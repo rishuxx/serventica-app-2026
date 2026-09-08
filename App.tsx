@@ -6,6 +6,7 @@ import { WelcomeSplashScreen } from './apps/customer/src/screens/WelcomeSplashSc
 import { CustomerLoginScreen } from './apps/customer/src/screens/CustomerLoginScreen';
 import { CustomerOtpScreen } from './apps/customer/src/screens/CustomerOtpScreen';
 import { HomePlaceholderScreen } from './apps/customer/src/screens/HomePlaceholderScreen';
+import { HomeScreen } from './apps/customer/src/features/home/screens/HomeScreen';
 import { authService } from './apps/customer/src/services/auth.service';
 
 type UnauthScreen = 'SPLASH' | 'LOGIN' | 'OTP';
@@ -90,9 +91,9 @@ function RootNavigator() {
     );
   }
 
-  // Authenticated state -> Show Home Placeholder
+  // Authenticated state -> Show Production Home Screen
   if (authState === 'AUTHENTICATED') {
-    return <HomePlaceholderScreen />;
+    return <HomeScreen />;
   }
 
   // Unauthenticated flow

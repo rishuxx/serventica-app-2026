@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     fontFamily: ServenticaTokens.fonts.Coolvetica,
     fontWeight: '700',
     color: '#e5aa1e',
-    letterSpacing: -0.5,
+    letterSpacing: 0,
   },
   logoDot: {
     color: '#e5aa1e',
