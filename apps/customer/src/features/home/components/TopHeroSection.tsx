@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   StyleSheet,
   View,
@@ -7,7 +7,9 @@ import {
   Image,
   Platform,
   StatusBar,
+  Animated,
 } from 'react-native';
+import Svg, { Defs, RadialGradient as SvgRadialGradient, Stop, Rect } from 'react-native-svg';
 import {
   MapPin,
   ChevronDown,
@@ -21,6 +23,12 @@ import { ServenticaTokens } from '../../../../../../packages/design-system/src';
 import { AssetRegistry } from '../../../services/home.service';
 import { HomeBannerItem } from '../../../types/home.types';
 
+import { CategoryItem } from '../../../types/category.types';
+import { HomeHeroAsset } from '../../../types/home.types';
+import { CategoryExperience } from '../../../types/experience.types';
+import { getFallbackCategoryTheme, getFallbackCategoryHero } from '../../../repositories/experience.repository';
+import { CategoryRail, CategoryRailSkeleton } from './CategoryRail';
+
 interface TopHeroSectionProps {
   shortAddress: string;
   onPressLocation: () => void;
@@ -32,6 +40,11 @@ interface TopHeroSectionProps {
   onPressVoice?: () => void;
   onPressCTA?: () => void;
   banners?: HomeBannerItem[];
+  categories?: CategoryItem[];
+  selectedCategoryId?: string | null;
+  onSelectCategory?: (category: CategoryItem) => void;
+  heroAsset?: HomeHeroAsset;
+  categoryExperience?: CategoryExperience;
 }
 
 export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
@@ -45,183 +58,294 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
   onPressVoice,
   onPressCTA,
   banners,
+  categories = [],
+  selectedCategoryId = null,
+  onSelectCategory = () => {},
+  heroAsset,
+  categoryExperience,
 }) => {
-  // Dynamic hero presentation container (runs primary hero message, ads, announcements)
-  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+  const [upperLayout, setUpperLayout] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
 
-  const heroSlides = [
-    {
-      title: 'Sit Back & Relax',
-      description: "We'll take care of all your home needs",
-      ctaText: 'Shop Now',
-    },
-    ...(banners && banners.length > 0
-      ? banners.map((b) => ({
-        title: b.title,
-        description: b.subtitle || 'Expert services right at your doorstep',
-        ctaText: b.cta_label || 'Shop Now',
-      }))
-      : [
-        {
-          title: 'Expert Home Help',
-          description: 'Top-rated professionals on demand',
-          ctaText: 'Book Now',
-        },
-        {
-          title: 'Occasional Decors',
-          description: 'Get your space ready for celebrations',
-          ctaText: 'Explore',
-        },
-      ]),
-  ];
+  // Animation drivers for buttery smooth context transition
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const slideAnim = useRef(new Animated.Value(0)).current;
 
+  const themeFallback = categoryExperience?.category.slug
+    ? getFallbackCategoryTheme(categoryExperience.category.slug)
+    : null;
+
+  const activeHero = categoryExperience?.hero;
+  const gradientStart = activeHero ? activeHero.palette.gradientStart : (heroAsset?.gradient_start || '#0284C7');
+  const gradientEnd = activeHero ? activeHero.palette.gradientEnd : (heroAsset?.gradient_end || '#38BDF8');
+
+  const isDark =
+    categoryExperience?.theme?.isDark !== undefined
+      ? categoryExperience.theme.isDark
+      : themeFallback?.isDark !== undefined
+      ? themeFallback.isDark
+      : activeHero
+      ? activeHero.palette.isDark
+      : (heroAsset?.is_dark ?? true);
+
+  const gradientColors: string[] =
+    activeHero?.palette.gradientColors && activeHero.palette.gradientColors.length >= 2
+      ? activeHero.palette.gradientColors
+      : categoryExperience?.theme?.gradientColors && categoryExperience.theme.gradientColors.length >= 2
+      ? categoryExperience.theme.gradientColors
+      : themeFallback?.gradientColors && themeFallback.gradientColors.length >= 2
+      ? themeFallback.gradientColors
+      : [gradientStart, gradientEnd];
+
+  const textColor = isDark ? '#FFFFFF' : '#111111';
+  const textSubColor = isDark ? 'rgba(255, 255, 255, 0.90)' : '#222222';
+  const iconColor = isDark ? '#FFFFFF' : '#111111';
+  const logoTint = isDark ? '#FFFFFF' : '#111111';
+  const profileBg = isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.08)';
+  const profileBorder = isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.12)';
+
+  // Resolve hero image asset
+  const fallbackHero = categoryExperience?.category ? getFallbackCategoryHero(categoryExperience.category) : null;
+  const heroImageKey = activeHero?.imageUrl || fallbackHero?.imageUrl || heroAsset?.image_url;
+  const heroImageSource =
+    heroImageKey && AssetRegistry[heroImageKey]
+      ? AssetRegistry[heroImageKey]
+      : fallbackHero?.imageUrl && AssetRegistry[fallbackHero.imageUrl]
+      ? AssetRegistry[fallbackHero.imageUrl]
+      : AssetRegistry.hero_gardener;
+
+  // Animate content smoothly whenever category context updates
   useEffect(() => {
-    if (heroSlides.length <= 1) return;
-    const interval = setInterval(() => {
-      setActiveSlideIndex((prev) => (prev + 1) % heroSlides.length);
-    }, 6000);
-    return () => clearInterval(interval);
-  }, [heroSlides.length]);
+    fadeAnim.setValue(0.35);
+    slideAnim.setValue(8);
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 320,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 320,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [categoryExperience?.category.id]);
 
-  const currentSlide = heroSlides[activeSlideIndex] || heroSlides[0];
+  const activeTitle = activeHero?.title || heroAsset?.headline || 'Hire us';
+  const activeSubtitle = activeHero?.subtitle || heroAsset?.subheadline || 'let your garden bloom with us hire your personal Gardener for monthly';
+  const activeCTA = activeHero?.ctaLabel || heroAsset?.cta_label || 'Shop Now';
 
   return (
     <View style={styles.heroContainer}>
-      {/* 1. Full-width background image covering the complete top area */}
-      <Image
-        source={AssetRegistry.hero_background}
-        style={styles.heroBackgroundImage}
-        resizeMode="cover"
-      />
-
-      {/* 2. Soft subtle overlay preserving crystal clear neon lines */}
-      <View style={styles.heroOverlay} />
-
-      {/* 3. Hero content layer */}
-      <View style={styles.contentLayer}>
-        {/* STATIC HEADER AREA: Pinned at top so dynamic hero slides never move it */}
-        <View style={styles.staticHeaderArea}>
-          {/* ROW 1: SERVENTICA LOGO AT THE VERY TOP CENTER */}
-          <View style={styles.logoHeaderRow}>
-            <Image
-              source={AssetRegistry.top_logo}
-              style={styles.logoImage}
-              resizeMode="contain"
-            />
-          </View>
-
-          {/* ROW 2: DELIVERY TIME + LOCATION (LEFT) & USER ACCOUNT (RIGHT) */}
-          <View style={styles.locationRow}>
-            <View style={styles.locationLeftColumn}>
-              {/* Delivery Time Badge with Electric Zap Icon & 24px text */}
-              <View style={styles.deliveryTimeContainer}>
-                <Zap size={18} color="#FFFFFF" fill="#FFFFFF" style={styles.electricIcon} />
-                <Text style={styles.deliveryTimeHighlight}>20 minutes</Text>
-              </View>
-
-              {/* Location Area: Small, compact address */}
-              <TouchableOpacity
-                style={styles.locationContainer}
-                activeOpacity={0.7}
-                onPress={onPressLocation}
-                accessibilityRole="button"
-                accessibilityLabel={`Delivery Location: ${shortAddress}`}
+      {/* ========================================================================= */}
+      {/* 1. UPPER HERO SECTION — BLINKIT-STYLE SMOOTH MULTI-COLOR SVG GRADIENT   */}
+      {/* Contains: Logo, ETA, Location, Profile, Search Bar & Category Navigation  */}
+      {/* ========================================================================= */}
+      <View
+        style={[styles.upperAdaptiveSection, { backgroundColor: gradientColors[0] }]}
+        onLayout={(e) => {
+          const { width, height } = e.nativeEvent.layout;
+          if (width > 0 && height > 0) {
+            setUpperLayout({ width, height });
+          }
+        }}
+      >
+        {/* Full-bleed SVG Radial Gradient Background Layer with ultra-smooth diffusion */}
+        {upperLayout.width > 0 && upperLayout.height > 0 ? (
+          <Svg
+            style={StyleSheet.absoluteFill}
+            width={upperLayout.width}
+            height={upperLayout.height}
+          >
+            <Defs>
+              <SvgRadialGradient
+                id={`upperHeroGrad_${categoryExperience?.category.id || 'default'}`}
+                cx="50%"
+                cy="0%"
+                rx="110%"
+                ry="130%"
+                fx="50%"
+                fy="0%"
               >
-                <MapPin size={13} color="#FFFFFF" strokeWidth={2.2} style={styles.pinIcon} />
-                <Text
-                  style={styles.addressText}
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                >
-                  {shortAddress}
-                </Text>
-                <ChevronDown size={13} color="#FFFFFF" strokeWidth={2.2} style={styles.chevronIcon} />
-              </TouchableOpacity>
+                {gradientColors.map((color, index) => {
+                  const offsetPercent = `${Math.round((index / (gradientColors.length - 1)) * 100)}%`;
+                  return <Stop key={index} offset={offsetPercent} stopColor={color} stopOpacity="1" />;
+                })}
+              </SvgRadialGradient>
+            </Defs>
+            <Rect x="0" y="0" width={upperLayout.width} height={upperLayout.height} fill={`url(#upperHeroGrad_${categoryExperience?.category.id || 'default'})`} />
+          </Svg>
+        ) : null}
+
+        {/* ROW 1: SERVENTICA LOGO AT THE VERY TOP CENTER */}
+        <View style={styles.logoHeaderRow}>
+          <Image
+            source={AssetRegistry.top_logo}
+            style={[styles.logoImage, { tintColor: logoTint }]}
+            resizeMode="contain"
+          />
+        </View>
+
+        {/* ROW 2: DELIVERY TIME + LOCATION (LEFT) & USER ACCOUNT (RIGHT) */}
+        <View style={styles.locationRow}>
+          <View style={styles.locationLeftColumn}>
+            {/* Delivery Time Badge with Electric Zap Icon & 24px text */}
+            <View style={styles.deliveryTimeContainer}>
+              <Zap size={18} color={iconColor} fill={iconColor} style={styles.electricIcon} />
+              <Text style={[styles.deliveryTimeHighlight, { color: textColor }]}>20 minutes</Text>
             </View>
 
-            {/* Profile User Icon */}
+            {/* Location Area: High-priority dedicated touch target with no overlap */}
             <TouchableOpacity
-              style={styles.profileButton}
-              activeOpacity={0.8}
-              onPress={onPressProfile}
+              style={styles.locationContainer}
+              activeOpacity={0.7}
+              onPress={onPressLocation}
               accessibilityRole="button"
-              accessibilityLabel="Customer Account and Profile"
+              accessibilityLabel={`Delivery Location: ${shortAddress}`}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <User size={16} color="#FFFFFF" strokeWidth={2.0} />
+              <MapPin size={14} color={iconColor} strokeWidth={2.4} style={styles.pinIcon} />
+              <Text
+                style={[styles.addressText, { color: textSubColor }]}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {shortAddress}
+              </Text>
+              <ChevronDown size={14} color={iconColor} strokeWidth={2.4} style={styles.chevronIcon} />
             </TouchableOpacity>
           </View>
 
-          {/* ROW 3: SEARCH BAR (Translucent frosted glass style) */}
-          <View style={styles.searchBarWrapper}>
-            <View style={styles.searchBar}>
-              <Search size={17} color="#FFFFFF" strokeWidth={2.0} style={styles.searchIcon} />
-              <TouchableOpacity
-                style={styles.inputHitBox}
-                activeOpacity={0.85}
-                onPress={onFocusSearch}
-              >
-                <Text
-                  style={[
-                    styles.inputText,
-                    searchQuery.length > 0 && styles.inputTextActive,
-                  ]}
-                  numberOfLines={1}
-                >
-                  {searchQuery || "Search for 'Painting'"}
-                </Text>
-              </TouchableOpacity>
-
-              {searchQuery.length > 0 ? (
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={onClearSearch}
-                  activeOpacity={0.7}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                  accessibilityLabel="Clear search text"
-                >
-                  <X size={16} color="#FFFFFF" strokeWidth={2.0} />
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={onPressVoice}
-                  activeOpacity={0.7}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                  accessibilityLabel="Voice search"
-                >
-                  <Mic size={17} color="#FFFFFF" strokeWidth={2.0} />
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-
-          {/* ROW 4: THIN SEPARATOR LINE WITH GAP AFTER SEARCH BAR */}
-          <View style={styles.heroDividerLine} />
+          {/* Profile User Icon */}
+          <TouchableOpacity
+            style={[styles.profileButton, { backgroundColor: profileBg, borderColor: profileBorder }]}
+            activeOpacity={0.8}
+            onPress={onPressProfile}
+            accessibilityRole="button"
+            accessibilityLabel="Customer Account and Profile"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <User size={16} color={iconColor} strokeWidth={2.2} />
+          </TouchableOpacity>
         </View>
 
-        {/* ROW 5: DYNAMIC HERO CONTAINER (Runs Ads, Promos, Title, Description, CTA) */}
-        <View style={styles.dynamicHeroBox}>
+        {/* ROW 3: SEARCH BAR (Crisp Clean Surface on Adaptive Background) */}
+        <View style={styles.searchBarWrapper}>
+          <TouchableOpacity
+            style={styles.searchBar}
+            activeOpacity={0.88}
+            onPress={onFocusSearch}
+            accessibilityRole="search"
+            accessibilityLabel="Search services and categories"
+          >
+            <Search size={17} color="#666666" strokeWidth={2.0} style={styles.searchIcon} />
+            <View style={styles.inputHitBox}>
+              <Text
+                style={[
+                  styles.inputText,
+                  searchQuery.length > 0 && styles.inputTextActive,
+                ]}
+                numberOfLines={1}
+              >
+                {searchQuery || `Search in ${categoryExperience?.category.name || 'Serventica'}...`}
+              </Text>
+            </View>
+
+            {searchQuery.length > 0 ? (
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={onClearSearch}
+                activeOpacity={0.7}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                accessibilityLabel="Clear search text"
+              >
+                <X size={16} color="#111111" strokeWidth={2.0} />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={onPressVoice}
+                activeOpacity={0.7}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                accessibilityLabel="Voice search"
+              >
+                <Mic size={17} color="#555555" strokeWidth={2.0} />
+              </TouchableOpacity>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        {/* ROW 4: ALL CATEGORIES HORIZONTAL NAVIGATION RAIL (With adaptive light/dark contrast) */}
+        <View style={styles.categoryRailWrapper}>
+          {categories && categories.length > 0 ? (
+            <CategoryRail
+              categories={categories}
+              selectedCategoryId={selectedCategoryId}
+              onSelectCategory={onSelectCategory}
+              variant="hero"
+              isDarkBackground={isDark}
+            />
+          ) : (
+            <CategoryRailSkeleton isDarkBackground={isDark} />
+          )}
+        </View>
+      </View>
+
+      {/* ========================================================================= */}
+      {/* 2. LOWER HERO IMAGE SECTION — SUPABASE / DELIVERED HERO IMAGE ONLY        */}
+      {/* Contains: Dynamic Crossfade Image + Category Marketing Copy + Context CTA */}
+      {/* ========================================================================= */}
+      <View style={styles.lowerImageHeroSection}>
+        <Animated.Image
+          source={heroImageSource}
+          style={[styles.lowerHeroBackgroundImage, { opacity: fadeAnim }]}
+          resizeMode="cover"
+        />
+
+        {/* Animated Marketing Copy + Context CTA */}
+        <Animated.View
+          style={[
+            styles.lowerHeroContentBox,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
+        >
           <Text style={styles.heroTitle} numberOfLines={2}>
-            {currentSlide.title}
+            {activeTitle}
           </Text>
 
-          {currentSlide.description ? (
+          {activeSubtitle ? (
             <Text style={styles.heroDescription} numberOfLines={2}>
-              {currentSlide.description}
+              {activeSubtitle}
             </Text>
           ) : null}
 
-          {/* Small compact Shop Now CTA */}
           <TouchableOpacity
-            style={styles.shopNowButton}
+            style={[
+              styles.shopNowButton,
+              categoryExperience?.theme?.buttonColor
+                ? { backgroundColor: categoryExperience.theme.buttonColor }
+                : null,
+            ]}
             activeOpacity={0.85}
             onPress={onPressCTA}
             accessibilityRole="button"
-            accessibilityLabel={currentSlide.ctaText}
+            accessibilityLabel={activeCTA}
           >
-            <Text style={styles.shopNowText}>{currentSlide.ctaText}</Text>
+            <Text
+              style={[
+                styles.shopNowText,
+                categoryExperience?.theme?.buttonTextColor
+                  ? { color: categoryExperience.theme.buttonTextColor }
+                  : null,
+              ]}
+            >
+              {activeCTA}
+            </Text>
           </TouchableOpacity>
-        </View>
+        </Animated.View>
       </View>
     </View>
   );
@@ -230,38 +354,20 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
 const styles = StyleSheet.create({
   heroContainer: {
     width: '100%',
-    minHeight: 480,
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
     borderBottomLeftRadius: 36,
     borderBottomRightRadius: 36,
     overflow: 'hidden',
-    backgroundColor: '#0a1622',
+    backgroundColor: 'transparent',
   },
-  heroBackgroundImage: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
+  upperAdaptiveSection: {
     width: '100%',
-    height: 520,
-  },
-  heroOverlay: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0, 0, 0, 0.02)',
-    borderBottomLeftRadius: 36,
-    borderBottomRightRadius: 36,
-  },
-  contentLayer: {
-    width: '100%',
-    flex: 1,
     paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 4 : 8,
-    paddingBottom: 24,
-    justifyContent: 'space-between',
-  },
-  staticHeaderArea: {
-    width: '100%',
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 6 : 10,
+    paddingBottom: 10,
+    position: 'relative',
+    overflow: 'hidden',
   },
   logoHeaderRow: {
     alignItems: 'center',
@@ -271,6 +377,7 @@ const styles = StyleSheet.create({
   logoImage: {
     width: 98,
     height: 20,
+    tintColor: '#111111',
   },
   locationRow: {
     flexDirection: 'row',
@@ -294,51 +401,59 @@ const styles = StyleSheet.create({
   deliveryTimeHighlight: {
     fontSize: 24,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#FFFFFF',
+    color: '#111111',
     letterSpacing: 0,
     lineHeight: 28,
   },
   locationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 1,
+    marginTop: 2,
+    alignSelf: 'flex-start',
+    paddingVertical: 2,
   },
   pinIcon: {
     marginRight: 4,
   },
   addressText: {
-    fontSize: 12,
+    fontSize: 12.5,
     fontFamily: ServenticaTokens.fonts.Regular,
-    color: 'rgba(255, 255, 255, 0.95)',
+    color: '#222222',
     maxWidth: '85%',
     letterSpacing: 0,
+    fontWeight: '500',
   },
   chevronIcon: {
     marginLeft: 3,
   },
   profileButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.22)',
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: 'rgba(0, 0, 0, 0.08)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.35)',
+    borderColor: 'rgba(0, 0, 0, 0.12)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   searchBarWrapper: {
     width: '100%',
-    marginBottom: 14,
+    marginBottom: 10,
   },
   searchBar: {
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.35)',
+    borderColor: 'rgba(0, 0, 0, 0.08)',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 14,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1.5 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
   },
   searchIcon: {
     marginRight: 8,
@@ -351,11 +466,11 @@ const styles = StyleSheet.create({
   inputText: {
     fontSize: 13.5,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: 'rgba(255, 255, 255, 0.92)',
+    color: '#888888',
     letterSpacing: 0,
   },
   inputTextActive: {
-    color: '#FFFFFF',
+    color: '#111111',
     fontWeight: '500',
   },
   actionButton: {
@@ -363,54 +478,79 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  heroDividerLine: {
+  categoryRailWrapper: {
+    width: '100%',
+    marginTop: 2,
+    marginBottom: 2,
+  },
+  sectionDividerLine: {
     width: '100%',
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-    marginBottom: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.08)',
   },
-  dynamicHeroBox: {
+  lowerImageHeroSection: {
     width: '100%',
-    minHeight: 140,
+    height: 310,
+    position: 'relative',
+    justifyContent: 'flex-end',
+    borderBottomLeftRadius: 36,
+    borderBottomRightRadius: 36,
+    overflow: 'hidden',
+    backgroundColor: '#0a1622',
+  },
+  lowerHeroBackgroundImage: {
+    ...StyleSheet.absoluteFill,
+    width: '100%',
+    height: '100%',
+  },
+  lowerHeroOverlay: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: 'rgba(0, 0, 0, 0.22)',
+  },
+  lowerHeroContentBox: {
+    width: '100%',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 12,
-    paddingTop: 6,
-    paddingBottom: 10,
+    justifyContent: 'flex-end',
+    paddingHorizontal: 16,
+    paddingBottom: 18,
   },
   heroTitle: {
-    fontSize: 25,
+    fontSize: 23,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
     color: '#FFFFFF',
     textAlign: 'center',
-    lineHeight: 30,
+    lineHeight: 28,
     letterSpacing: 0,
-    marginBottom: 6,
+    marginBottom: 4,
   },
   heroDescription: {
-    fontSize: 13.5,
+    fontSize: 13,
     fontFamily: ServenticaTokens.fonts.Regular,
-    color: 'rgba(255, 255, 255, 0.92)',
+    color: 'rgba(255, 255, 255, 0.95)',
     textAlign: 'center',
-    lineHeight: 19,
+    lineHeight: 18,
     letterSpacing: 0,
-    marginBottom: 16,
-    paddingHorizontal: 20,
+    marginBottom: 12,
+    paddingHorizontal: 16,
   },
   shopNowButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.32)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.45)',
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 16,
+    backgroundColor: '#FFCC00', // Serventica signature yellow
+    paddingHorizontal: 24,
+    paddingVertical: 9,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
   },
   shopNowText: {
-    fontSize: 12.5,
+    fontSize: 13,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#FFFFFF',
+    color: '#111111',
     letterSpacing: 0,
+    fontWeight: '700',
   },
 });

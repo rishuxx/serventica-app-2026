@@ -150,3 +150,5 @@ export interface ApiErrorResponse {
   details?: unknown;
   timestamp: string;
 }
+
+export * from './account.types';

@@ -6,13 +6,14 @@ import {
   Modal,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import {
   MapPin,
   X,
   Navigation,
   Check,
+  Compass,
 } from 'lucide-react-native';
 import { ServenticaTokens } from '../../../../../../packages/design-system/src';
 
@@ -21,6 +22,9 @@ interface LocationModalProps {
   onClose: () => void;
   fullAddress: string;
   city: string;
+  isLoading?: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
   onRefreshLocation: () => void;
 }
 
@@ -29,6 +33,9 @@ export const LocationModal: React.FC<LocationModalProps> = ({
   onClose,
   fullAddress,
   city,
+  isLoading = false,
+  latitude = null,
+  longitude = null,
   onRefreshLocation,
 }) => {
   return (
@@ -44,7 +51,10 @@ export const LocationModal: React.FC<LocationModalProps> = ({
             <View style={styles.sheetContainer}>
               {/* Header */}
               <View style={styles.sheetHeader}>
-                <Text style={styles.sheetTitle}>Service Delivery Location</Text>
+                <View style={styles.titleRow}>
+                  <Compass size={19} color="#111111" strokeWidth={2.4} style={{ marginRight: 6 }} />
+                  <Text style={styles.sheetTitle}>Service Delivery Location</Text>
+                </View>
                 <TouchableOpacity
                   onPress={onClose}
                   style={styles.closeBtn}
@@ -58,30 +68,49 @@ export const LocationModal: React.FC<LocationModalProps> = ({
               <View style={styles.currentCard}>
                 <View style={styles.cardHeader}>
                   <MapPin size={18} color="#111111" strokeWidth={2.4} />
-                  <Text style={styles.cardHeaderText}>Current Selected Location</Text>
-                  <View style={styles.checkBadge}>
-                    <Check size={14} color="#ffffff" strokeWidth={2.6} />
-                  </View>
+                  <Text style={styles.cardHeaderText}>Current GPS Location</Text>
+                  {isLoading ? (
+                    <ActivityIndicator size="small" color="#111111" />
+                  ) : (
+                    <View style={styles.checkBadge}>
+                      <Check size={13} color="#ffffff" strokeWidth={2.8} />
+                    </View>
+                  )}
                 </View>
 
                 <Text style={styles.fullAddressText}>
-                  {fullAddress}
+                  {isLoading ? 'Acquiring GPS coordinates & reverse geocoding...' : fullAddress}
                 </Text>
 
-                <Text style={styles.cityBadge}>City: {city}</Text>
+                <View style={styles.metaRow}>
+                  <Text style={styles.cityBadge}>
+                    City: <Text style={styles.cityBadgeHighlight}>{city}</Text>
+                  </Text>
+                  {latitude !== null && longitude !== null && (
+                    <Text style={styles.coordsBadge}>
+                      {latitude.toFixed(4)}°, {longitude.toFixed(4)}°
+                    </Text>
+                  )}
+                </View>
               </View>
 
               {/* Action to re-detect location */}
               <TouchableOpacity
-                style={styles.refreshBtn}
+                style={[styles.refreshBtn, isLoading && styles.refreshBtnDisabled]}
                 activeOpacity={0.8}
+                disabled={isLoading}
                 onPress={() => {
                   onRefreshLocation();
-                  onClose();
                 }}
               >
-                <Navigation size={18} color="#111111" strokeWidth={2.2} />
-                <Text style={styles.refreshBtnText}>Use Current GPS Location</Text>
+                {isLoading ? (
+                  <ActivityIndicator size="small" color="#111111" style={{ marginRight: 8 }} />
+                ) : (
+                  <Navigation size={18} color="#111111" strokeWidth={2.2} />
+                )}
+                <Text style={styles.refreshBtnText}>
+                  {isLoading ? 'Locating with GPS...' : 'Fetch Live GPS Location'}
+                </Text>
               </TouchableOpacity>
             </View>
           </TouchableWithoutFeedback>
@@ -110,6 +139,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 16,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   sheetTitle: {
     fontSize: 17,
@@ -145,21 +178,39 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: '#111111',
+    backgroundColor: '#1E4B29',
     justifyContent: 'center',
     alignItems: 'center',
   },
   fullAddressText: {
     fontSize: 14,
     lineHeight: 20,
-    color: '#333333',
+    color: '#222222',
     fontFamily: ServenticaTokens.fonts.Medium,
-    marginBottom: 8,
+    marginBottom: 10,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   cityBadge: {
     fontSize: 12,
     color: '#666666',
     fontFamily: ServenticaTokens.fonts.Medium,
+  },
+  cityBadgeHighlight: {
+    color: '#111111',
+    fontWeight: '600',
+  },
+  coordsBadge: {
+    fontSize: 11,
+    color: '#888888',
+    fontFamily: ServenticaTokens.fonts.Medium,
+    backgroundColor: '#EAEAEA',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
   },
   refreshBtn: {
     flexDirection: 'row',
@@ -170,6 +221,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#F6F6F4',
     borderWidth: 1,
     borderColor: '#E8E8E6',
+  },
+  refreshBtnDisabled: {
+    opacity: 0.7,
   },
   refreshBtnText: {
     fontSize: 14,

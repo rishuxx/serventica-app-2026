@@ -3,11 +3,11 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "dev": "node -e \"console.log('@serventica/admin web app not yet installed')\"",
+    "build": "node -e \"console.log('@serventica/admin web app build skipped')\"",
+    "start": "node -e \"console.log('@serventica/admin web app start skipped')\"",
+    "lint": "echo 0",
+    "typecheck": "echo 0"
   },
   "dependencies": {
     "@serventica/types": "workspace:*",

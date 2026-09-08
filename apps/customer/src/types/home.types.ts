@@ -27,9 +27,33 @@ export interface HomeBasicServiceItem {
   base_price: number;
   image_url: string;
   rating: number;
+  category_id?: string;
+  category_name?: string;
+}
+
+export interface HomeHeroAsset {
+  id: string;
+  name: string;
+  slug: string;
+  storage_path: string;
+  image_url: string;
+  mobile_image_url?: string;
+  primary_color: string;
+  secondary_color: string;
+  accent_color?: string;
+  gradient_start: string;
+  gradient_end: string;
+  text_color: string;
+  overlay_color?: string;
+  is_dark: boolean;
+  headline: string;
+  subheadline: string;
+  cta_label: string;
+  cta_target_route?: string;
 }
 
 export interface HomePayload {
+  heroAsset: HomeHeroAsset;
   banners: HomeBannerItem[];
   categories: HomeCategoryItem[];
   basics: HomeBasicServiceItem[];

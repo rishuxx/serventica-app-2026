@@ -134,6 +134,11 @@ export const SearchResultsView: React.FC<SearchResultsViewProps> = ({
               </View>
 
               <View style={styles.itemDetails}>
+                {item.category_name ? (
+                  <View style={styles.categoryBadge}>
+                    <Text style={styles.categoryBadgeText}>{item.category_name}</Text>
+                  </View>
+                ) : null}
                 <Text style={styles.itemName} numberOfLines={1}>{item.name}</Text>
                 <Text style={styles.itemTagline} numberOfLines={1}>
                   {item.short_tagline || item.description}
@@ -278,5 +283,18 @@ const styles = StyleSheet.create({
     fontFamily: ServenticaTokens.fonts.Bold,
     color: '#111111',
     marginTop: 4,
+  },
+  categoryBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#F2F2F0',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginBottom: 4,
+  },
+  categoryBadgeText: {
+    fontSize: 11,
+    fontFamily: ServenticaTokens.fonts.Medium,
+    color: '#555555',
   },
 });

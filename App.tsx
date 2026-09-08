@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import { useAuth } from './apps/customer/src/context/AuthContext';
-import { AuthProvider } from './apps/customer/src/context/AuthContext';
+import { AuthProvider, useAuth } from './apps/customer/src/context/AuthContext';
+import { LocationProvider } from './apps/customer/src/context/LocationContext';
 import { WelcomeSplashScreen } from './apps/customer/src/screens/WelcomeSplashScreen';
 import { CustomerLoginScreen } from './apps/customer/src/screens/CustomerLoginScreen';
 import { CustomerOtpScreen } from './apps/customer/src/screens/CustomerOtpScreen';
@@ -131,7 +131,9 @@ function RootNavigator() {
 export default function App() {
   return (
     <AuthProvider>
-      <RootNavigator />
+      <LocationProvider>
+        <RootNavigator />
+      </LocationProvider>
     </AuthProvider>
   );
 }

@@ -92,11 +92,10 @@ const styles = StyleSheet.create({
   iconWrapper: {
     paddingHorizontal: 12,
     paddingVertical: 4,
-    borderRadius: 14,
     marginBottom: 2,
   },
   activeIconWrapper: {
-    backgroundColor: '#F1F1EF',
+    backgroundColor: 'transparent',
   },
   tabLabel: {
     fontSize: 11,
