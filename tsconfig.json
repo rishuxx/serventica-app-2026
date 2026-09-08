@@ -1,5 +1,20 @@
 {
   "extends": "@react-native/typescript-config",
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "types": ["node", "jest"],
+    "baseUrl": ".",
+    "paths": {
+      "@serventica/types": ["packages/types/src"],
+      "@serventica/validation": ["packages/validation/src"],
+      "@serventica/config": ["packages/config/src"],
+      "@serventica/design-system": ["packages/design-system/src"],
+      "@serventica/api-client": ["packages/api-client/src"],
+      "@serventica/analytics": ["packages/analytics/src"],
+      "@serventica/utils": ["packages/utils/src"]
+    }
+  },
   "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["**/node_modules", "**/Pods"]
 }

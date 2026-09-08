@@ -1,0 +1,25 @@
+{
+  "name": "@serventica/partner",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "start": "react-native start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@serventica/types": "workspace:*",
+    "@serventica/design-system": "workspace:*",
+    "@serventica/config": "workspace:*",
+    "react": "19.2.3",
+    "react-native": "0.87.1",
+    "react-native-safe-area-context": "^5.5.2"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "typescript": "^5.8.0"
+  }
+}
