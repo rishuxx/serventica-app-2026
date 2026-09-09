@@ -9,10 +9,15 @@ import {
 
 // Asset map resolving backend identifiers to local crisp assets or storage URLs
 export const AssetRegistry: Record<string, any> = {
-  // Hero Backgrounds (Gardener, AC technician, Home Decors)
-  hero_gardener: require('../assets/images/serventica-hero-gardener.png'),
-  hero_background: require('../assets/images/serventica-hero-ac.png'),
-  hero_homedecors: require('../assets/images/serventica-hero-homedecors.png'),
+  // Hero Banners (Organized under assets/hero)
+  hero_gardener: require('../assets/hero/hero-cleaning-gardener.png'),
+  hero_cleaning: require('../assets/hero/hero-cleaning.webp'),
+  hero_ac_appliances: require('../assets/hero/hero-ac-appliances.webp'),
+  hero_background: require('../assets/hero/hero-ac-appliances.webp'),
+  hero_electrical: require('../assets/hero/hero-electrical.webp'),
+  hero_painting: require('../assets/hero/hero-painting.webp'),
+  hero_homedecors: require('../assets/hero/hero-home-decor.png'),
+  hero_services_general: require('../assets/hero/hero-services-general.jpg'),
   top_logo: require('../assets/images/TopLogo.png'),
 
   // Banners / Serventica Originals

@@ -110,14 +110,16 @@ export const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
                   source={imageSource}
                   style={styles.serviceImage}
                   resizeMode="contain"
-                  onLoadStart={() => setImageLoading(true)}
+                  onLoadStart={() => {
+                    if (!isRegistryAsset) setImageLoading(true);
+                  }}
                   onLoadEnd={() => setImageLoading(false)}
                   onError={() => {
                     setImageLoading(false);
                     setImageError(true);
                   }}
                 />
-                {imageLoading ? (
+                {!isRegistryAsset && imageLoading ? (
                   <View style={styles.imageLoadingOverlay}>
                     <ActivityIndicator size="small" color="#111111" />
                   </View>

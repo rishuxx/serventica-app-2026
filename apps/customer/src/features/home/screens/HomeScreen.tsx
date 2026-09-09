@@ -32,6 +32,8 @@ import { HomeBasicServiceItem } from '../../../types/home.types';
 import { CategoryItem } from '../../../types/category.types';
 import { ServenticaTokens } from '../../../../../../packages/design-system/src';
 import { MapPin, ChevronDown, User, Search } from 'lucide-react-native';
+import Svg, { Defs, RadialGradient as SvgRadialGradient, Stop, Rect } from 'react-native-svg';
+import { getFallbackCategoryTheme } from '../../../repositories/experience.repository';
 
 import { ProfileScreen } from '../../account/screens/ProfileScreen';
 import { EditProfileScreen } from '../../account/screens/EditProfileScreen';
@@ -90,9 +92,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   // Track scroll position to ensure sticky header never receives touches when invisible at top
   useEffect(() => {
     const listenerId = scrollY.addListener(({ value }) => {
-      if (value > 220 && !isStickyActive) {
+      if (value > 380 && !isStickyActive) {
         setIsStickyActive(true);
-      } else if (value <= 220 && isStickyActive) {
+      } else if (value <= 380 && isStickyActive) {
         setIsStickyActive(false);
       }
     });
@@ -108,17 +110,49 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     selectCategory(category.id);
   };
 
+  const [stickyLayout, setStickyLayout] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
+
+  // Resolve active theme and colors for sticky header inheritance
+  const themeFallback = activeCategory?.slug
+    ? getFallbackCategoryTheme(activeCategory.slug)
+    : null;
+
+  const isDarkSticky =
+    activeExperience?.theme?.isDark !== undefined
+      ? activeExperience.theme.isDark
+      : themeFallback?.isDark !== undefined
+      ? themeFallback.isDark
+      : false;
+
+  const stickyGradientColors: string[] =
+    activeExperience?.hero?.palette?.gradientColors && activeExperience.hero.palette.gradientColors.length >= 2
+      ? activeExperience.hero.palette.gradientColors
+      : activeExperience?.theme?.gradientColors && activeExperience.theme.gradientColors.length >= 2
+      ? activeExperience.theme.gradientColors
+      : themeFallback?.gradientColors && themeFallback.gradientColors.length >= 2
+      ? themeFallback.gradientColors
+      : [
+          activeExperience?.theme?.gradientStart || themeFallback?.gradientStart || '#0284C7',
+          activeExperience?.theme?.gradientEnd || themeFallback?.gradientEnd || '#38BDF8',
+        ];
+
+  const stickyTextColor = isDarkSticky ? '#FFFFFF' : '#111111';
+  const stickySubtextColor = isDarkSticky ? 'rgba(255, 255, 255, 0.85)' : '#444444';
+  const stickyIconColor = isDarkSticky ? '#FFFFFF' : '#111111';
+  const stickyInputBg = isDarkSticky ? 'rgba(255, 255, 255, 0.20)' : 'rgba(0, 0, 0, 0.06)';
+  const stickyInputBorder = isDarkSticky ? 'rgba(255, 255, 255, 0.28)' : 'rgba(0, 0, 0, 0.08)';
+
   // Sticky Category Header Interpolations:
-  // Fades in smoothly as user scrolls past hero threshold (~240px)
+  // Fades in smoothly as user scrolls past hero threshold (~400px - 450px)
   const stickyHeaderOpacity = scrollY.interpolate({
-    inputRange: [240, 280],
+    inputRange: [400, 460],
     outputRange: [0, 1],
     extrapolate: 'clamp',
   });
 
   const stickyHeaderTranslateY = scrollY.interpolate({
-    inputRange: [240, 280],
-    outputRange: [-15, 0],
+    inputRange: [400, 460],
+    outputRange: [-20, 0],
     extrapolate: 'clamp',
   });
 
@@ -399,43 +433,113 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             style={[
               styles.stickyHeaderSurface,
               {
+                backgroundColor: stickyGradientColors[0],
                 opacity: stickyHeaderOpacity,
                 transform: [{ translateY: stickyHeaderTranslateY }],
+                display: isStickyActive ? 'flex' : 'none',
               },
             ]}
+            onLayout={(e) => {
+              const { width, height } = e.nativeEvent.layout;
+              if (width > 0 && height > 0) {
+                setStickyLayout({ width, height });
+              }
+            }}
           >
+            {/* SVG Radial Gradient matching Top Hero */}
+            {stickyLayout.width > 0 && stickyLayout.height > 0 ? (
+              <Svg
+                pointerEvents="none"
+                style={StyleSheet.absoluteFill}
+                width={stickyLayout.width}
+                height={stickyLayout.height}
+              >
+                <Defs>
+                  <SvgRadialGradient
+                    id={`stickyHeaderGrad_${activeExperience?.category?.id || 'default'}`}
+                    cx="50%"
+                    cy="0%"
+                    rx="120%"
+                    ry="150%"
+                    fx="50%"
+                    fy="0%"
+                  >
+                    {stickyGradientColors.map((color, index) => {
+                      const offsetPercent = `${Math.round((index / (stickyGradientColors.length - 1)) * 100)}%`;
+                      return <Stop key={index} offset={offsetPercent} stopColor={color} stopOpacity="1" />;
+                    })}
+                  </SvgRadialGradient>
+                </Defs>
+                <Rect
+                  x="0"
+                  y="0"
+                  width={stickyLayout.width}
+                  height={stickyLayout.height}
+                  fill={`url(#stickyHeaderGrad_${activeExperience?.category?.id || 'default'})`}
+                />
+              </Svg>
+            ) : null}
+
             {/* Compact Header Row: Location, Search, Profile */}
             <View style={styles.stickyTopBar}>
               <TouchableOpacity
-                style={styles.stickyLocationBox}
+                style={[
+                  styles.stickyLocationBox,
+                  {
+                    backgroundColor: stickyInputBg,
+                    borderColor: stickyInputBorder,
+                    borderWidth: 1,
+                  },
+                ]}
                 activeOpacity={0.75}
                 onPress={location.openSelectLocation}
               >
-                <MapPin size={13} color="#111111" strokeWidth={2.2} />
-                <Text style={styles.stickyAddressText} numberOfLines={1}>
+                <MapPin size={13} color={stickyIconColor} strokeWidth={2.2} />
+                <Text
+                  style={[styles.stickyAddressText, { color: stickyTextColor }]}
+                  numberOfLines={1}
+                >
                   {location.activeLocation.shortAddress}
                 </Text>
-                <ChevronDown size={13} color="#111111" strokeWidth={2.2} />
+                <ChevronDown size={13} color={stickyIconColor} strokeWidth={2.2} />
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.stickySearchButton}
+                style={[
+                  styles.stickySearchButton,
+                  {
+                    backgroundColor: stickyInputBg,
+                    borderColor: stickyInputBorder,
+                    borderWidth: 1,
+                  },
+                ]}
                 activeOpacity={0.85}
                 onPress={search.openSearch}
               >
-                <Search size={14} color="#666666" strokeWidth={2} />
-                <Text style={styles.stickySearchPlaceholder}>Search...</Text>
+                <Search size={14} color={stickySubtextColor} strokeWidth={2} />
+                <Text
+                  style={[styles.stickySearchPlaceholder, { color: stickySubtextColor }]}
+                >
+                  Search...
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.stickyProfileBtn}
+                style={[
+                  styles.stickyProfileBtn,
+                  {
+                    backgroundColor: stickyInputBg,
+                    borderColor: stickyInputBorder,
+                    borderWidth: 1,
+                  },
+                ]}
                 activeOpacity={0.8}
                 onPress={() => {
                   setActiveAccountRoute('PROFILE');
                   onOpenAccount?.();
                 }}
               >
-                <User size={15} color="#111111" strokeWidth={2} />
+                <User size={15} color={stickyIconColor} strokeWidth={2} />
               </TouchableOpacity>
             </View>
 
@@ -445,6 +549,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               selectedCategoryId={selectedCategoryId}
               onSelectCategory={handleCategoryPress}
               variant="sticky"
+              isDarkBackground={isDarkSticky}
             />
           </Animated.View>
         </View>
@@ -509,22 +614,22 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'android' ? 36 : 48,
   },
 
-  // STICKY HEADER STYLING (Pixel-perfect 60fps collapse surface)
+  // STICKY HEADER STYLING (Pixel-perfect 60fps collapse surface with curved lower edge)
   stickyHeaderSurface: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#ffffff',
     paddingTop: Platform.OS === 'android' ? 34 : 46,
-    paddingBottom: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-    elevation: 4,
+    paddingBottom: 6,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    overflow: 'hidden',
+    elevation: 8,
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
     zIndex: 9999,
   },
   stickyTopBar: {

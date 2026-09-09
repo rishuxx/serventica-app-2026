@@ -172,7 +172,7 @@ INSERT INTO public.category_hero_assets (
     'hero-assets/categories/decor/hero.webp',
     'hero_homedecors',
     'hero_homedecors',
-    '#DB2777', '#FFF1F2', '#FFDDE1', '#EE9CA7', '#111111', FALSE,
+    '#ffccddff', '#FFF1F2', 'hsla(353, 100%, 93%, 1.00)', '#EE9CA7', '#111111', FALSE,
     'Make your celebrations memorable',
     'Occasional lighting, balloon styling, and theme decoration',
     'Explore Decor',

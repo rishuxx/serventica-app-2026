@@ -78,8 +78,13 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
   const gradientStart = activeHero ? activeHero.palette.gradientStart : (heroAsset?.gradient_start || '#0284C7');
   const gradientEnd = activeHero ? activeHero.palette.gradientEnd : (heroAsset?.gradient_end || '#38BDF8');
 
+  const currentCategorySlug = categoryExperience?.category?.slug;
+  const isAcAppliances = !currentCategorySlug || currentCategorySlug === 'ac-appliances';
+
   const isDark =
-    categoryExperience?.theme?.isDark !== undefined
+    isAcAppliances
+      ? true
+      : categoryExperience?.theme?.isDark !== undefined
       ? categoryExperience.theme.isDark
       : themeFallback?.isDark !== undefined
       ? themeFallback.isDark
@@ -105,7 +110,21 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
 
   // Resolve hero image asset
   const fallbackHero = categoryExperience?.category ? getFallbackCategoryHero(categoryExperience.category) : null;
-  const heroImageKey = activeHero?.imageUrl || fallbackHero?.imageUrl || heroAsset?.image_url;
+  const currentSlug = categoryExperience?.category?.slug;
+  const categorySpecificKey =
+    currentSlug === 'electrical'
+      ? 'hero_electrical'
+      : currentSlug === 'painting'
+      ? 'hero_painting'
+      : currentSlug === 'cleaning'
+      ? 'hero_cleaning'
+      : currentSlug === 'ac-appliances'
+      ? 'hero_background'
+      : currentSlug === 'home-decor'
+      ? 'hero_homedecors'
+      : null;
+
+  const heroImageKey = categorySpecificKey || activeHero?.imageUrl || fallbackHero?.imageUrl || heroAsset?.image_url;
   const heroImageSource =
     heroImageKey && AssetRegistry[heroImageKey]
       ? AssetRegistry[heroImageKey]
@@ -153,6 +172,7 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
         {/* Full-bleed SVG Radial Gradient Background Layer with ultra-smooth diffusion */}
         {upperLayout.width > 0 && upperLayout.height > 0 ? (
           <Svg
+            pointerEvents="none"
             style={StyleSheet.absoluteFill}
             width={upperLayout.width}
             height={upperLayout.height}
@@ -219,13 +239,13 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
           {/* Profile User Icon */}
           <TouchableOpacity
             style={[styles.profileButton, { backgroundColor: profileBg, borderColor: profileBorder }]}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
             onPress={onPressProfile}
             accessibilityRole="button"
             accessibilityLabel="Customer Account and Profile"
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           >
-            <User size={16} color={iconColor} strokeWidth={2.2} />
+            <User size={18} color={iconColor} strokeWidth={2.2} />
           </TouchableOpacity>
         </View>
 
@@ -377,7 +397,7 @@ const styles = StyleSheet.create({
   logoImage: {
     width: 98,
     height: 20,
-    tintColor: '#111111',
+    tintColor: '#FFFFFF',
   },
   locationRow: {
     flexDirection: 'row',
@@ -401,7 +421,7 @@ const styles = StyleSheet.create({
   deliveryTimeHighlight: {
     fontSize: 24,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#FFFFFF',
     letterSpacing: 0,
     lineHeight: 28,
   },
@@ -418,7 +438,7 @@ const styles = StyleSheet.create({
   addressText: {
     fontSize: 12.5,
     fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#222222',
+    color: 'rgba(255, 255, 255, 0.92)',
     maxWidth: '85%',
     letterSpacing: 0,
     fontWeight: '500',
@@ -427,12 +447,12 @@ const styles = StyleSheet.create({
     marginLeft: 3,
   },
   profileButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: 'rgba(0, 0, 0, 0.08)',
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.12)',
+    borderColor: 'rgba(255, 255, 255, 0.25)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -505,7 +525,7 @@ const styles = StyleSheet.create({
   },
   lowerHeroOverlay: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0, 0, 0, 0.22)',
+    backgroundColor: 'rgba(0, 0, 0, 0.28)',
   },
   lowerHeroContentBox: {
     width: '100%',
@@ -526,7 +546,7 @@ const styles = StyleSheet.create({
   heroDescription: {
     fontSize: 13,
     fontFamily: ServenticaTokens.fonts.Regular,
-    color: 'rgba(255, 255, 255, 0.95)',
+    color: '#FFFFFF',
     textAlign: 'center',
     lineHeight: 18,
     letterSpacing: 0,

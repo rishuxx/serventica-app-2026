@@ -21,17 +21,13 @@ export const CategoryRailItem: React.FC<CategoryItemProps> = React.memo(({
 }) => {
   const isHero = variant === 'hero';
   
-  // Contrast adaptation: when hero background is dark (e.g. gardener green), use white labels & icons
-  const defaultHeroColor = isDarkBackground ? '#FFFFFF' : '#111111';
-  const defaultHeroTextColor = isDarkBackground ? 'rgba(255, 255, 255, 0.95)' : '#222222';
+  // Contrast adaptation: when background is dark, use white labels, icons & indicators
+  const defaultContrastColor = isDarkBackground ? '#FFFFFF' : '#111111';
+  const defaultSubtextColor = isDarkBackground ? 'rgba(255, 255, 255, 0.90)' : '#222222';
+  const defaultUnselectedColor = isDarkBackground ? 'rgba(255, 255, 255, 0.75)' : '#555555';
   
-  const iconColor = isHero
-    ? isSelected ? defaultHeroColor : defaultHeroColor
-    : isSelected ? '#111111' : '#666666';
-
-  const textColor = isHero
-    ? isSelected ? defaultHeroColor : defaultHeroTextColor
-    : isSelected ? '#111111' : '#666666';
+  const iconColor = isSelected ? defaultContrastColor : defaultUnselectedColor;
+  const textColor = isSelected ? defaultContrastColor : (isDarkBackground ? defaultSubtextColor : '#444444');
 
   const label = category.short_name || category.name;
 
@@ -39,7 +35,7 @@ export const CategoryRailItem: React.FC<CategoryItemProps> = React.memo(({
     <TouchableOpacity
       style={[
         styles.container,
-        isSelected && (isHero ? (isDarkBackground ? styles.selectedContainerHeroDark : styles.selectedContainerHero) : styles.selectedContainerSticky),
+        isSelected && (isDarkBackground ? styles.selectedContainerDark : styles.selectedContainerLight),
       ]}
       activeOpacity={0.75}
       onPress={() => onPress(category)}
@@ -69,7 +65,7 @@ export const CategoryRailItem: React.FC<CategoryItemProps> = React.memo(({
         <View
           style={[
             styles.activeIndicator,
-            { backgroundColor: isHero ? '#FFFFFF' : '#111111' },
+            { backgroundColor: isDarkBackground ? '#FFFFFF' : '#111111' },
           ]}
         />
       )}
@@ -89,14 +85,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     minHeight: 48, // Accessible touch target > 44px
   },
-  selectedContainerHero: {
-    backgroundColor: 'rgba(0, 0, 0, 0.08)',
+  selectedContainerLight: {
+    backgroundColor: 'rgba(0, 0, 0, 0.07)',
   },
-  selectedContainerHeroDark: {
-    backgroundColor: 'rgba(255, 255, 255, 0.16)',
-  },
-  selectedContainerSticky: {
-    backgroundColor: '#F2F2F0',
+  selectedContainerDark: {
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
   },
   iconWrapper: {
     width: 24,

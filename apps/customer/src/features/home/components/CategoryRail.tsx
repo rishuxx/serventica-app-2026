@@ -73,9 +73,8 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   stickyWrapper: {
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    backgroundColor: 'transparent',
+    borderBottomWidth: 0,
   },
   scrollContent: {
     paddingHorizontal: 12,

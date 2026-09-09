@@ -47,11 +47,11 @@ export function getFallbackCategoryTheme(categorySlug: string): CategoryThemeDat
         secondaryColor: '#E0F2FE',
         buttonColor: '#0284C7',
         buttonTextColor: '#FFFFFF',
-        textColor: '#0F172A',
-        gradientStart: '#D0EEFE',
+        textColor: '#FFFFFF',
+        gradientStart: '#0284C7',
         gradientEnd: '#38BDF8',
-        gradientColors: ['#D0EEFE', '#BAE6FD', '#7DD3FC', '#38BDF8'],
-        isDark: false,
+        gradientColors: ['#0369A1', '#0284C7', '#0EA5E9', '#38BDF8'],
+        isDark: true,
       };
     case 'cleaning':
       return {
@@ -203,11 +203,20 @@ export function getFallbackCategoryTheme(categorySlug: string): CategoryThemeDat
 // Fallback Hero Builder
 export function getFallbackCategoryHero(category: CategoryItem): CategoryHeroData {
   const theme = getFallbackCategoryTheme(category.slug);
-  const isHomeDecor = category.slug === 'home-decor';
-  const isAcOrTech = category.slug === 'ac-appliances' || category.slug === 'electrical' || category.slug === 'plumbing';
-  const isGardener = category.slug === 'cleaning' || category.slug === 'pest-control';
-
-  const defaultImage = isHomeDecor ? 'hero_homedecors' : isGardener ? 'hero_gardener' : isAcOrTech ? 'hero_background' : 'hero_gardener';
+  const defaultImage =
+    category.slug === 'home-decor'
+      ? 'hero_homedecors'
+      : category.slug === 'cleaning'
+      ? 'hero_cleaning'
+      : category.slug === 'ac-appliances'
+      ? 'hero_background'
+      : category.slug === 'electrical'
+      ? 'hero_electrical'
+      : category.slug === 'painting'
+      ? 'hero_painting'
+      : category.slug === 'plumbing'
+      ? 'hero_background'
+      : 'hero_gardener';
 
   const titles: Record<string, { title: string; subtitle: string; cta: string }> = {
     'ac-appliances': {
@@ -374,6 +383,14 @@ class ExperienceRepository {
         const resolvedImageUrl =
           category.slug === 'home-decor'
             ? 'hero_homedecors'
+            : category.slug === 'cleaning'
+            ? 'hero_cleaning'
+            : category.slug === 'ac-appliances'
+            ? 'hero_background'
+            : category.slug === 'electrical'
+            ? 'hero_electrical'
+            : category.slug === 'painting'
+            ? 'hero_painting'
             : heroRes.data.image_url;
 
         hero = {
@@ -396,19 +413,21 @@ class ExperienceRepository {
       }
 
       if (themeRes.data) {
+        const isAcCategory = category.slug === 'ac-appliances';
+        const isDarkTheme = isAcCategory ? true : (themeRes.data.is_dark ?? false);
         theme = {
           primaryColor: themeRes.data.primary_color,
           secondaryColor: themeRes.data.secondary_color,
           surfaceColor: themeRes.data.surface_color || '#FFFFFF',
           accentColor: themeRes.data.accent_color,
-          textColor: themeRes.data.text_color || '#111111',
-          mutedTextColor: themeRes.data.muted_text_color || '#666666',
+          textColor: isAcCategory ? '#FFFFFF' : (themeRes.data.text_color || (isDarkTheme ? '#FFFFFF' : '#111111')),
+          mutedTextColor: themeRes.data.muted_text_color || (isDarkTheme ? 'rgba(255, 255, 255, 0.75)' : '#666666'),
           buttonColor: themeRes.data.button_color,
           buttonTextColor: themeRes.data.button_text_color || '#FFFFFF',
           gradientStart: themeRes.data.gradient_start,
           gradientEnd: themeRes.data.gradient_end,
           gradientColors: theme.gradientColors || [themeRes.data.gradient_start, themeRes.data.gradient_end],
-          isDark: themeRes.data.is_dark ?? false,
+          isDark: isDarkTheme,
         };
       }
 
