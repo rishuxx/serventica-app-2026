@@ -53,7 +53,7 @@ export const HomeBottomNav: React.FC<HomeBottomNavProps> = ({
                 <View style={[styles.iconWrapper, isActive && styles.activeIconWrapper]}>
                   <Icon
                     size={22}
-                    color={isActive ? '#111111' : '#777777'}
+                    color={isActive ? '#1E242B' : '#777777'}
                     strokeWidth={isActive ? 2.4 : 1.8}
                   />
                 </View>
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     color: '#777777',
   },
   activeTabLabel: {
-    color: '#111111',
+    color: '#1E242B',
     fontWeight: '700',
   },
 });

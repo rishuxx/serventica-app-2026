@@ -152,3 +152,4 @@ export interface ApiErrorResponse {
 }
 
 export * from './account.types';
+export * from './routing.types';

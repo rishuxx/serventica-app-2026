@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef, useEffect } from 'react';
 import { StyleSheet, FlatList, View } from 'react-native';
 import { CategoryItem } from '../../../types/category.types';
 import { CategoryRailItem } from './CategoryRailItem';
@@ -18,21 +18,57 @@ export const CategoryRail: React.FC<CategoryRailProps> = React.memo(({
   variant = 'hero',
   isDarkBackground = false,
 }) => {
+  const flatListRef = useRef<FlatList>(null);
+
+  // Smoothly center the active category in the viewport when selectedCategoryId changes
+  useEffect(() => {
+    if (!selectedCategoryId || !categories.length) return;
+    const targetIndex = categories.findIndex((c) => c.id === selectedCategoryId);
+    if (targetIndex !== -1 && flatListRef.current) {
+      try {
+        flatListRef.current.scrollToIndex({
+          index: targetIndex,
+          animated: true,
+          viewPosition: 0.5,
+        });
+      } catch (_) {
+        // Handled by onScrollToIndexFailed
+      }
+    }
+  }, [selectedCategoryId, categories]);
+
+  const handleItemPress = useCallback((category: CategoryItem) => {
+    const index = categories.findIndex((c) => c.id === category.id);
+    if (index !== -1 && flatListRef.current) {
+      try {
+        flatListRef.current.scrollToIndex({
+          index,
+          animated: true,
+          viewPosition: 0.5,
+        });
+      } catch (_) {
+        // Safe fallback
+      }
+    }
+    onSelectCategory(category);
+  }, [categories, onSelectCategory]);
+
   const renderItem = useCallback(({ item }: { item: CategoryItem }) => (
     <CategoryRailItem
       category={item}
-      isSelected={selectedCategoryId === item.id}
-      onPress={onSelectCategory}
+      isSelected={selectedCategoryId === item.id || selectedCategoryId === item.slug}
+      onPress={handleItemPress}
       variant={variant}
       isDarkBackground={isDarkBackground}
     />
-  ), [selectedCategoryId, onSelectCategory, variant, isDarkBackground]);
+  ), [selectedCategoryId, handleItemPress, variant, isDarkBackground]);
 
   const keyExtractor = useCallback((item: CategoryItem) => item.id, []);
 
   return (
     <View style={[styles.wrapper, variant === 'sticky' && styles.stickyWrapper]}>
       <FlatList
+        ref={flatListRef}
         data={categories}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
@@ -44,6 +80,15 @@ export const CategoryRail: React.FC<CategoryRailProps> = React.memo(({
         initialNumToRender={12}
         maxToRenderPerBatch={12}
         windowSize={5}
+        onScrollToIndexFailed={(info) => {
+          setTimeout(() => {
+            flatListRef.current?.scrollToIndex({
+              index: info.index,
+              animated: true,
+              viewPosition: 0.5,
+            });
+          }, 60);
+        }}
       />
     </View>
   );
@@ -71,6 +116,7 @@ const styles = StyleSheet.create({
   wrapper: {
     width: '100%',
     paddingVertical: 2,
+    position: 'relative',
   },
   stickyWrapper: {
     backgroundColor: 'transparent',
@@ -79,13 +125,14 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 12,
     alignItems: 'center',
+    position: 'relative',
   },
   skeletonItem: {
-    minWidth: 64,
-    maxWidth: 82,
+    minWidth: 68,
+    maxWidth: 88,
     alignItems: 'center',
-    paddingVertical: 5,
-    paddingHorizontal: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
     marginRight: 4,
   },
   skeletonIcon: {
@@ -100,3 +147,5 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
 });
+
+

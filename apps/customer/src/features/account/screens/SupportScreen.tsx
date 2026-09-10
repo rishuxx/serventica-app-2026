@@ -80,7 +80,7 @@ export const SupportScreen: React.FC<SupportScreenProps> = ({
         <StatusBar barStyle="dark-content" />
         <View style={styles.headerBar}>
           <TouchableOpacity style={styles.circleBackButton} onPress={onBack}>
-            <ArrowLeft size={20} color="#111111" strokeWidth={2.2} />
+            <ArrowLeft size={20} color='#1E242B' strokeWidth={2.2} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Customer Support</Text>
           <View style={styles.headerSpacer} />
@@ -109,7 +109,7 @@ export const SupportScreen: React.FC<SupportScreenProps> = ({
       {/* HEADER */}
       <View style={styles.headerBar}>
         <TouchableOpacity style={styles.circleBackButton} onPress={onBack}>
-          <ArrowLeft size={20} color="#111111" strokeWidth={2.2} />
+          <ArrowLeft size={20} color='#1E242B' strokeWidth={2.2} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Help & Support</Text>
         <View style={styles.headerSpacer} />
@@ -133,7 +133,7 @@ export const SupportScreen: React.FC<SupportScreenProps> = ({
 
         {initialBookingId ? (
           <View style={styles.contextBadge}>
-            <MessageSquare size={14} color="#111111" strokeWidth={2} />
+            <MessageSquare size={14} color='#1E242B' strokeWidth={2} />
             <Text style={styles.contextText}>Attached Booking: {initialBookingId.slice(0, 8)}</Text>
           </View>
         ) : null}
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 16,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
   },
   headerSpacer: {
     width: 38,
@@ -298,8 +298,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   pillSelected: {
-    backgroundColor: '#111111',
-    borderColor: '#111111',
+    backgroundColor: '#1E242B',
+    borderColor: '#1E242B',
   },
   pillText: {
     fontSize: 12,
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     fontSize: 13.5,
     fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#111111',
+    color: '#1E242B',
     marginBottom: 16,
   },
   textArea: {
@@ -331,13 +331,13 @@ const styles = StyleSheet.create({
     padding: 14,
     fontSize: 13.5,
     fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#111111',
+    color: '#1E242B',
     marginBottom: 24,
   },
   submitBtn: {
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#111111',
+    backgroundColor: '#1E242B',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
   submittedTitle: {
     fontSize: 18,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     marginBottom: 8,
     textAlign: 'center',
   },
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 26,
     paddingVertical: 12,
     borderRadius: 24,
-    backgroundColor: '#111111',
+    backgroundColor: '#1E242B',
   },
   doneBtnText: {
     fontSize: 13.5,

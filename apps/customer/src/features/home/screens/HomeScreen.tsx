@@ -27,12 +27,13 @@ import { useHome } from '../../../hooks/useHome';
 import { useLocation } from '../../../context/LocationContext';
 import { useHomeSearch } from '../../../hooks/useHomeSearch';
 import { useHomeExperience } from '../../../hooks/useHomeExperience';
+import { useServiceETA } from '../../../hooks/useServiceETA';
 import { DynamicCatalogSection } from '../components/DynamicCatalogSection';
 import { HomeBasicServiceItem } from '../../../types/home.types';
 import { CategoryItem } from '../../../types/category.types';
 import { ServenticaTokens } from '../../../../../../packages/design-system/src';
 import { MapPin, ChevronDown, User, Search } from 'lucide-react-native';
-import Svg, { Defs, RadialGradient as SvgRadialGradient, Stop, Rect } from 'react-native-svg';
+import Svg, { Defs, RadialGradient as SvgRadialGradient, LinearGradient as SvgLinearGradient, Stop, Rect } from 'react-native-svg';
 import { getFallbackCategoryTheme } from '../../../repositories/experience.repository';
 
 import { ProfileScreen } from '../../account/screens/ProfileScreen';
@@ -67,6 +68,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const { data, isLoading: isHomeLoading, refresh: refreshHome } = useHome();
   const location = useLocation();
   const search = useHomeSearch();
+
+  const userCoordinates = React.useMemo(() => {
+    if (location.activeLocation?.latitude != null && location.activeLocation?.longitude != null) {
+      return {
+        latitude: location.activeLocation.latitude,
+        longitude: location.activeLocation.longitude,
+      };
+    }
+    return null;
+  }, [location.activeLocation?.latitude, location.activeLocation?.longitude]);
+
+  const { formattedETA, isCalculating: isETACalculating } = useServiceETA(userCoordinates);
+
   const {
     categories,
     selectedCategoryId,
@@ -89,12 +103,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   // Scroll offset driving smooth 60fps collapse and sticky header
   const scrollY = useRef(new Animated.Value(0)).current;
 
-  // Track scroll position to ensure sticky header never receives touches when invisible at top
+  // Track scroll position to ensure sticky header never receives touches when offscreen
   useEffect(() => {
     const listenerId = scrollY.addListener(({ value }) => {
-      if (value > 380 && !isStickyActive) {
+      if (value > 300 && !isStickyActive) {
         setIsStickyActive(true);
-      } else if (value <= 380 && isStickyActive) {
+      } else if (value <= 300 && isStickyActive) {
         setIsStickyActive(false);
       }
     });
@@ -106,9 +120,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const isSearchActive = search.query.trim().length > 0 || search.isSearchActive;
 
   // Handle category selection — Persistent Home context switch without page navigation
-  const handleCategoryPress = (category: CategoryItem) => {
+  const handleCategoryPress = React.useCallback((category: CategoryItem) => {
     selectCategory(category.id);
-  };
+  }, [selectCategory]);
 
   const [stickyLayout, setStickyLayout] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
 
@@ -136,23 +150,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           activeExperience?.theme?.gradientEnd || themeFallback?.gradientEnd || '#38BDF8',
         ];
 
-  const stickyTextColor = isDarkSticky ? '#FFFFFF' : '#111111';
+  const stickyTextColor = isDarkSticky ? '#FFFFFF' : '#1E242B';
   const stickySubtextColor = isDarkSticky ? 'rgba(255, 255, 255, 0.85)' : '#444444';
-  const stickyIconColor = isDarkSticky ? '#FFFFFF' : '#111111';
+  const stickyIconColor = isDarkSticky ? '#FFFFFF' : '#1E242B';
   const stickyInputBg = isDarkSticky ? 'rgba(255, 255, 255, 0.20)' : 'rgba(0, 0, 0, 0.06)';
   const stickyInputBorder = isDarkSticky ? 'rgba(255, 255, 255, 0.28)' : 'rgba(0, 0, 0, 0.08)';
 
-  // Sticky Category Header Interpolations:
-  // Fades in smoothly as user scrolls past hero threshold (~400px - 450px)
-  const stickyHeaderOpacity = scrollY.interpolate({
-    inputRange: [400, 460],
-    outputRange: [0, 1],
-    extrapolate: 'clamp',
-  });
-
+  // Sticky Header Interpolation:
+  // Instant and crisp without slow faded ghosting (pure slide/pin driven at 60fps)
   const stickyHeaderTranslateY = scrollY.interpolate({
-    inputRange: [400, 460],
-    outputRange: [-20, 0],
+    inputRange: [320, 370],
+    outputRange: [-120, 0],
     extrapolate: 'clamp',
   });
 
@@ -348,8 +356,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   refreshHome();
                   retryExperience();
                 }}
-                tintColor="#111111"
-                colors={['#111111']}
+                tintColor='#1E242B'
+                colors={['#1E242B']}
                 progressViewOffset={Platform.OS === 'android' ? 60 : 0}
               />
             }
@@ -373,6 +381,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               onSelectCategory={handleCategoryPress}
               heroAsset={data?.heroAsset}
               categoryExperience={activeExperience}
+              deliveryTime={formattedETA}
+              isCalculatingETA={isETACalculating}
             />
 
             {/* 2. DYNAMIC CATEGORY CATALOG SECTION (Replaces white CategoryScreen with seamless in-home feed) */}
@@ -427,14 +437,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             ) : null}
           </Animated.ScrollView>
 
-          {/* 5. STICKY COMPACT DISCOVERY HEADER (Appears smoothly when scrolling down) */}
+          {/* 5. STICKY COMPACT DISCOVERY HEADER (Instant & Liquid Native Lock) */}
           <Animated.View
             pointerEvents={isStickyActive ? 'auto' : 'none'}
             style={[
               styles.stickyHeaderSurface,
               {
                 backgroundColor: stickyGradientColors[0],
-                opacity: stickyHeaderOpacity,
                 transform: [{ translateY: stickyHeaderTranslateY }],
                 display: isStickyActive ? 'flex' : 'none',
               },
@@ -446,7 +455,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               }
             }}
           >
-            {/* SVG Radial Gradient matching Top Hero */}
+            {/* SVG Gradient matching Top Hero (90deg Linear for Plumbing or Radial Diffusion) */}
             {stickyLayout.width > 0 && stickyLayout.height > 0 ? (
               <Svg
                 pointerEvents="none"
@@ -455,20 +464,35 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 height={stickyLayout.height}
               >
                 <Defs>
-                  <SvgRadialGradient
-                    id={`stickyHeaderGrad_${activeExperience?.category?.id || 'default'}`}
-                    cx="50%"
-                    cy="0%"
-                    rx="120%"
-                    ry="150%"
-                    fx="50%"
-                    fy="0%"
-                  >
-                    {stickyGradientColors.map((color, index) => {
-                      const offsetPercent = `${Math.round((index / (stickyGradientColors.length - 1)) * 100)}%`;
-                      return <Stop key={index} offset={offsetPercent} stopColor={color} stopOpacity="1" />;
-                    })}
-                  </SvgRadialGradient>
+                  {activeCategory?.slug === 'plumbing' ? (
+                    <SvgLinearGradient
+                      id={`stickyHeaderGrad_${activeExperience?.category?.id || 'default'}`}
+                      x1="0%"
+                      y1="0%"
+                      x2="0%"
+                      y2="100%"
+                    >
+                      {stickyGradientColors.map((color, index) => {
+                        const offsetPercent = `${Math.round((index / (stickyGradientColors.length - 1)) * 100)}%`;
+                        return <Stop key={index} offset={offsetPercent} stopColor={color} stopOpacity="1" />;
+                      })}
+                    </SvgLinearGradient>
+                  ) : (
+                    <SvgRadialGradient
+                      id={`stickyHeaderGrad_${activeExperience?.category?.id || 'default'}`}
+                      cx="50%"
+                      cy="0%"
+                      rx="120%"
+                      ry="150%"
+                      fx="50%"
+                      fy="0%"
+                    >
+                      {stickyGradientColors.map((color, index) => {
+                        const offsetPercent = `${Math.round((index / (stickyGradientColors.length - 1)) * 100)}%`;
+                        return <Stop key={index} offset={offsetPercent} stopColor={color} stopOpacity="1" />;
+                      })}
+                    </SvgRadialGradient>
+                  )}
                 </Defs>
                 <Rect
                   x="0"
@@ -614,22 +638,18 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'android' ? 36 : 48,
   },
 
-  // STICKY HEADER STYLING (Pixel-perfect 60fps collapse surface with curved lower edge)
+  // STICKY HEADER STYLING (Liquid smooth curved bottom corners matching Hero)
   stickyHeaderSurface: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    paddingTop: Platform.OS === 'android' ? 34 : 46,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 4 : 44,
     paddingBottom: 6,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
     overflow: 'hidden',
-    elevation: 8,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
+    elevation: 0,
     zIndex: 9999,
   },
   stickyTopBar: {
@@ -652,7 +672,7 @@ const styles = StyleSheet.create({
   stickyAddressText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#111111',
+    color: '#1E242B',
     fontFamily: ServenticaTokens.fonts.Medium,
     flexShrink: 1,
   },

@@ -44,7 +44,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           accessibilityLabel="Back to home"
         >
-          <ArrowLeft size={20} color="#111111" strokeWidth={1.8} />
+          <ArrowLeft size={20} color='#1E242B' strokeWidth={1.8} />
         </TouchableOpacity>
       ) : null}
 
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   searchBarFocused: {
-    borderColor: '#111111',
+    borderColor: '#1E242B',
     backgroundColor: '#FFFFFF',
   },
   searchIcon: {
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
     height: '100%',
     fontSize: 14,
     fontFamily: ServenticaTokens.fonts.Medium,
-    color: '#111111',
+    color: '#1E242B',
     fontWeight: '400',
     paddingVertical: 0,
   },

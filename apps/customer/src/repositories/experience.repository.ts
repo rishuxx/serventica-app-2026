@@ -79,14 +79,28 @@ export function getFallbackCategoryTheme(categorySlug: string): CategoryThemeDat
       };
     case 'plumbing':
       return {
-        primaryColor: '#334155',
-        secondaryColor: '#E2E8F0',
-        buttonColor: '#334155',
+        primaryColor: '#692EB7',
+        secondaryColor: '#F3E8FF',
+        buttonColor: '#5D2BAE',
         buttonTextColor: '#FFFFFF',
         textColor: '#FFFFFF',
-        gradientStart: '#334155',
-        gradientEnd: '#64748B',
-        gradientColors: ['#1E293B', '#334155', '#475569', '#64748B'],
+        gradientStart: '#D9B3E2',
+        gradientEnd: '#522CA4',
+        gradientColors: [
+          '#D9B3E2',
+          '#D2A4E3',
+          '#CA94E2',
+          '#C183E1',
+          '#B673DE',
+          '#AA63DA',
+          '#9D54D5',
+          '#9047CE',
+          '#833CC7',
+          '#7533BF',
+          '#692EB7',
+          '#5D2BAE',
+          '#522CA4',
+        ],
         isDark: true,
       };
     case 'painting':
@@ -119,7 +133,7 @@ export function getFallbackCategoryTheme(categorySlug: string): CategoryThemeDat
         secondaryColor: '#FFF1F2',
         buttonColor: '#DB2777',
         buttonTextColor: '#FFFFFF',
-        textColor: '#111111',
+        textColor: '#1E242B',
         gradientStart: '#FFDDE1',
         gradientEnd: '#EE9CA7',
         gradientColors: ['#FFDDE1', '#F7BCC4', '#EE9CA7'],
@@ -146,7 +160,7 @@ export function getFallbackCategoryTheme(categorySlug: string): CategoryThemeDat
         textColor: '#FFFFFF',
         gradientStart: '#1E293B',
         gradientEnd: '#475569',
-        gradientColors: ['#0F172A', '#1E293B', '#334155', '#475569'],
+        gradientColors: ['#1E242B', '#1E293B', '#334155', '#475569'],
         isDark: true,
       };
     case 'laundry':
@@ -215,7 +229,7 @@ export function getFallbackCategoryHero(category: CategoryItem): CategoryHeroDat
       : category.slug === 'painting'
       ? 'hero_painting'
       : category.slug === 'plumbing'
-      ? 'hero_background'
+      ? 'hero_plumbing'
       : 'hero_gardener';
 
   const titles: Record<string, { title: string; subtitle: string; cta: string }> = {
@@ -391,6 +405,8 @@ class ExperienceRepository {
             ? 'hero_electrical'
             : category.slug === 'painting'
             ? 'hero_painting'
+            : category.slug === 'plumbing'
+            ? 'hero_plumbing'
             : heroRes.data.image_url;
 
         hero = {
@@ -420,7 +436,7 @@ class ExperienceRepository {
           secondaryColor: themeRes.data.secondary_color,
           surfaceColor: themeRes.data.surface_color || '#FFFFFF',
           accentColor: themeRes.data.accent_color,
-          textColor: isAcCategory ? '#FFFFFF' : (themeRes.data.text_color || (isDarkTheme ? '#FFFFFF' : '#111111')),
+          textColor: isAcCategory ? '#FFFFFF' : (themeRes.data.text_color || (isDarkTheme ? '#FFFFFF' : '#1E242B')),
           mutedTextColor: themeRes.data.muted_text_color || (isDarkTheme ? 'rgba(255, 255, 255, 0.75)' : '#666666'),
           buttonColor: themeRes.data.button_color,
           buttonTextColor: themeRes.data.button_text_color || '#FFFFFF',

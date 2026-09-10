@@ -67,7 +67,7 @@ export const ReviewsScreen: React.FC<ReviewsScreenProps> = ({
           activeOpacity={0.7}
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
         >
-          <ArrowLeft size={22} color="#111111" strokeWidth={2} />
+          <ArrowLeft size={22} color='#1E242B' strokeWidth={2} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Reviews</Text>
         <View style={{ width: 32 }} />
@@ -75,7 +75,7 @@ export const ReviewsScreen: React.FC<ReviewsScreenProps> = ({
 
       {isLoading ? (
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="small" color="#111111" />
+          <ActivityIndicator size="small" color='#1E242B' />
           <Text style={styles.loadingText}>Loading reviews...</Text>
         </View>
       ) : reviews.length === 0 ? (
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontFamily: 'Coolvetica',
     fontSize: 20,
-    color: '#111111',
+    color: '#1E242B',
     letterSpacing: 0.3,
   },
   centerContainer: {
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontFamily: 'Coolvetica',
     fontSize: 18,
-    color: '#111111',
+    color: '#1E242B',
     marginBottom: 8,
   },
   emptySubtitle: {
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   exploreBtn: {
-    backgroundColor: '#111111',
+    backgroundColor: '#1E242B',
     paddingHorizontal: 22,
     paddingVertical: 12,
     borderRadius: 24,
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   serviceName: {
     fontFamily: 'Coolvetica',
     fontSize: 16,
-    color: '#111111',
+    color: '#1E242B',
     fontWeight: '500',
   },
   starsRow: {

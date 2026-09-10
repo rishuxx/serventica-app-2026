@@ -194,7 +194,7 @@ export const SelectLocationScreen: React.FC<SelectLocationScreenProps> = ({ onCl
           accessibilityLabel="Back to Home"
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <ArrowLeft size={22} color="#111111" strokeWidth={2.2} />
+          <ArrowLeft size={22} color='#1E242B' strokeWidth={2.2} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>SELECT DELIVERY LOCATION</Text>
       </View>
@@ -417,7 +417,7 @@ export const SelectLocationScreen: React.FC<SelectLocationScreenProps> = ({ onCl
                 onPress={() => setIsAddModalOpen(false)}
                 style={styles.modalCloseBtn}
               >
-                <X size={20} color="#111111" strokeWidth={2.2} />
+                <X size={20} color='#1E242B' strokeWidth={2.2} />
               </TouchableOpacity>
             </View>
 
@@ -651,7 +651,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     letterSpacing: 0.3,
   },
   searchContainer: {
@@ -674,7 +674,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 14,
-    color: '#111111',
+    color: '#1E242B',
     fontFamily: ServenticaTokens.fonts.Medium,
     paddingVertical: 0,
   },
@@ -760,7 +760,7 @@ const styles = StyleSheet.create({
   savedSectionTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#111111',
+    color: '#1E242B',
     fontFamily: ServenticaTokens.fonts.Coolvetica,
   },
   addNewBtn: {
@@ -811,7 +811,7 @@ const styles = StyleSheet.create({
   addressTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#111111',
+    color: '#1E242B',
     fontFamily: ServenticaTokens.fonts.Medium,
   },
   selectedBadge: {
@@ -891,7 +891,7 @@ const styles = StyleSheet.create({
   searchResultTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#111111',
+    color: '#1E242B',
     fontFamily: ServenticaTokens.fonts.Medium,
     marginBottom: 2,
   },
@@ -907,7 +907,7 @@ const styles = StyleSheet.create({
   emptySearchTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#111111',
+    color: '#1E242B',
     fontFamily: ServenticaTokens.fonts.Medium,
     marginBottom: 4,
   },
@@ -957,7 +957,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '700',
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
   },
   modalCloseBtn: {
     padding: 4,
@@ -1007,7 +1007,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     height: 44,
     fontSize: 13,
-    color: '#111111',
+    color: '#1E242B',
     fontFamily: ServenticaTokens.fonts.Medium,
   },
   formRow: {
@@ -1049,7 +1049,7 @@ const styles = StyleSheet.create({
   optionsTitle: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#111111',
+    color: '#1E242B',
     fontFamily: ServenticaTokens.fonts.Coolvetica,
   },
   optionActionRow: {
@@ -1085,7 +1085,7 @@ const styles = StyleSheet.create({
   confirmTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#111111',
+    color: '#1E242B',
     fontFamily: ServenticaTokens.fonts.Coolvetica,
     marginBottom: 8,
   },
@@ -1136,7 +1136,7 @@ const styles = StyleSheet.create({
   unserviceableTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#111111',
+    color: '#1E242B',
     textAlign: 'center',
     fontFamily: ServenticaTokens.fonts.Coolvetica,
     marginBottom: 8,

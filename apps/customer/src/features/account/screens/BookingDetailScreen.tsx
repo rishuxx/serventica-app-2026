@@ -47,7 +47,7 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
     return (
       <View style={styles.centerContainer}>
         <StatusBar barStyle="dark-content" />
-        <ActivityIndicator size="large" color="#111111" />
+        <ActivityIndicator size="large" color='#1E242B' />
         <Text style={styles.loadingText}>Loading booking details...</Text>
       </View>
     );
@@ -151,7 +151,7 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
-          <ArrowLeft size={20} color="#111111" strokeWidth={2.2} />
+          <ArrowLeft size={20} color='#1E242B' strokeWidth={2.2} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{booking.bookingNumber}</Text>
         <TouchableOpacity
@@ -159,7 +159,7 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
           onPress={() => onGetHelp(booking.id)}
           activeOpacity={0.7}
         >
-          <HelpCircle size={20} color="#111111" strokeWidth={2} />
+          <HelpCircle size={20} color='#1E242B' strokeWidth={2} />
         </TouchableOpacity>
       </View>
 
@@ -260,7 +260,7 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
         <View style={styles.card}>
           <Text style={styles.cardHeading}>Service Address</Text>
           <View style={styles.addressBox}>
-            <MapPin size={16} color="#111111" strokeWidth={2} style={styles.addressIcon} />
+            <MapPin size={16} color='#1E242B' strokeWidth={2} style={styles.addressIcon} />
             <View style={styles.addressTextCol}>
               <Text style={styles.addressTitle}>{booking.address.title}</Text>
               <Text style={styles.addressFull}>{booking.address.formattedAddress}</Text>
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 15,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
   },
   helpIconBtn: {
     width: 38,
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
   serviceTitle: {
     fontSize: 18,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     marginBottom: 8,
   },
   metaRow: {
@@ -424,7 +424,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#059669',
   },
   timelineDotActive: {
-    backgroundColor: '#111111',
+    backgroundColor: '#1E242B',
   },
   timelineLine: {
     width: 2,
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   timelineLabelActive: {
-    color: '#111111',
+    color: '#1E242B',
     fontFamily: ServenticaTokens.fonts.Medium,
     fontWeight: '600',
   },
@@ -468,7 +468,7 @@ const styles = StyleSheet.create({
   partnerName: {
     fontSize: 15,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
   },
   partnerSpecialty: {
     fontSize: 12,
@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
   addressTitle: {
     fontSize: 14,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     marginBottom: 2,
   },
   addressFull: {
@@ -520,7 +520,7 @@ const styles = StyleSheet.create({
   billValue: {
     fontSize: 13,
     fontFamily: ServenticaTokens.fonts.Medium,
-    color: '#111111',
+    color: '#1E242B',
   },
   discountText: {
     color: '#059669',
@@ -534,12 +534,12 @@ const styles = StyleSheet.create({
   billLabelTotal: {
     fontSize: 14,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
   },
   billValueTotal: {
     fontSize: 16,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
   },
   actionContainer: {
     marginTop: 10,
@@ -590,7 +590,7 @@ const styles = StyleSheet.create({
   errorTitle: {
     fontSize: 16,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     marginBottom: 6,
   },
   errorSubtitle: {
@@ -604,7 +604,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: '#111111',
+    backgroundColor: '#1E242B',
   },
   backBtnText: {
     fontSize: 13,

@@ -37,12 +37,17 @@ export const ServenticaTokens = {
     bottomNavActiveIcon: '#ffffff',
     bottomNavInactiveIcon: 'rgba(255, 255, 255, 0.65)',
 
-    textPrimary: '#1a1a1a',
-    textSecondary: '#666666',
-    textMuted: '#9e9e9e',
-    textLink: '#4a90e2',
+    textPrimary: '#1E242B', // Universal soft light-black shade of grey
+    textDark: '#1E242B',
+    textSecondary: '#5E6672',
+    textMuted: '#94A3B8',
+    textLink: '#3B82F6',
 
-    divider: '#d8dcd2',
+    buttonDark: '#262B34', // Soft graphite dark button background
+    surfaceDark: '#262B34',
+    borderDark: '#333842',
+
+    divider: '#E2E8F0',
   },
   spacing: {
     xs: 4,

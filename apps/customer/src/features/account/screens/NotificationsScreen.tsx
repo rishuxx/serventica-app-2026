@@ -44,7 +44,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
   const renderIcon = (type: NotificationRecord['type']) => {
     switch (type) {
       case 'BOOKING_UPDATE':
-        return <Calendar size={18} color="#111111" strokeWidth={1.8} />;
+        return <Calendar size={18} color='#1E242B' strokeWidth={1.8} />;
       case 'SERVICE_STATUS':
         return <CheckCircle2 size={18} color="#15803d" strokeWidth={1.8} />;
       case 'PAYMENT':
@@ -67,7 +67,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
           activeOpacity={0.7}
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
         >
-          <ArrowLeft size={22} color="#111111" strokeWidth={2} />
+          <ArrowLeft size={22} color='#1E242B' strokeWidth={2} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Notifications</Text>
         {unreadCount > 0 ? (
@@ -85,7 +85,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
 
       {isLoading ? (
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="small" color="#111111" />
+          <ActivityIndicator size="small" color='#1E242B' />
           <Text style={styles.loadingText}>Loading notifications...</Text>
         </View>
       ) : notifications.length === 0 ? (
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontFamily: 'Coolvetica',
     fontSize: 20,
-    color: '#111111',
+    color: '#1E242B',
     letterSpacing: 0.3,
   },
   markAllText: {
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontFamily: 'Coolvetica',
     fontSize: 18,
-    color: '#111111',
+    color: '#1E242B',
     marginBottom: 8,
   },
   emptySubtitle: {
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   unreadTitle: {
-    color: '#111111',
+    color: '#1E242B',
     fontWeight: '600',
   },
   unreadDot: {

@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, TouchableOpacity, Text, View } from 'react-native';
+import React, { useRef } from 'react';
+import { StyleSheet, TouchableOpacity, Text, View, Animated } from 'react-native';
 import { CategoryItem } from '../../../types/category.types';
 import { CategoryIcon } from './CategoryIcon';
 import { ServenticaTokens } from '../../../../../../packages/design-system/src';
@@ -19,77 +19,109 @@ export const CategoryRailItem: React.FC<CategoryItemProps> = React.memo(({
   variant = 'hero',
   isDarkBackground = false,
 }) => {
-  const isHero = variant === 'hero';
+  const pressScale = useRef(new Animated.Value(1)).current;
   
-  // Contrast adaptation: when background is dark, use white labels, icons & indicators
-  const defaultContrastColor = isDarkBackground ? '#FFFFFF' : '#111111';
-  const defaultSubtextColor = isDarkBackground ? 'rgba(255, 255, 255, 0.90)' : '#222222';
-  const defaultUnselectedColor = isDarkBackground ? 'rgba(255, 255, 255, 0.75)' : '#555555';
+  // Contrast adaptation: when background is dark, use white labels and icons
+  const defaultContrastColor = isDarkBackground ? '#FFFFFF' : '#1E242B';
+  const defaultSubtextColor = isDarkBackground ? 'rgba(255, 255, 255, 0.92)' : '#222222';
+  const defaultUnselectedColor = isDarkBackground ? 'rgba(255, 255, 255, 0.72)' : '#555555';
   
   const iconColor = isSelected ? defaultContrastColor : defaultUnselectedColor;
   const textColor = isSelected ? defaultContrastColor : (isDarkBackground ? defaultSubtextColor : '#444444');
 
   const label = category.short_name || category.name;
 
+  const handlePressIn = () => {
+    Animated.spring(pressScale, {
+      toValue: 0.92,
+      speed: 40,
+      bounciness: 0,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(pressScale, {
+      toValue: 1,
+      speed: 25,
+      bounciness: 6,
+      useNativeDriver: true,
+    }).start();
+  };
+
   return (
-    <TouchableOpacity
+    <Animated.View
       style={[
-        styles.container,
-        isSelected && (isDarkBackground ? styles.selectedContainerDark : styles.selectedContainerLight),
+        styles.containerWrapper,
+        { transform: [{ scale: pressScale }] },
       ]}
-      activeOpacity={0.75}
-      onPress={() => onPress(category)}
-      hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
-      accessibilityRole="button"
-      accessibilityLabel={`${category.name} service category`}
     >
-      <View style={styles.iconWrapper}>
-        <CategoryIcon
-          name={category.icon}
-          size={21}
-          color={iconColor}
-          strokeWidth={1.65}
-        />
-      </View>
-      <Text
+      <TouchableOpacity
         style={[
-          styles.label,
-          { color: textColor },
-          isSelected && styles.selectedLabel,
+          styles.container,
+          isSelected && (isDarkBackground ? styles.selectedContainerDark : styles.selectedContainerLight),
         ]}
-        numberOfLines={1}
+        activeOpacity={0.85}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        onPress={() => onPress(category)}
+        hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
+        accessibilityRole="button"
+        accessibilityState={{ selected: isSelected }}
+        accessibilityLabel={`${category.name} service category`}
       >
-        {label}
-      </Text>
-      {isSelected && (
-        <View
+        <View style={styles.iconWrapper}>
+          <CategoryIcon
+            name={category.icon}
+            size={21}
+            color={iconColor}
+            strokeWidth={isSelected ? 1.9 : 1.55}
+          />
+        </View>
+        <Text
           style={[
-            styles.activeIndicator,
-            { backgroundColor: isDarkBackground ? '#FFFFFF' : '#111111' },
+            styles.label,
+            { color: textColor },
+            isSelected && styles.selectedLabel,
           ]}
-        />
-      )}
-    </TouchableOpacity>
+          numberOfLines={1}
+        >
+          {label}
+        </Text>
+        {isSelected ? (
+          <View
+            style={[
+              styles.activeIndicator,
+              { backgroundColor: isDarkBackground ? '#FFFFFF' : '#1E242B' },
+            ]}
+          />
+        ) : (
+          <View style={styles.indicatorPlaceholder} />
+        )}
+      </TouchableOpacity>
+    </Animated.View>
   );
 });
 
 const styles = StyleSheet.create({
+  containerWrapper: {
+    marginRight: 4,
+  },
   container: {
-    minWidth: 64,
-    maxWidth: 82,
+    minWidth: 68,
+    maxWidth: 88,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 5,
-    paddingHorizontal: 6,
-    marginRight: 4,
-    borderRadius: 12,
-    minHeight: 48, // Accessible touch target > 44px
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: 14,
+    minHeight: 52,
   },
   selectedContainerLight: {
-    backgroundColor: 'rgba(0, 0, 0, 0.07)',
+    backgroundColor: 'rgba(0, 0, 0, 0.08)',
   },
   selectedContainerDark: {
-    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+    backgroundColor: 'rgba(255, 255, 255, 0.20)',
   },
   iconWrapper: {
     width: 24,
@@ -106,12 +138,21 @@ const styles = StyleSheet.create({
     lineHeight: 14,
   },
   selectedLabel: {
-    fontWeight: '600',
+    fontWeight: '700',
+    fontFamily: ServenticaTokens.fonts.SemiBold || ServenticaTokens.fonts.Regular,
   },
   activeIndicator: {
     width: 16,
-    height: 2,
-    borderRadius: 1,
+    height: 2.2,
+    borderRadius: 1.1,
     marginTop: 3,
   },
+  indicatorPlaceholder: {
+    width: 16,
+    height: 2.2,
+    marginTop: 3,
+    backgroundColor: 'transparent',
+  },
 });
+
+

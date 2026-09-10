@@ -52,7 +52,7 @@ export const LocationModal: React.FC<LocationModalProps> = ({
               {/* Header */}
               <View style={styles.sheetHeader}>
                 <View style={styles.titleRow}>
-                  <Compass size={19} color="#111111" strokeWidth={2.4} style={{ marginRight: 6 }} />
+                  <Compass size={19} color='#1E242B' strokeWidth={2.4} style={{ marginRight: 6 }} />
                   <Text style={styles.sheetTitle}>Service Delivery Location</Text>
                 </View>
                 <TouchableOpacity
@@ -67,10 +67,10 @@ export const LocationModal: React.FC<LocationModalProps> = ({
               {/* Current Active Location Card */}
               <View style={styles.currentCard}>
                 <View style={styles.cardHeader}>
-                  <MapPin size={18} color="#111111" strokeWidth={2.4} />
+                  <MapPin size={18} color='#1E242B' strokeWidth={2.4} />
                   <Text style={styles.cardHeaderText}>Current GPS Location</Text>
                   {isLoading ? (
-                    <ActivityIndicator size="small" color="#111111" />
+                    <ActivityIndicator size="small" color='#1E242B' />
                   ) : (
                     <View style={styles.checkBadge}>
                       <Check size={13} color="#ffffff" strokeWidth={2.8} />
@@ -104,9 +104,9 @@ export const LocationModal: React.FC<LocationModalProps> = ({
                 }}
               >
                 {isLoading ? (
-                  <ActivityIndicator size="small" color="#111111" style={{ marginRight: 8 }} />
+                  <ActivityIndicator size="small" color='#1E242B' style={{ marginRight: 8 }} />
                 ) : (
-                  <Navigation size={18} color="#111111" strokeWidth={2.2} />
+                  <Navigation size={18} color='#1E242B' strokeWidth={2.2} />
                 )}
                 <Text style={styles.refreshBtnText}>
                   {isLoading ? 'Locating with GPS...' : 'Fetch Live GPS Location'}
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '700',
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
   },
   closeBtn: {
     padding: 6,
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   cardHeaderText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#111111',
+    color: '#1E242B',
     fontFamily: ServenticaTokens.fonts.Medium,
     marginLeft: 8,
     flex: 1,
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
     fontFamily: ServenticaTokens.fonts.Medium,
   },
   cityBadgeHighlight: {
-    color: '#111111',
+    color: '#1E242B',
     fontWeight: '600',
   },
   coordsBadge: {
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     fontFamily: ServenticaTokens.fonts.Medium,
-    color: '#111111',
+    color: '#1E242B',
     marginLeft: 8,
   },
 });

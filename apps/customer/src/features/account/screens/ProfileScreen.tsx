@@ -97,7 +97,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
             accessibilityRole="button"
             accessibilityLabel="Back to Home"
           >
-            <ArrowLeft size={22} color="#111111" strokeWidth={2.0} />
+            <ArrowLeft size={22} color='#1E242B' strokeWidth={2.0} />
           </TouchableOpacity>
         ) : null}
         <Text style={styles.screenTitle}>My Account</Text>
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
   screenTitle: {
     fontSize: 22,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     letterSpacing: 0.2,
   },
   scrollView: {

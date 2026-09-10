@@ -33,7 +33,7 @@ export const ProfileMenuItem: React.FC<ProfileMenuItemProps> = ({
       <View style={[styles.iconBox, isDestructive && styles.destructiveIconBox]}>
         <Icon
           size={21}
-          color={isDestructive ? '#DC2626' : '#111111'}
+          color={isDestructive ? '#DC2626' : '#1E242B'}
           strokeWidth={1.8}
         />
       </View>
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F0F0ED',
     overflow: 'hidden',
-    shadowColor: '#000000',
+    shadowColor: '#1E242B',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.02,
     shadowRadius: 6,
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
   labelText: {
     fontSize: 16,
     fontFamily: ServenticaTokens.fonts.Medium,
-    color: '#111111',
+    color: '#1E242B',
     letterSpacing: 0.1,
   },
   sublabelText: {

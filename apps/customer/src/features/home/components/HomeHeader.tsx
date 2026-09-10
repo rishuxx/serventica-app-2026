@@ -89,11 +89,11 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '800',
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     letterSpacing: -0.3,
   },
   brandDot: {
-    color: '#111111',
+    color: '#1E242B',
   },
   addressRow: {
     flexDirection: 'row',

@@ -124,13 +124,13 @@ INSERT INTO public.category_hero_assets (
   ),
   (
     'ba000000-0000-0000-0000-000000000004',
-    'c1000000-0000-0000-0000-000000000004', -- Plumbing (Steel Grey & Oceanic Steel Slate Gradient)
+    'c1000000-0000-0000-0000-000000000004', -- Plumbing (Purple Indigo 90deg Linear Gradient)
     'Plumbing Hero',
     'plumbing-hero',
     'hero-assets/categories/plumbing/hero.webp',
     'hero_background',
     'hero_background',
-    '#475569', '#E2E8F0', '#334155', '#64748B', '#FFFFFF', TRUE,
+    '#692EB7', '#F3E8FF', '#D9B3E2', '#522CA4', '#FFFFFF', TRUE,
     'Reliable plumbing in 20 minutes',
     'Expert fix for taps, pipes, sanitary fittings, and blockages',
     'Book Plumber',
@@ -268,9 +268,9 @@ INSERT INTO public.category_themes (
   ),
   (
     'de000000-0000-0000-0000-000000000004',
-    'c1000000-0000-0000-0000-000000000004', -- Plumbing (Steel Grey Gradient)
-    '#334155', '#E2E8F0', '#334155', '#FFFFFF',
-    '#334155', '#64748B', TRUE
+    'c1000000-0000-0000-0000-000000000004', -- Plumbing (Purple Indigo 90deg Linear Gradient)
+    '#692EB7', '#F3E8FF', '#5D2BAE', '#FFFFFF',
+    '#D9B3E2', '#522CA4', TRUE
   ),
   (
     'de000000-0000-0000-0000-000000000005',

@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderWidth: 1,
     borderColor: '#E8E8E4',
-    shadowColor: '#000000',
+    shadowColor: '#1E242B',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
   serviceName: {
     fontSize: 15,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     marginBottom: 4,
   },
   metaRow: {
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
   },
   partnerName: {
     fontFamily: ServenticaTokens.fonts.Medium,
-    color: '#111111',
+    color: '#1E242B',
     fontWeight: '600',
   },
 });

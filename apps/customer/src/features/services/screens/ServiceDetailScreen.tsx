@@ -61,11 +61,11 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <ArrowLeft size={20} color="#111111" strokeWidth={2.2} />
+            <ArrowLeft size={20} color='#1E242B' strokeWidth={2.2} />
           </TouchableOpacity>
         </View>
         <View style={styles.centerContent}>
-          <ActivityIndicator size="large" color="#111111" />
+          <ActivityIndicator size="large" color='#1E242B' />
           <Text style={styles.loadingText}>Loading service details...</Text>
         </View>
       </View>
@@ -83,7 +83,7 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <ArrowLeft size={20} color="#111111" strokeWidth={2.2} />
+            <ArrowLeft size={20} color='#1E242B' strokeWidth={2.2} />
           </TouchableOpacity>
         </View>
         <View style={styles.centerContent}>
@@ -135,7 +135,7 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
-          <ArrowLeft size={20} color="#111111" strokeWidth={2.2} />
+          <ArrowLeft size={20} color='#1E242B' strokeWidth={2.2} />
         </TouchableOpacity>
         <Text style={styles.headerBarTitle} numberOfLines={1}>
           {service.name}
@@ -183,7 +183,7 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({
           <View style={styles.badgeRow}>
             {hasRealRating ? (
               <View style={styles.metricBadge}>
-                <Star size={13} color="#111111" fill="#111111" />
+                <Star size={13} color='#1E242B' fill='#1E242B' />
                 <Text style={styles.metricBoldText}>{service.rating.toFixed(1)}</Text>
                 {service.reviews_count ? (
                   <Text style={styles.metricDimText}>({service.reviews_count} reviews)</Text>
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
   errorTitle: {
     fontSize: 16,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     marginBottom: 6,
   },
   errorSubtitle: {
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   retryButton: {
-    backgroundColor: '#111111',
+    backgroundColor: '#1E242B',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,
@@ -384,7 +384,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     textAlign: 'center',
     paddingHorizontal: 10,
   },
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
   serviceTitle: {
     fontSize: 22,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     lineHeight: 26,
     marginBottom: 8,
   },
@@ -470,7 +470,7 @@ const styles = StyleSheet.create({
   metricBoldText: {
     fontSize: 12.5,
     fontWeight: '700',
-    color: '#111111',
+    color: '#1E242B',
     fontFamily: ServenticaTokens.fonts.Regular,
   },
   metricDimText: {
@@ -538,7 +538,7 @@ const styles = StyleSheet.create({
   promiseHeading: {
     fontSize: 12.5,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     marginBottom: 2,
   },
   promiseSubtitle: {
@@ -554,7 +554,7 @@ const styles = StyleSheet.create({
   sectionHeading: {
     fontSize: 15,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     marginBottom: 12,
   },
   itemsList: {
@@ -602,7 +602,7 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === 'android' ? 16 : 30,
     borderTopWidth: 1,
     borderTopColor: '#f0f0ed',
-    shadowColor: '#000000',
+    shadowColor: '#1E242B',
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
@@ -623,19 +623,19 @@ const styles = StyleSheet.create({
   bottomPriceCurrency: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#111111',
+    color: '#1E242B',
   },
   bottomPriceValue: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#111111',
+    color: '#1E242B',
     marginLeft: 2,
   },
   ctaButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#111111',
+    backgroundColor: '#1E242B',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 24,

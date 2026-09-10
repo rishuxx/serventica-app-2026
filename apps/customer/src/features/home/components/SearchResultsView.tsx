@@ -48,7 +48,7 @@ export const SearchResultsView: React.FC<SearchResultsViewProps> = ({
   if (isSearching && results.length === 0) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="small" color="#111111" />
+        <ActivityIndicator size="small" color='#1E242B' />
         <Text style={styles.searchingText}>Searching verified services...</Text>
       </View>
     );
@@ -59,7 +59,7 @@ export const SearchResultsView: React.FC<SearchResultsViewProps> = ({
     return (
       <View style={styles.container}>
         <View style={styles.sectionHeader}>
-          <Sparkles size={16} color="#111111" strokeWidth={2.2} />
+          <Sparkles size={16} color='#1E242B' strokeWidth={2.2} />
           <Text style={styles.sectionTitle}>Popular Searches</Text>
         </View>
 
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     marginLeft: 6,
   },
   chipsContainer: {
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     marginBottom: 8,
   },
   noResultsSubtitle: {
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
   },
   itemTagline: {
     fontSize: 12.5,
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     fontFamily: ServenticaTokens.fonts.Bold,
-    color: '#111111',
+    color: '#1E242B',
     marginTop: 4,
   },
   categoryBadge: {

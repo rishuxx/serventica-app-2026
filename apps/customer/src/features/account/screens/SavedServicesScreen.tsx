@@ -40,7 +40,7 @@ export const SavedServicesScreen: React.FC<SavedServicesScreenProps> = ({
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
-          <ArrowLeft size={20} color="#111111" strokeWidth={2.2} />
+          <ArrowLeft size={20} color='#1E242B' strokeWidth={2.2} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Saved Services</Text>
         <View style={styles.headerSpacer} />
@@ -48,7 +48,7 @@ export const SavedServicesScreen: React.FC<SavedServicesScreenProps> = ({
 
       {isLoading ? (
         <View style={styles.centerBox}>
-          <ActivityIndicator size="large" color="#111111" />
+          <ActivityIndicator size="large" color='#1E242B' />
           <Text style={styles.loadingText}>Loading saved services...</Text>
         </View>
       ) : savedServices.length === 0 ? (
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 16,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
   },
   headerSpacer: {
     width: 38,
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 16,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     marginBottom: 8,
     textAlign: 'center',
   },
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 24,
-    backgroundColor: '#111111',
+    backgroundColor: '#1E242B',
   },
   exploreBtnText: {
     fontSize: 13.5,

@@ -63,7 +63,7 @@ export const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ onBack }) 
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
-          <ArrowLeft size={20} color="#111111" strokeWidth={2.2} />
+          <ArrowLeft size={20} color='#1E242B' strokeWidth={2.2} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Edit Profile</Text>
         <View style={styles.headerSpacer} />
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 16,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
   },
   headerSpacer: {
     width: 38,
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     fontSize: 14,
     fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#111111',
+    color: '#1E242B',
   },
   inputDisabled: {
     justifyContent: 'center',
@@ -277,10 +277,10 @@ const styles = StyleSheet.create({
   saveButton: {
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#111111',
+    backgroundColor: '#1E242B',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000000',
+    shadowColor: '#1E242B',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,

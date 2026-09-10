@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 22,
     alignItems: 'center',
-    shadowColor: '#000000',
+    shadowColor: '#1E242B',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
     shadowRadius: 16,
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 17,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     marginBottom: 8,
     textAlign: 'center',
   },

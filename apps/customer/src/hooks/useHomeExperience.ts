@@ -55,6 +55,12 @@ export function useHomeExperience(): UseHomeExperienceResult {
       .then((items) => {
         if (!isMounted || !items || items.length === 0) return;
         setCategories(items);
+        setSelectedCategoryId((prevId) => {
+          const matched = items.find(
+            (it) => it.id === prevId || it.slug === prevId || it.slug === 'ac-appliances'
+          );
+          return matched ? matched.id : items[0].id;
+        });
         // Trigger background prefetching for first visible items
         experienceRepository.prefetchInitialCategories(items);
       })

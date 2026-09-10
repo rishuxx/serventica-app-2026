@@ -75,7 +75,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
           <View style={styles.metaRow}>
             {hasRealRating ? (
               <View style={styles.ratingBox}>
-                <Star size={11} color="#111111" fill="#111111" />
+                <Star size={11} color="#F59E0B" fill="#F59E0B" />
                 <Text style={styles.ratingText}>{service.rating.toFixed(1)}</Text>
                 {service.reviews_count ? (
                   <Text style={styles.reviewsCount}>({service.reviews_count})</Text>
@@ -85,7 +85,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
 
             {hasRealDuration ? (
               <View style={styles.durationBox}>
-                <Clock size={11} color="#666666" strokeWidth={1.8} />
+                <Clock size={11} color="#64748B" strokeWidth={1.8} />
                 <Text style={styles.durationText}>{service.duration_minutes} mins</Text>
               </View>
             ) : null}
@@ -121,7 +121,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
                 />
                 {!isRegistryAsset && imageLoading ? (
                   <View style={styles.imageLoadingOverlay}>
-                    <ActivityIndicator size="small" color="#111111" />
+                    <ActivityIndicator size="small" color='#1E242B' />
                   </View>
                 ) : null}
               </>
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     borderColor: '#e8e8e6',
     marginBottom: 12,
     padding: 14,
-    shadowColor: '#000000',
+    shadowColor: '#1E242B',
     shadowOffset: { width: 0, height: 1.5 },
     shadowOpacity: 0.04,
     shadowRadius: 3,
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
   serviceName: {
     fontSize: 15.5,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     letterSpacing: 0,
     lineHeight: 19,
     marginBottom: 4,
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   serviceDescription: {
     fontSize: 12,
     fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#666666',
+    color: '#5E6672',
     lineHeight: 16,
     marginBottom: 8,
   },
@@ -211,12 +211,12 @@ const styles = StyleSheet.create({
   ratingText: {
     fontSize: 11.5,
     fontWeight: '700',
-    color: '#111111',
+    color: '#1E242B',
     fontFamily: ServenticaTokens.fonts.Regular,
   },
   reviewsCount: {
     fontSize: 10.5,
-    color: '#888888',
+    color: '#94A3B8',
     fontFamily: ServenticaTokens.fonts.Regular,
   },
   durationBox: {
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
   durationText: {
     fontSize: 11,
     fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#666666',
+    color: '#5E6672',
   },
   priceRow: {
     flexDirection: 'row',
@@ -236,18 +236,18 @@ const styles = StyleSheet.create({
   priceFromLabel: {
     fontSize: 11,
     fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#777777',
+    color: '#64748B',
     marginRight: 4,
   },
   priceCurrency: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#111111',
+    color: '#1E242B',
   },
   priceValue: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#111111',
+    color: '#1E242B',
     marginLeft: 1,
   },
   imageActionCol: {
@@ -257,14 +257,14 @@ const styles = StyleSheet.create({
   imageWrapper: {
     width: 78,
     height: 72,
-    backgroundColor: '#f8f8f7',
+    backgroundColor: '#F8FAFC',
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#f0f0ed',
+    borderColor: '#E2E8F0',
   },
   serviceImage: {
     width: '88%',
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#111111',
+    backgroundColor: '#262B34',
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 16,

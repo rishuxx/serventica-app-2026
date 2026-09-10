@@ -26,7 +26,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
         accessibilityLabel="View Bookings"
       >
         <View style={styles.iconBox}>
-          <ClipboardList size={24} color="#111111" strokeWidth={1.8} />
+          <ClipboardList size={24} color='#1E242B' strokeWidth={1.8} />
           {activeBookingsCount > 0 ? <View style={styles.badgeDot} /> : null}
         </View>
         <Text style={styles.cardTitle}>Bookings</Text>
@@ -40,7 +40,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
         accessibilityLabel="Saved Addresses"
       >
         <View style={styles.iconBox}>
-          <MapPin size={24} color="#111111" strokeWidth={1.8} />
+          <MapPin size={24} color='#1E242B' strokeWidth={1.8} />
         </View>
         <Text style={styles.cardTitle}>Addresses</Text>
       </TouchableOpacity>
@@ -53,7 +53,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
         accessibilityLabel="Saved Services"
       >
         <View style={styles.iconBox}>
-          <Heart size={24} color="#111111" strokeWidth={1.8} />
+          <Heart size={24} color='#1E242B' strokeWidth={1.8} />
         </View>
         <Text style={styles.cardTitle}>Saved</Text>
       </TouchableOpacity>
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: '#F0F0ED',
-    shadowColor: '#000000',
+    shadowColor: '#1E242B',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.03,
     shadowRadius: 4,
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 14.5,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     letterSpacing: 0.1,
     textAlign: 'center',
   },

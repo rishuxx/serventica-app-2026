@@ -116,13 +116,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     letterSpacing: 0.1,
   },
   sectionSubtitle: {
     fontSize: 12,
     fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#666666',
+    color: '#5E6672',
     marginTop: 2,
   },
   cardsList: {
@@ -156,13 +156,13 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 16,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#374151',
+    color: '#334155',
     marginTop: 10,
   },
   emptySubtitle: {
     fontSize: 13,
     fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#6B7280',
+    color: '#64748B',
     textAlign: 'center',
     marginTop: 4,
     lineHeight: 18,
@@ -179,12 +179,12 @@ const styles = StyleSheet.create({
   errorTitle: {
     fontSize: 16,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
   },
   errorSubtitle: {
     fontSize: 13,
     fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#666666',
+    color: '#5E6672',
     textAlign: 'center',
     marginTop: 4,
     marginBottom: 16,
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   retryButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#111111',
+    backgroundColor: '#262B34',
     paddingHorizontal: 16,
     paddingVertical: 9,
     borderRadius: 20,

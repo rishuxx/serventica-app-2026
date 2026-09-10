@@ -63,7 +63,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           accessibilityRole="button"
           accessibilityLabel="Edit Profile"
         >
-          <Pencil size={15} color="#111111" strokeWidth={2} />
+          <Pencil size={15} color='#1E242B' strokeWidth={2} />
         </TouchableOpacity>
       </View>
     </View>
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1,
     borderColor: '#F0F0ED',
-    shadowColor: '#000000',
+    shadowColor: '#1E242B',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
   nameText: {
     fontSize: 20,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     letterSpacing: 0.2,
     marginBottom: 4,
   },

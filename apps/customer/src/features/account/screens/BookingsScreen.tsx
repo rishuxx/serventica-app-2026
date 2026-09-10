@@ -124,7 +124,7 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
-          <ArrowLeft size={20} color="#111111" strokeWidth={2.2} />
+          <ArrowLeft size={20} color='#1E242B' strokeWidth={2.2} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Bookings</Text>
         <View style={styles.headerSpacer} />
@@ -153,7 +153,7 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({
       {/* LIST OR STATES */}
       {isLoading ? (
         <View style={styles.centerBox}>
-          <ActivityIndicator size="large" color="#111111" />
+          <ActivityIndicator size="large" color='#1E242B' />
           <Text style={styles.loadingText}>Loading bookings...</Text>
         </View>
       ) : error ? (
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 16,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
   },
   headerSpacer: {
     width: 38,
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   tabButtonActive: {
-    backgroundColor: '#111111',
+    backgroundColor: '#1E242B',
   },
   tabText: {
     fontSize: 12.5,
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     borderWidth: 1,
     borderColor: '#EFEFEA',
-    shadowColor: '#000000',
+    shadowColor: '#1E242B',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.03,
     shadowRadius: 6,
@@ -349,7 +349,7 @@ const styles = StyleSheet.create({
   serviceName: {
     fontSize: 14.5,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     marginBottom: 3,
   },
   addressRow: {
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
   priceText: {
     fontSize: 13,
     fontFamily: ServenticaTokens.fonts.Medium,
-    color: '#111111',
+    color: '#1E242B',
     fontWeight: '700',
   },
   centerBox: {
@@ -384,7 +384,7 @@ const styles = StyleSheet.create({
   errorTitle: {
     fontSize: 15,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     marginBottom: 6,
   },
   errorSubtitle: {
@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: '#111111',
+    backgroundColor: '#1E242B',
   },
   retryBtnText: {
     fontSize: 13,
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 16,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     marginBottom: 8,
     textAlign: 'center',
   },
@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 24,
-    backgroundColor: '#111111',
+    backgroundColor: '#1E242B',
   },
   exploreBtnText: {
     fontSize: 13.5,

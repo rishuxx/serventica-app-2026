@@ -54,7 +54,7 @@ export const HomeHero: React.FC<HomeHeroProps> = ({ onPressCTA }) => {
             accessibilityLabel="Book a Service"
           >
             <Text style={styles.ctaText}>Book a Service</Text>
-            <ArrowRight size={16} color="#111111" strokeWidth={2.4} style={styles.ctaIcon} />
+            <ArrowRight size={16} color='#1E242B' strokeWidth={2.4} style={styles.ctaIcon} />
           </TouchableOpacity>
         </View>
       </ImageBackground>
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 11,
     borderRadius: 22,
-    shadowColor: '#000',
+    shadowColor: '#1E242B',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     fontFamily: ServenticaTokens.fonts.Medium,
-    color: '#111111',
+    color: '#1E242B',
   },
   ctaIcon: {
     marginLeft: 6,

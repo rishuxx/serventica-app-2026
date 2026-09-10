@@ -82,7 +82,7 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
           accessibilityRole="button"
           accessibilityLabel="Back to home"
         >
-          <ArrowLeft size={20} color="#111111" strokeWidth={2} />
+          <ArrowLeft size={20} color='#1E242B' strokeWidth={2} />
         </TouchableOpacity>
         <View style={styles.headerTitleBox}>
           <Text style={styles.headerTitle} numberOfLines={1}>
@@ -96,7 +96,7 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
 
       {isLoading ? (
         <View style={styles.loadingBox}>
-          <ActivityIndicator size="large" color="#111111" />
+          <ActivityIndicator size="large" color='#1E242B' />
           <Text style={styles.loadingText}>Loading services...</Text>
         </View>
       ) : hasError ? (
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     letterSpacing: 0,
   },
   headerSubtitle: {
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
   errorTitle: {
     fontSize: 16,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     marginBottom: 6,
   },
   errorSubtitle: {
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   retryButton: {
-    backgroundColor: '#111111',
+    backgroundColor: '#1E242B',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
   catalogItemTitle: {
     fontSize: 15,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     letterSpacing: 0,
     marginBottom: 3,
   },
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   subTabPillActive: {
-    backgroundColor: '#111111',
+    backgroundColor: '#1E242B',
   },
   subTabText: {
     fontSize: 12,
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e5e7eb',
     marginBottom: 12,
-    shadowColor: '#000000',
+    shadowColor: '#1E242B',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,
     shadowRadius: 3,
@@ -422,7 +422,7 @@ const styles = StyleSheet.create({
   serviceName: {
     fontSize: 15.5,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     letterSpacing: 0,
     marginBottom: 4,
   },
@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
   ratingText: {
     fontSize: 11.5,
     fontWeight: '700',
-    color: '#111111',
+    color: '#1E242B',
     marginLeft: 3,
   },
   reviewsCount: {
@@ -471,12 +471,12 @@ const styles = StyleSheet.create({
   priceSymbol: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#111111',
+    color: '#1E242B',
   },
   priceAmount: {
     fontSize: 17,
     fontWeight: '800',
-    color: '#111111',
+    color: '#1E242B',
     marginLeft: 1,
   },
   priceSuffix: {
@@ -489,7 +489,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   bookButton: {
-    backgroundColor: '#111111',
+    backgroundColor: '#1E242B',
     paddingHorizontal: 18,
     paddingVertical: 9,
     borderRadius: 18,
@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 15,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     marginBottom: 6,
   },
   emptyDesc: {

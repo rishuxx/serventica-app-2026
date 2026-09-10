@@ -9,7 +9,7 @@ import {
   StatusBar,
   Animated,
 } from 'react-native';
-import Svg, { Defs, RadialGradient as SvgRadialGradient, Stop, Rect } from 'react-native-svg';
+import Svg, { Defs, RadialGradient as SvgRadialGradient, LinearGradient as SvgLinearGradient, Stop, Rect } from 'react-native-svg';
 import {
   MapPin,
   ChevronDown,
@@ -45,6 +45,8 @@ interface TopHeroSectionProps {
   onSelectCategory?: (category: CategoryItem) => void;
   heroAsset?: HomeHeroAsset;
   categoryExperience?: CategoryExperience;
+  deliveryTime?: string;
+  isCalculatingETA?: boolean;
 }
 
 export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
@@ -63,6 +65,8 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
   onSelectCategory = () => {},
   heroAsset,
   categoryExperience,
+  deliveryTime = '20 minutes',
+  isCalculatingETA = false,
 }) => {
   const [upperLayout, setUpperLayout] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
 
@@ -101,10 +105,10 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
       ? themeFallback.gradientColors
       : [gradientStart, gradientEnd];
 
-  const textColor = isDark ? '#FFFFFF' : '#111111';
+  const textColor = isDark ? '#FFFFFF' : '#1E242B';
   const textSubColor = isDark ? 'rgba(255, 255, 255, 0.90)' : '#222222';
-  const iconColor = isDark ? '#FFFFFF' : '#111111';
-  const logoTint = isDark ? '#FFFFFF' : '#111111';
+  const iconColor = isDark ? '#FFFFFF' : '#1E242B';
+  const logoTint = isDark ? '#FFFFFF' : '#1E242B';
   const profileBg = isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.08)';
   const profileBorder = isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.12)';
 
@@ -118,6 +122,8 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
       ? 'hero_painting'
       : currentSlug === 'cleaning'
       ? 'hero_cleaning'
+      : currentSlug === 'plumbing'
+      ? 'hero_plumbing'
       : currentSlug === 'ac-appliances'
       ? 'hero_background'
       : currentSlug === 'home-decor'
@@ -134,17 +140,17 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
 
   // Animate content smoothly whenever category context updates
   useEffect(() => {
-    fadeAnim.setValue(0.35);
-    slideAnim.setValue(8);
+    fadeAnim.setValue(0.5);
+    slideAnim.setValue(6);
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 320,
+        duration: 180,
         useNativeDriver: true,
       }),
       Animated.timing(slideAnim, {
         toValue: 0,
-        duration: 320,
+        duration: 180,
         useNativeDriver: true,
       }),
     ]).start();
@@ -169,7 +175,7 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
           }
         }}
       >
-        {/* Full-bleed SVG Radial Gradient Background Layer with ultra-smooth diffusion */}
+        {/* Full-bleed SVG Background Layer (Supports 90deg Linear or Ultra-smooth Radial Diffusion) */}
         {upperLayout.width > 0 && upperLayout.height > 0 ? (
           <Svg
             pointerEvents="none"
@@ -178,20 +184,35 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
             height={upperLayout.height}
           >
             <Defs>
-              <SvgRadialGradient
-                id={`upperHeroGrad_${categoryExperience?.category.id || 'default'}`}
-                cx="50%"
-                cy="0%"
-                rx="110%"
-                ry="130%"
-                fx="50%"
-                fy="0%"
-              >
-                {gradientColors.map((color, index) => {
-                  const offsetPercent = `${Math.round((index / (gradientColors.length - 1)) * 100)}%`;
-                  return <Stop key={index} offset={offsetPercent} stopColor={color} stopOpacity="1" />;
-                })}
-              </SvgRadialGradient>
+              {currentSlug === 'plumbing' ? (
+                <SvgLinearGradient
+                  id={`upperHeroGrad_${categoryExperience?.category.id || 'default'}`}
+                  x1="0%"
+                  y1="0%"
+                  x2="0%"
+                  y2="100%"
+                >
+                  {gradientColors.map((color, index) => {
+                    const offsetPercent = `${Math.round((index / (gradientColors.length - 1)) * 100)}%`;
+                    return <Stop key={index} offset={offsetPercent} stopColor={color} stopOpacity="1" />;
+                  })}
+                </SvgLinearGradient>
+              ) : (
+                <SvgRadialGradient
+                  id={`upperHeroGrad_${categoryExperience?.category.id || 'default'}`}
+                  cx="50%"
+                  cy="0%"
+                  rx="110%"
+                  ry="130%"
+                  fx="50%"
+                  fy="0%"
+                >
+                  {gradientColors.map((color, index) => {
+                    const offsetPercent = `${Math.round((index / (gradientColors.length - 1)) * 100)}%`;
+                    return <Stop key={index} offset={offsetPercent} stopColor={color} stopOpacity="1" />;
+                  })}
+                </SvgRadialGradient>
+              )}
             </Defs>
             <Rect x="0" y="0" width={upperLayout.width} height={upperLayout.height} fill={`url(#upperHeroGrad_${categoryExperience?.category.id || 'default'})`} />
           </Svg>
@@ -212,7 +233,9 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
             {/* Delivery Time Badge with Electric Zap Icon & 24px text */}
             <View style={styles.deliveryTimeContainer}>
               <Zap size={18} color={iconColor} fill={iconColor} style={styles.electricIcon} />
-              <Text style={[styles.deliveryTimeHighlight, { color: textColor }]}>20 minutes</Text>
+              <Text style={[styles.deliveryTimeHighlight, { color: textColor }]}>
+                {deliveryTime}
+              </Text>
             </View>
 
             {/* Location Area: High-priority dedicated touch target with no overlap */}
@@ -279,7 +302,7 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 accessibilityLabel="Clear search text"
               >
-                <X size={16} color="#111111" strokeWidth={2.0} />
+                <X size={16} color='#1E242B' strokeWidth={2.0} />
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
@@ -469,7 +492,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 14,
-    shadowColor: '#000000',
+    shadowColor: '#1E242B',
     shadowOffset: { width: 0, height: 1.5 },
     shadowOpacity: 0.06,
     shadowRadius: 3,
@@ -490,7 +513,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
   },
   inputTextActive: {
-    color: '#111111',
+    color: '#1E242B',
     fontWeight: '500',
   },
   actionButton: {
@@ -560,7 +583,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000000',
+    shadowColor: '#1E242B',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
@@ -569,7 +592,7 @@ const styles = StyleSheet.create({
   shopNowText: {
     fontSize: 13,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#111111',
+    color: '#1E242B',
     letterSpacing: 0,
     fontWeight: '700',
   },

@@ -16,6 +16,7 @@ export const AssetRegistry: Record<string, any> = {
   hero_background: require('../assets/hero/hero-ac-appliances.webp'),
   hero_electrical: require('../assets/hero/hero-electrical.webp'),
   hero_painting: require('../assets/hero/hero-painting.webp'),
+  hero_plumbing: require('../assets/hero/hero-plumbing.webp'),
   hero_homedecors: require('../assets/hero/hero-home-decor.png'),
   hero_services_general: require('../assets/hero/hero-services-general.jpg'),
   top_logo: require('../assets/images/TopLogo.png'),
