@@ -7,6 +7,7 @@ import { CustomerLoginScreen } from './apps/customer/src/screens/CustomerLoginSc
 import { CustomerOtpScreen } from './apps/customer/src/screens/CustomerOtpScreen';
 import { HomePlaceholderScreen } from './apps/customer/src/screens/HomePlaceholderScreen';
 import { HomeScreen } from './apps/customer/src/features/home/screens/HomeScreen';
+import { ServiceCardShowcaseScreen } from './apps/customer/src/features/showcase/ServiceCardShowcaseScreen';
 import { authService } from './apps/customer/src/services/auth.service';
 
 type UnauthScreen = 'SPLASH' | 'LOGIN' | 'OTP';
@@ -129,10 +130,16 @@ function RootNavigator() {
 }
 
 export default function App() {
+  const [showShowcase, setShowShowcase] = useState(false);
+
   return (
     <AuthProvider>
       <LocationProvider>
-        <RootNavigator />
+        {showShowcase ? (
+          <ServiceCardShowcaseScreen onBack={() => setShowShowcase(false)} />
+        ) : (
+          <RootNavigator />
+        )}
       </LocationProvider>
     </AuthProvider>
   );

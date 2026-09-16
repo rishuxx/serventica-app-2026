@@ -121,9 +121,10 @@ const styles = StyleSheet.create({
   stickyWrapper: {
     backgroundColor: 'transparent',
     borderBottomWidth: 0,
+    paddingHorizontal: 8,
   },
   scrollContent: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     alignItems: 'center',
     position: 'relative',
   },

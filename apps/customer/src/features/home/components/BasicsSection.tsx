@@ -105,5 +105,6 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     textAlign: 'center',
     marginTop: 1,
+    letterSpacing: -0.1,
   },
 });

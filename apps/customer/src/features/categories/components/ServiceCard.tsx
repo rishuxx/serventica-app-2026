@@ -145,7 +145,8 @@ export const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
 const styles = StyleSheet.create({
   cardContainer: {
     backgroundColor: '#ffffff',
-    borderRadius: 16,
+    borderRadius: 20,
+    overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#e8e8e6',
     marginBottom: 12,
@@ -185,7 +186,6 @@ const styles = StyleSheet.create({
     fontSize: 15.5,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
     color: '#1E242B',
-    letterSpacing: 0,
     lineHeight: 19,
     marginBottom: 4,
   },
@@ -195,6 +195,7 @@ const styles = StyleSheet.create({
     color: '#5E6672',
     lineHeight: 16,
     marginBottom: 8,
+    letterSpacing: -0.1,
   },
   metaRow: {
     flexDirection: 'row',
@@ -213,11 +214,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1E242B',
     fontFamily: ServenticaTokens.fonts.Regular,
+    letterSpacing: -0.1,
   },
   reviewsCount: {
     fontSize: 10.5,
     color: '#94A3B8',
     fontFamily: ServenticaTokens.fonts.Regular,
+    letterSpacing: -0.1,
   },
   durationBox: {
     flexDirection: 'row',
@@ -228,6 +231,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: ServenticaTokens.fonts.Regular,
     color: '#5E6672',
+    letterSpacing: -0.1,
   },
   priceRow: {
     flexDirection: 'row',
@@ -238,17 +242,21 @@ const styles = StyleSheet.create({
     fontFamily: ServenticaTokens.fonts.Regular,
     color: '#64748B',
     marginRight: 4,
+    letterSpacing: -0.1,
   },
   priceCurrency: {
     fontSize: 13,
     fontWeight: '700',
     color: '#1E242B',
+    fontFamily: ServenticaTokens.fonts.Regular,
   },
   priceValue: {
     fontSize: 16,
     fontWeight: '800',
     color: '#1E242B',
     marginLeft: 1,
+    fontFamily: ServenticaTokens.fonts.Regular,
+    letterSpacing: -0.2,
   },
   imageActionCol: {
     alignItems: 'center',
@@ -301,5 +309,6 @@ const styles = StyleSheet.create({
     fontFamily: ServenticaTokens.fonts.Regular,
     color: '#FFFFFF',
     fontWeight: '600',
+    letterSpacing: -0.1,
   },
 });

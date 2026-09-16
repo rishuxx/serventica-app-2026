@@ -100,22 +100,40 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [activeServiceTarget, setActiveServiceTarget] = useState<{ id: string; slug: string; fromCategory?: boolean } | null>(null);
   const [isStickyActive, setIsStickyActive] = useState<boolean>(false);
 
-  // Scroll offset driving smooth 60fps collapse and sticky header
+  // Scroll offset tracking for threshold trigger
   const scrollY = useRef(new Animated.Value(0)).current;
 
-  // Track scroll position to ensure sticky header never receives touches when offscreen
+  // Dedicated slide animation value: 0 = completely hidden above (-180), 1 = dropped in place (0)
+  const stickyAnim = useRef(new Animated.Value(0)).current;
+  const isStickyActiveRef = useRef(false);
+
+  // Smooth autonomous drop / retract animation triggered at a specific scroll point (280)
   useEffect(() => {
     const listenerId = scrollY.addListener(({ value }) => {
-      if (value > 300 && !isStickyActive) {
+      const THRESHOLD = 280;
+      if (value > THRESHOLD && !isStickyActiveRef.current) {
+        isStickyActiveRef.current = true;
         setIsStickyActive(true);
-      } else if (value <= 300 && isStickyActive) {
+        Animated.spring(stickyAnim, {
+          toValue: 1,
+          tension: 65,
+          friction: 11,
+          useNativeDriver: true,
+        }).start();
+      } else if (value <= THRESHOLD && isStickyActiveRef.current) {
+        isStickyActiveRef.current = false;
         setIsStickyActive(false);
+        Animated.timing(stickyAnim, {
+          toValue: 0,
+          duration: 220,
+          useNativeDriver: true,
+        }).start();
       }
     });
     return () => {
       scrollY.removeListener(listenerId);
     };
-  }, [isStickyActive]);
+  }, [stickyAnim]);
 
   const isSearchActive = search.query.trim().length > 0 || search.isSearchActive;
 
@@ -156,140 +174,24 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const stickyInputBg = isDarkSticky ? 'rgba(255, 255, 255, 0.20)' : 'rgba(0, 0, 0, 0.06)';
   const stickyInputBorder = isDarkSticky ? 'rgba(255, 255, 255, 0.28)' : 'rgba(0, 0, 0, 0.08)';
 
-  // Sticky Header Interpolation:
-  // Instant and crisp without slow faded ghosting (pure slide/pin driven at 60fps)
-  const stickyHeaderTranslateY = scrollY.interpolate({
-    inputRange: [320, 370],
-    outputRange: [-120, 0],
-    extrapolate: 'clamp',
+  // Sticky Header Translation derived from stickyAnim (smooth autonomous drop in from -180 to 0)
+  const stickyHeaderTranslateY = stickyAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-180, 0],
   });
 
-  // 1. Account / Profile Sub-Routes Routing (Bookings, Profile, Edit, Saved, Support, Reviews, Notifications)
-  if (activeAccountRoute === 'PROFILE') {
-    return (
-      <ProfileScreen
-        onBack={() => {
-          setActiveAccountRoute(null);
-          setActiveTab('HOME');
-        }}
-        onNavigateEditProfile={() => setActiveAccountRoute('EDIT_PROFILE')}
-        onNavigateBookings={() => setActiveAccountRoute('BOOKINGS')}
-        onNavigateBookingDetail={(bookingId: string) => {
-          setSelectedBookingId(bookingId);
-          setActiveAccountRoute('BOOKING_DETAIL');
-        }}
-        onNavigateAddresses={location.openSelectLocation}
-        onNavigateSavedServices={() => setActiveAccountRoute('SAVED')}
-        onNavigateReviews={() => setActiveAccountRoute('REVIEWS')}
-        onNavigateNotifications={() => setActiveAccountRoute('NOTIFICATIONS')}
-        onNavigateSupport={() => {
-          setSupportBookingContext(undefined);
-          setActiveAccountRoute('SUPPORT');
-        }}
-      />
-    );
-  }
-
-  if (activeAccountRoute === 'EDIT_PROFILE') {
-    return (
-      <EditProfileScreen
-        onBack={() => setActiveAccountRoute('PROFILE')}
-      />
-    );
-  }
-
-  if (activeAccountRoute === 'BOOKINGS') {
-    return (
-      <BookingsScreen
-        onBack={() => {
-          setActiveAccountRoute(null);
-          setActiveTab('HOME');
-        }}
-        onSelectBooking={(bookingId: string) => {
-          setSelectedBookingId(bookingId);
-          setActiveAccountRoute('BOOKING_DETAIL');
-        }}
-        onExploreServices={() => {
-          setActiveAccountRoute(null);
-          setActiveTab('HOME');
-        }}
-      />
-    );
-  }
-
-  if (activeAccountRoute === 'BOOKING_DETAIL' && selectedBookingId) {
-    return (
-      <BookingDetailScreen
-        bookingId={selectedBookingId}
-        onBack={() => setActiveAccountRoute('BOOKINGS')}
-        onGetHelp={(bookingId: string) => {
-          setSupportBookingContext({ id: bookingId, serviceName: 'Booking' });
-          setActiveAccountRoute('SUPPORT');
-        }}
-        onBookAgain={(serviceId: string) => {
-          setActiveAccountRoute(null);
-          setActiveTab('HOME');
-          setActiveServiceTarget({ id: serviceId, slug: '', fromCategory: false });
-        }}
-      />
-    );
-  }
-
-  if (activeAccountRoute === 'SAVED') {
-    return (
-      <SavedServicesScreen
-        onBack={() => {
-          setActiveAccountRoute(null);
-          setActiveTab('HOME');
-        }}
-        onSelectService={(service) => {
-          setActiveAccountRoute(null);
-          setActiveServiceTarget({ id: service.id, slug: service.slug, fromCategory: false });
-        }}
-        onExploreServices={() => {
-          setActiveAccountRoute(null);
-          setActiveTab('HOME');
-        }}
-      />
-    );
-  }
-
-  if (activeAccountRoute === 'SUPPORT') {
-    return (
-      <SupportScreen
-        onBack={() => setActiveAccountRoute('PROFILE')}
-        initialBookingId={supportBookingContext?.id}
-      />
-    );
-  }
-
-  if (activeAccountRoute === 'NOTIFICATIONS') {
-    return (
-      <NotificationsScreen
-        onBack={() => setActiveAccountRoute('PROFILE')}
-        onNavigateToBooking={(bookingId) => {
-          setSelectedBookingId(bookingId);
-          setActiveAccountRoute('BOOKING_DETAIL');
-        }}
-        onNavigateToServices={() => {
-          setActiveAccountRoute(null);
-          setActiveTab('HOME');
-        }}
-      />
-    );
-  }
-
-  if (activeAccountRoute === 'REVIEWS') {
-    return (
-      <ReviewsScreen
-        onBack={() => setActiveAccountRoute('PROFILE')}
-        onExploreServices={() => {
-          setActiveAccountRoute(null);
-          setActiveTab('HOME');
-        }}
-      />
-    );
-  }
+  const handleTabSwitch = React.useCallback((tab: BottomNavTab) => {
+    setActiveTab(tab);
+    if (tab === 'PROFILE') {
+      setActiveAccountRoute('PROFILE');
+    } else if (tab === 'ORDERS') {
+      setActiveAccountRoute('BOOKINGS');
+    } else if (tab === 'SAVED') {
+      setActiveAccountRoute('SAVED');
+    } else if (tab === 'CATEGORIES' || tab === 'HOME') {
+      setActiveAccountRoute(null);
+    }
+  }, []);
 
   // 2. If activeServiceTarget is set, render full ServiceDetailScreen
   if (activeServiceTarget) {
@@ -307,12 +209,182 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     );
   }
 
-  return (
-    <View style={styles.rootContainer}>
-      <StatusBar barStyle="light-content" />
+  if (activeAccountRoute === 'EDIT_PROFILE') {
+    return (
+      <View style={styles.rootContainer}>
+        <View style={styles.feedWrapper}>
+          <EditProfileScreen
+            onBack={() => setActiveAccountRoute('PROFILE')}
+          />
+        </View>
+        <HomeBottomNav
+          activeTab={activeTab}
+          onSelectTab={handleTabSwitch}
+        />
+      </View>
+    );
+  }
 
-      {/* CONDITIONAL BODY: FULL SEARCH EXPERIENCE OR STANDARD DISCOVERY FEED */}
-      {isSearchActive ? (
+  if (activeAccountRoute === 'BOOKING_DETAIL' && selectedBookingId) {
+    return (
+      <View style={styles.rootContainer}>
+        <View style={styles.feedWrapper}>
+          <BookingDetailScreen
+            bookingId={selectedBookingId}
+            onBack={() => setActiveAccountRoute('BOOKINGS')}
+            onGetHelp={(bookingId: string) => {
+              setSupportBookingContext({ id: bookingId, serviceName: 'Booking' });
+              setActiveAccountRoute('SUPPORT');
+            }}
+            onBookAgain={(serviceId: string) => {
+              setActiveAccountRoute(null);
+              setActiveTab('HOME');
+              setActiveServiceTarget({ id: serviceId, slug: '', fromCategory: false });
+            }}
+          />
+        </View>
+        <HomeBottomNav
+          activeTab={activeTab}
+          onSelectTab={handleTabSwitch}
+        />
+      </View>
+    );
+  }
+
+  if (activeAccountRoute === 'SUPPORT') {
+    return (
+      <View style={styles.rootContainer}>
+        <View style={styles.feedWrapper}>
+          <SupportScreen
+            onBack={() => setActiveAccountRoute('PROFILE')}
+            initialBookingId={supportBookingContext?.id}
+          />
+        </View>
+        <HomeBottomNav
+          activeTab={activeTab}
+          onSelectTab={handleTabSwitch}
+        />
+      </View>
+    );
+  }
+
+  if (activeAccountRoute === 'NOTIFICATIONS') {
+    return (
+      <View style={styles.rootContainer}>
+        <View style={styles.feedWrapper}>
+          <NotificationsScreen
+            onBack={() => setActiveAccountRoute('PROFILE')}
+            onNavigateToBooking={(bookingId) => {
+              setSelectedBookingId(bookingId);
+              setActiveAccountRoute('BOOKING_DETAIL');
+            }}
+            onNavigateToServices={() => {
+              setActiveAccountRoute(null);
+              setActiveTab('HOME');
+            }}
+          />
+        </View>
+        <HomeBottomNav
+          activeTab={activeTab}
+          onSelectTab={handleTabSwitch}
+        />
+      </View>
+    );
+  }
+
+  if (activeAccountRoute === 'REVIEWS') {
+    return (
+      <View style={styles.rootContainer}>
+        <View style={styles.feedWrapper}>
+          <ReviewsScreen
+            onBack={() => setActiveAccountRoute('PROFILE')}
+            onExploreServices={() => {
+              setActiveAccountRoute(null);
+              setActiveTab('HOME');
+            }}
+          />
+        </View>
+        <HomeBottomNav
+          activeTab={activeTab}
+          onSelectTab={handleTabSwitch}
+        />
+      </View>
+    );
+  }
+
+  // Render primary tab views
+  const renderTabContent = () => {
+    if (activeAccountRoute === 'PROFILE') {
+      return (
+        <ProfileScreen
+          onBack={() => {
+            setActiveAccountRoute(null);
+            setActiveTab('HOME');
+          }}
+          onNavigateEditProfile={() => setActiveAccountRoute('EDIT_PROFILE')}
+          onNavigateBookings={() => {
+            setActiveAccountRoute('BOOKINGS');
+            setActiveTab('ORDERS');
+          }}
+          onNavigateBookingDetail={(bookingId: string) => {
+            setSelectedBookingId(bookingId);
+            setActiveAccountRoute('BOOKING_DETAIL');
+          }}
+          onNavigateAddresses={location.openSelectLocation}
+          onNavigateSavedServices={() => {
+            setActiveAccountRoute('SAVED');
+            setActiveTab('SAVED');
+          }}
+          onNavigateReviews={() => setActiveAccountRoute('REVIEWS')}
+          onNavigateNotifications={() => setActiveAccountRoute('NOTIFICATIONS')}
+          onNavigateSupport={() => {
+            setSupportBookingContext(undefined);
+            setActiveAccountRoute('SUPPORT');
+          }}
+        />
+      );
+    }
+
+    if (activeAccountRoute === 'BOOKINGS') {
+      return (
+        <BookingsScreen
+          onBack={() => {
+            setActiveAccountRoute(null);
+            setActiveTab('HOME');
+          }}
+          onSelectBooking={(bookingId: string) => {
+            setSelectedBookingId(bookingId);
+            setActiveAccountRoute('BOOKING_DETAIL');
+          }}
+          onExploreServices={() => {
+            setActiveAccountRoute(null);
+            setActiveTab('HOME');
+          }}
+        />
+      );
+    }
+
+    if (activeAccountRoute === 'SAVED') {
+      return (
+        <SavedServicesScreen
+          onBack={() => {
+            setActiveAccountRoute(null);
+            setActiveTab('HOME');
+          }}
+          onSelectService={(service) => {
+            setActiveAccountRoute(null);
+            setActiveServiceTarget({ id: service.id, slug: service.slug, fromCategory: false });
+          }}
+          onExploreServices={() => {
+            setActiveAccountRoute(null);
+            setActiveTab('HOME');
+          }}
+        />
+      );
+    }
+
+    if (isSearchActive) {
+      return (
         <View style={styles.searchResultsContainer}>
           <HomeSearchBar
             query={search.query}
@@ -336,108 +408,123 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             onSelectSuggestedQuery={search.setQuery}
           />
         </View>
-      ) : (
-        /* MAIN FEED WITH PERSISTENT COMMERCE SHELL & DYNAMIC CATEGORY CONTEXT */
-        <View style={styles.feedWrapper}>
-          <Animated.ScrollView
-            style={styles.scrollContainer}
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-            scrollEventThrottle={16}
-            onScroll={Animated.event(
-              [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-              { useNativeDriver: false }
-            )}
-            refreshControl={
-              <RefreshControl
-                refreshing={isHomeLoading || isExpLoading}
-                onRefresh={() => {
-                  refreshHome();
-                  retryExperience();
-                }}
-                tintColor='#1E242B'
-                colors={['#1E242B']}
-                progressViewOffset={Platform.OS === 'android' ? 60 : 0}
-              />
-            }
-          >
-            {/* 1. FULL-WIDTH TOP HERO SECTION (Adaptive palette + Dynamic Hero Image + Embedded Rail) */}
-            <TopHeroSection
-              shortAddress={location.activeLocation.shortAddress}
-              onPressLocation={location.openSelectLocation}
-              onPressProfile={() => {
-                setActiveAccountRoute('PROFILE');
-                onOpenAccount?.();
+      );
+    }
+
+    return (
+      <View style={styles.feedWrapper}>
+        <Animated.ScrollView
+          style={styles.scrollContainer}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          scrollEventThrottle={16}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: false }
+          )}
+          refreshControl={
+            <RefreshControl
+              refreshing={isHomeLoading || isExpLoading}
+              onRefresh={() => {
+                refreshHome();
+                retryExperience();
               }}
-              searchQuery={search.query}
-              onChangeSearchQuery={search.setQuery}
-              onClearSearch={search.clearSearch}
-              onFocusSearch={search.openSearch}
-              onPressCTA={search.openSearch}
-              banners={data?.banners}
-              categories={categories}
-              selectedCategoryId={selectedCategoryId}
-              onSelectCategory={handleCategoryPress}
-              heroAsset={data?.heroAsset}
-              categoryExperience={activeExperience}
-              deliveryTime={formattedETA}
-              isCalculatingETA={isETACalculating}
+              tintColor='#1E242B'
+              colors={['#1E242B']}
+              progressViewOffset={Platform.OS === 'android' ? 60 : 0}
             />
+          }
+        >
+          {/* 1. FULL-WIDTH TOP HERO SECTION (Adaptive palette + Dynamic Hero Image + Embedded Rail) */}
+          <TopHeroSection
+            shortAddress={location.activeLocation.shortAddress}
+            onPressLocation={location.openSelectLocation}
+            onPressProfile={() => {
+              setActiveAccountRoute('PROFILE');
+              setActiveTab('PROFILE');
+              onOpenAccount?.();
+            }}
+            searchQuery={search.query}
+            onChangeSearchQuery={search.setQuery}
+            onClearSearch={search.clearSearch}
+            onFocusSearch={search.openSearch}
+            onPressCTA={search.openSearch}
+            banners={data?.banners}
+            categories={categories}
+            selectedCategoryId={selectedCategoryId}
+            onSelectCategory={handleCategoryPress}
+            heroAsset={data?.heroAsset}
+            categoryExperience={activeExperience}
+            deliveryTime={formattedETA}
+            isCalculatingETA={isETACalculating}
+          />
 
-            {/* 2. DYNAMIC CATEGORY CATALOG SECTION (Replaces white CategoryScreen with seamless in-home feed) */}
-            <DynamicCatalogSection
-              sections={activeExperience.catalog.sections}
-              isLoading={isExpLoading}
-              error={expError}
-              categoryName={activeCategory.name}
-              onSelectService={(service) => {
-                setActiveServiceTarget({ id: service.id, slug: service.slug, fromCategory: true });
-                onSelectService?.(service as any);
-              }}
-              onRetry={retryExperience}
-            />
+          {/* 2. DYNAMIC CATEGORY CATALOG SECTION (Replaces white CategoryScreen with seamless in-home feed) */}
+          <DynamicCatalogSection
+            sections={activeExperience.catalog.sections}
+            isLoading={isExpLoading}
+            error={expError}
+            categoryName={activeCategory.name}
+            onSelectService={(service) => {
+              setActiveServiceTarget({ id: service.id, slug: service.slug, fromCategory: true });
+              onSelectService?.(service as any);
+            }}
+            onRetry={retryExperience}
+          />
 
-            {/* 3. SERVENTICA ORIGINALS (High-Conversion Visual Banners) */}
-            {data?.banners && data.banners.length > 0 ? (
-              <View style={styles.sectionBlock}>
-                <BreakerText text="SERVENTICA ORIGINALS" />
-                <OriginalsSection
-                  banners={data.banners}
-                  onSelectBanner={(banner) => {
-                    if (categories.length > 0) {
-                      handleCategoryPress(categories[0]);
-                    }
-                  }}
-                />
-              </View>
-            ) : null}
-
-            {/* 4. CATEGORIES OVERVIEW GRID */}
+          {/* 3. SERVENTICA ORIGINALS (High-Conversion Visual Banners) */}
+          {data?.banners && data.banners.length > 0 ? (
             <View style={styles.sectionBlock}>
-              <BreakerText text="ALL CATEGORIES" />
-              <CategoriesSection
-                categories={categories as any}
-                onSelectCategory={(cat: any) => handleCategoryPress(cat)}
+              <BreakerText text="SERVENTICA ORIGINALS" />
+              <OriginalsSection
+                banners={data.banners}
+                onSelectBanner={(banner) => {
+                  if (categories.length > 0) {
+                    handleCategoryPress(categories[0]);
+                  }
+                }}
               />
             </View>
+          ) : null}
 
-            {/* 5. BASICS GRID (Popular Verified Services) */}
-            {data?.basics && data.basics.length > 0 ? (
-              <View style={styles.sectionBlock}>
-                <BreakerText text="POPULAR BASICS" />
-                <BasicsSection
-                  basics={data.basics}
-                  onSelectService={(service) => {
-                    setActiveServiceTarget({ id: service.id, slug: service.slug, fromCategory: false });
-                    onSelectService?.(service);
-                  }}
-                />
-              </View>
-            ) : null}
-          </Animated.ScrollView>
+          {/* 4. CATEGORIES OVERVIEW GRID */}
+          <View style={styles.sectionBlock}>
+            <BreakerText text="ALL CATEGORIES" />
+            <CategoriesSection
+              categories={categories as any}
+              onSelectCategory={(cat: any) => handleCategoryPress(cat)}
+            />
+          </View>
 
-          {/* 5. STICKY COMPACT DISCOVERY HEADER (Instant & Liquid Native Lock) */}
+          {/* 5. BASICS GRID (Popular Verified Services) */}
+          {data?.basics && data.basics.length > 0 ? (
+            <View style={styles.sectionBlock}>
+              <BreakerText text="POPULAR BASICS" />
+              <BasicsSection
+                basics={data.basics}
+                onSelectService={(service) => {
+                  setActiveServiceTarget({ id: service.id, slug: service.slug, fromCategory: false });
+                  onSelectService?.(service);
+                }}
+              />
+            </View>
+          ) : null}
+        </Animated.ScrollView>
+      </View>
+    );
+  };
+
+  return (
+    <View style={styles.rootContainer}>
+      <StatusBar barStyle={activeAccountRoute ? 'dark-content' : 'light-content'} />
+
+      {/* RENDER CURRENT TAB CONTENT */}
+      {renderTabContent()}
+
+      {/* 4. HIGH-PERFORMANCE STICKY HEADER SURFACE */}
+      {!activeAccountRoute && !isSearchActive && isStickyActive && (
+        <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
           <Animated.View
             pointerEvents={isStickyActive ? 'auto' : 'none'}
             style={[
@@ -445,7 +532,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               {
                 backgroundColor: stickyGradientColors[0],
                 transform: [{ translateY: stickyHeaderTranslateY }],
-                display: isStickyActive ? 'flex' : 'none',
               },
             ]}
             onLayout={(e) => {
@@ -560,6 +646,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 activeOpacity={0.8}
                 onPress={() => {
                   setActiveAccountRoute('PROFILE');
+                  setActiveTab('PROFILE');
                   onOpenAccount?.();
                 }}
               >
@@ -592,24 +679,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       {/* 6. MONOCHROMATIC BOTTOM NAVIGATION */}
       <HomeBottomNav
         activeTab={activeTab}
-        onSelectTab={(tab) => {
-          if (tab === 'PROFILE') {
-            setActiveAccountRoute('PROFILE');
-            setActiveTab('PROFILE');
-          } else if (tab === 'ORDERS') {
-            setActiveAccountRoute('BOOKINGS');
-            setActiveTab('ORDERS');
-          } else if (tab === 'SAVED') {
-            setActiveAccountRoute('SAVED');
-            setActiveTab('SAVED');
-          } else if (tab === 'CATEGORIES') {
-            setActiveAccountRoute(null);
-            setActiveTab('HOME');
-          } else if (tab === 'HOME') {
-            setActiveAccountRoute(null);
-            setActiveTab('HOME');
-          }
-        }}
+        onSelectTab={handleTabSwitch}
       />
     </View>
   );
@@ -645,7 +715,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 4 : 44,
-    paddingBottom: 6,
+    paddingBottom: 8,
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,
     overflow: 'hidden',
@@ -656,7 +726,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingBottom: 8,
+    paddingBottom: 6,
     gap: 8,
   },
   stickyLocationBox: {

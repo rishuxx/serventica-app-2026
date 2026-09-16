@@ -445,7 +445,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
     color: '#FFFFFF',
-    letterSpacing: 0,
     lineHeight: 28,
   },
   locationContainer: {
@@ -463,7 +462,7 @@ const styles = StyleSheet.create({
     fontFamily: ServenticaTokens.fonts.Regular,
     color: 'rgba(255, 255, 255, 0.92)',
     maxWidth: '85%',
-    letterSpacing: 0,
+    letterSpacing: -0.1,
     fontWeight: '500',
   },
   chevronIcon: {
@@ -508,9 +507,9 @@ const styles = StyleSheet.create({
   },
   inputText: {
     fontSize: 13.5,
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
+    fontFamily: ServenticaTokens.fonts.Regular,
     color: '#888888',
-    letterSpacing: 0,
+    letterSpacing: -0.1,
   },
   inputTextActive: {
     color: '#1E242B',
@@ -563,7 +562,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     textAlign: 'center',
     lineHeight: 28,
-    letterSpacing: 0,
     marginBottom: 4,
   },
   heroDescription: {
@@ -572,7 +570,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     textAlign: 'center',
     lineHeight: 18,
-    letterSpacing: 0,
+    letterSpacing: -0.1,
     marginBottom: 12,
     paddingHorizontal: 16,
   },
@@ -591,9 +589,9 @@ const styles = StyleSheet.create({
   },
   shopNowText: {
     fontSize: 13,
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
+    fontFamily: ServenticaTokens.fonts.Medium,
     color: '#1E242B',
-    letterSpacing: 0,
+    letterSpacing: -0.1,
     fontWeight: '700',
   },
 });

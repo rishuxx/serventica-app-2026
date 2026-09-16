@@ -263,7 +263,6 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontFamily: ServenticaTokens.fonts.Coolvetica,
     color: '#1E242B',
-    letterSpacing: 0.2,
   },
   scrollView: {
     flex: 1,
@@ -291,5 +290,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: ServenticaTokens.fonts.Regular,
     color: '#AAAAAA',
+    letterSpacing: -0.1,
   },
 });

@@ -34,7 +34,6 @@ const styles = StyleSheet.create({
     fontFamily: ServenticaTokens.fonts.Coolvetica,
     fontWeight: '600',
     color: '#9A9A9A',
-    letterSpacing: 1.2,
     textTransform: 'uppercase',
   },
 });
