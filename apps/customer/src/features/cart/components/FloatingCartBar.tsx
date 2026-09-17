@@ -6,7 +6,7 @@ import {
   Animated,
   Platform,
 } from 'react-native';
-import { ShoppingBag, ArrowRight, Zap } from 'lucide-react-native';
+import { ArrowRight, ShoppingBag, Zap } from 'lucide-react-native';
 import { useCart } from '../context/CartContext';
 import { AnimatedTouchable } from '../../../shared/components/AnimatedTouchable';
 import { ServenticaTokens } from '../../../../../../packages/design-system/src';
@@ -17,25 +17,70 @@ interface FloatingCartBarProps {
 
 export const FloatingCartBar: React.FC<FloatingCartBarProps> = ({ onPressCheckout }) => {
   const { itemCount, fees, openCartDrawer } = useCart();
-  const slideAnim = useRef(new Animated.Value(120)).current;
+  const slideAnim = useRef(new Animated.Value(100)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const bagRotateAnim = useRef(new Animated.Value(0)).current;
 
+  // Slide In/Out Animation
   useEffect(() => {
     if (itemCount > 0) {
       Animated.spring(slideAnim, {
         toValue: 0,
-        damping: 18,
-        mass: 0.8,
-        stiffness: 220,
+        damping: 20,
+        mass: 0.7,
+        stiffness: 240,
         useNativeDriver: true,
       }).start();
+
+      // Trigger subtle tactile pulse and wiggle on item count change
+      Animated.sequence([
+        Animated.parallel([
+          Animated.timing(pulseAnim, {
+            toValue: 1.14,
+            duration: 120,
+            useNativeDriver: true,
+          }),
+          Animated.timing(bagRotateAnim, {
+            toValue: -0.15,
+            duration: 90,
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.parallel([
+          Animated.timing(pulseAnim, {
+            toValue: 0.95,
+            duration: 100,
+            useNativeDriver: true,
+          }),
+          Animated.timing(bagRotateAnim, {
+            toValue: 0.12,
+            duration: 90,
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.parallel([
+          Animated.spring(pulseAnim, {
+            toValue: 1,
+            friction: 4,
+            tension: 200,
+            useNativeDriver: true,
+          }),
+          Animated.spring(bagRotateAnim, {
+            toValue: 0,
+            friction: 4,
+            tension: 200,
+            useNativeDriver: true,
+          }),
+        ]),
+      ]).start();
     } else {
       Animated.timing(slideAnim, {
-        toValue: 120,
+        toValue: 100,
         duration: 200,
         useNativeDriver: true,
       }).start();
     }
-  }, [itemCount, slideAnim]);
+  }, [itemCount, slideAnim, pulseAnim, bagRotateAnim]);
 
   if (itemCount === 0) {
     return null;
@@ -49,6 +94,11 @@ export const FloatingCartBar: React.FC<FloatingCartBarProps> = ({ onPressCheckou
     }
   };
 
+  const bagRotation = bagRotateAnim.interpolate({
+    inputRange: [-1, 1],
+    outputRange: ['-30deg', '30deg'],
+  });
+
   return (
     <Animated.View
       style={[
@@ -60,36 +110,40 @@ export const FloatingCartBar: React.FC<FloatingCartBarProps> = ({ onPressCheckou
       pointerEvents="box-none"
     >
       <AnimatedTouchable
-        style={styles.cartBar}
+        style={styles.glassCartBar}
         activeOpacity={0.92}
         onPress={handlePress}
         accessibilityRole="button"
-        accessibilityLabel={`View Cart with ${itemCount} items, total ₹${fees.finalPayable}`}
+        accessibilityLabel={`View Cart with ${itemCount} items`}
       >
+        {/* Left Side: Animated Professional Icon & Item Count Badge */}
         <View style={styles.leftCol}>
-          <View style={styles.badgeBox}>
-            <ShoppingBag size={15} color="#FFFFFF" strokeWidth={2.2} />
-            <Text style={styles.badgeText}>{itemCount}</Text>
-          </View>
+          <Animated.View
+            style={[
+              styles.iconWrapper,
+              {
+                transform: [{ scale: pulseAnim }, { rotate: bagRotation }],
+              },
+            ]}
+          >
+            <ShoppingBag size={21} color="#1E242B" strokeWidth={2.3} />
+            <View style={styles.badgePill}>
+              <Text style={styles.badgeCount}>{itemCount}</Text>
+            </View>
+          </Animated.View>
 
-          <View style={styles.priceInfo}>
-            <View style={styles.priceRow}>
-              <Text style={styles.priceText}>₹{fees.finalPayable}</Text>
-              {fees.discountAmount > 0 ? (
-                <Text style={styles.savingsText}>Save ₹{fees.discountAmount}</Text>
-              ) : null}
-            </View>
-            <View style={styles.expressTag}>
-              <Zap size={11} color="#FFCC00" fill="#FFCC00" />
-              <Text style={styles.expressText}>20-Min Express Slot</Text>
-            </View>
+          {/* Express Delivery Badge */}
+          <View style={styles.expressTag}>
+            <Zap size={11} color="#EAB308" fill="#EAB308" />
+            <Text style={styles.expressText}>20-Min Express</Text>
           </View>
         </View>
 
+        {/* Right Side: Clean "View Cart" CTA with Gold Arrow */}
         <View style={styles.rightCol}>
-          <Text style={styles.ctaText}>View Cart</Text>
-          <View style={styles.arrowCircle}>
-            <ArrowRight size={14} color="#1E242B" strokeWidth={2.5} />
+          <Text style={styles.viewCartText}>View Cart</Text>
+          <View style={styles.goldArrowBtn}>
+            <ArrowRight size={13} color="#1E242B" strokeWidth={2.8} />
           </View>
         </View>
       </AnimatedTouchable>
@@ -100,92 +154,103 @@ export const FloatingCartBar: React.FC<FloatingCartBarProps> = ({ onPressCheckou
 const styles = StyleSheet.create({
   floatingContainer: {
     position: 'absolute',
-    bottom: 84, // Sits perfectly above the bottom navigation bar
-    left: 16,
-    right: 16,
+    bottom: 74, // Perfectly sits directly above bottom nav bar
+    left: 20,
+    right: 20,
     zIndex: 999,
   },
-  cartBar: {
+  glassCartBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#1E242B',
-    borderRadius: 22,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 36, // Highly rounded pill curve
+    paddingLeft: 14,
+    paddingRight: 10,
+    paddingVertical: 8,
+    borderWidth: 1.2,
+    borderColor: 'rgba(230, 235, 240, 0.95)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#0F172A',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.12,
+        shadowRadius: 16,
+      },
+      android: {
+        elevation: 10,
+      },
+    }),
   },
   leftCol: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
   },
-  badgeBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#323B44',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 14,
-    gap: 5,
-  },
-  badgeText: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '700',
-    fontFamily: ServenticaTokens.fonts.Medium,
-  },
-  priceInfo: {
+  iconWrapper: {
+    width: 32,
+    height: 32,
     justifyContent: 'center',
-  },
-  priceRow: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    position: 'relative',
   },
-  priceText: {
-    fontSize: 16,
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#FFFFFF',
+  badgePill: {
+    position: 'absolute',
+    top: -3,
+    right: -7,
+    backgroundColor: '#FFCC00',
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    paddingHorizontal: 3.5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
   },
-  savingsText: {
-    fontSize: 11,
-    color: '#4ADE80',
-    fontWeight: '600',
-    fontFamily: ServenticaTokens.fonts.Medium,
+  badgeCount: {
+    fontSize: 9.5,
+    fontFamily: ServenticaTokens.fonts.Bold,
+    fontWeight: '800',
+    color: '#1E242B',
+    lineHeight: 11,
   },
   expressTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
-    marginTop: 1,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    paddingHorizontal: 8,
+    paddingVertical: 3.5,
+    borderRadius: 14,
+    gap: 4,
   },
   expressText: {
     fontSize: 11,
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontFamily: ServenticaTokens.fonts.Regular,
+    fontFamily: ServenticaTokens.fonts.Medium,
+    fontWeight: '600',
+    color: '#475569',
+    letterSpacing: -0.1,
   },
   rightCol: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 7,
   },
-  ctaText: {
-    fontSize: 14,
+  viewCartText: {
+    fontSize: 13.5,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
     fontWeight: '700',
-    color: '#FFFFFF',
-    fontFamily: ServenticaTokens.fonts.Medium,
+    color: '#1E242B',
+    letterSpacing: -0.2,
   },
-  arrowCircle: {
+  goldArrowBtn: {
     width: 26,
     height: 26,
     borderRadius: 13,
     backgroundColor: '#FFCC00',
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
   },
 });
