@@ -11,9 +11,9 @@
     "test": "jest"
   },
   "dependencies": {
-    "@serventica/types": "workspace:*",
-    "@serventica/design-system": "workspace:*",
-    "@serventica/config": "workspace:*",
+    "@serventica/types": "*",
+    "@serventica/design-system": "*",
+    "@serventica/config": "*",
     "react": "19.2.3",
     "react-native": "0.87.1",
     "react-native-safe-area-context": "^5.5.2"

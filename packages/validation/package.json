@@ -8,7 +8,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@serventica/types": "workspace:*",
+    "@serventica/types": "*",
     "zod": "^3.24.2"
   },
   "devDependencies": {

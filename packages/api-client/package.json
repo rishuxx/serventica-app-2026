@@ -8,8 +8,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@serventica/types": "workspace:*",
-    "@serventica/config": "workspace:*"
+    "@serventica/types": "*",
+    "@serventica/config": "*"
   },
   "devDependencies": {
     "typescript": "^5.8.0"

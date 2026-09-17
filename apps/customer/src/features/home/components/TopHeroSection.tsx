@@ -28,6 +28,11 @@ import { HomeHeroAsset } from '../../../types/home.types';
 import { CategoryExperience } from '../../../types/experience.types';
 import { getFallbackCategoryTheme, getFallbackCategoryHero } from '../../../repositories/experience.repository';
 import { CategoryRail, CategoryRailSkeleton } from './CategoryRail';
+import { FulfillmentModeSelector } from './FulfillmentModeSelector';
+import {
+  FulfillmentMode,
+  FulfillmentAvailabilityState,
+} from '../../../../../../packages/types/src';
 
 interface TopHeroSectionProps {
   shortAddress: string;
@@ -47,6 +52,14 @@ interface TopHeroSectionProps {
   categoryExperience?: CategoryExperience;
   deliveryTime?: string;
   isCalculatingETA?: boolean;
+
+  // SERV-03: Fulfillment Mode Integration
+  selectedFulfillmentMode?: FulfillmentMode;
+  instantAvailabilityState?: FulfillmentAvailabilityState;
+  scheduledAvailabilityState?: FulfillmentAvailabilityState;
+  instantEtaText?: string;
+  scheduledSlotText?: string;
+  onSelectFulfillmentMode?: (mode: FulfillmentMode) => void;
 }
 
 export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
@@ -67,6 +80,12 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
   categoryExperience,
   deliveryTime = '20 minutes',
   isCalculatingETA = false,
+  selectedFulfillmentMode = 'INSTANT',
+  instantAvailabilityState = 'AVAILABLE',
+  scheduledAvailabilityState = 'AVAILABLE',
+  instantEtaText = '15–20 mins',
+  scheduledSlotText = 'Today / Tomorrow',
+  onSelectFulfillmentMode = () => {},
 }) => {
   const [upperLayout, setUpperLayout] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
 
@@ -321,6 +340,20 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
             <CategoryRailSkeleton isDarkBackground={isDark} />
           )}
         </View>
+
+        {/* HORIZONTAL DIVIDER LINE */}
+        <View style={styles.horizontalDivider} />
+
+        {/* ROW 5: SERV-03 INSTANT & SCHEDULED FULFILLMENT MODE SELECTOR */}
+        <FulfillmentModeSelector
+          selectedMode={selectedFulfillmentMode}
+          instantState={instantAvailabilityState}
+          scheduledState={scheduledAvailabilityState}
+          instantEtaText={instantEtaText}
+          scheduledSlotText={scheduledSlotText}
+          theme={activeTheme}
+          onSelectMode={onSelectFulfillmentMode}
+        />
       </View>
 
       {/* ========================================================================= */}
@@ -509,7 +542,14 @@ const styles = StyleSheet.create({
   categoryRailWrapper: {
     width: '100%',
     marginTop: 2,
-    marginBottom: 2,
+    marginBottom: 4,
+  },
+  horizontalDivider: {
+    width: '92%',
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.22)',
+    alignSelf: 'center',
+    marginVertical: 4,
   },
   sectionDividerLine: {
     width: '100%',

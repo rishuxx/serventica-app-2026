@@ -573,3 +573,170 @@ export interface ReserveSlotParams {
   idempotencyKey: string;
   holdDurationMinutes?: number;
 }
+
+// ==============================================================================
+// PHASE 6: PRODUCTION BOOKING + REAL PAYMENT TRANSACTION TYPES
+// ==============================================================================
+
+export type PaymentGatewayProvider = 'RAZORPAY' | 'WALLET' | 'COD';
+
+export type PaymentLifecycleStatus =
+  | 'CREATED'
+  | 'PENDING'
+  | 'AUTHORIZED'
+  | 'CAPTURED'
+  | 'FAILED'
+  | 'CANCELLED'
+  | 'REFUNDED'
+  | 'PARTIALLY_REFUNDED';
+
+export type PaymentMethodType = 'UPI' | 'CARDS' | 'NETBANKING' | 'WALLET' | 'COD';
+
+export interface PaymentRecord {
+  id: string;
+  booking_id: string;
+  user_id: string;
+  provider: PaymentGatewayProvider;
+  provider_order_id?: string | null;
+  provider_payment_id?: string | null;
+  provider_signature?: string | null;
+  amount: number;
+  currency: string;
+  status: PaymentLifecycleStatus;
+  payment_method?: string | null;
+  payment_method_details?: Record<string, any> | null;
+  provider_status?: string | null;
+  provider_error_code?: string | null;
+  provider_error_description?: string | null;
+  authorized_at?: string | null;
+  captured_at?: string | null;
+  failed_at?: string | null;
+  cancelled_at?: string | null;
+  refunded_at?: string | null;
+  metadata?: Record<string, any>;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface PaymentAttemptRecord {
+  id: string;
+  booking_id: string;
+  user_id: string;
+  payment_id?: string | null;
+  attempt_number: number;
+  provider: PaymentGatewayProvider;
+  provider_order_id?: string | null;
+  status: PaymentLifecycleStatus;
+  amount: number;
+  failure_code?: string | null;
+  failure_reason?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CreatePaymentOrderRequest {
+  serviceId: string;
+  variantId?: string | null;
+  addonIds?: string[];
+  addressId: string;
+  serviceAreaId: string;
+  startAt: string;
+  endAt: string;
+  paymentMethod: PaymentMethodType;
+  paymentBrand?: string;
+  idempotencyKey: string;
+  reservationId?: string;
+  promoCode?: string;
+}
+
+export interface CreatePaymentOrderResponse {
+  success: boolean;
+  bookingId: string;
+  bookingNumber: string;
+  paymentId: string;
+  razorpayOrderId?: string;
+  razorpayKeyId?: string;
+  amountPaise: number;
+  amountRupees: number;
+  currency: string;
+  customer: {
+    name: string;
+    email: string;
+    phone: string;
+  };
+  notes: Record<string, string>;
+  error?: string;
+  errorCode?: string;
+}
+
+export interface VerifyPaymentRequest {
+  bookingId: string;
+  paymentId: string;
+  razorpayOrderId: string;
+  razorpayPaymentId: string;
+  razorpaySignature: string;
+  paymentMethod?: string;
+}
+
+export interface VerifyPaymentResponse {
+  success: boolean;
+  bookingId: string;
+  bookingNumber: string;
+  paymentId: string;
+  status: 'CAPTURED' | 'FAILED' | 'PENDING';
+  message: string;
+  transactionId: string;
+  amount: number;
+}
+
+// ==============================================================================
+// SERV-03: INSTANT & SCHEDULED FULFILLMENT DOMAIN CONTRACTS
+// ==============================================================================
+
+export type FulfillmentMode = 'INSTANT' | 'SCHEDULED';
+
+export type FulfillmentAvailabilityState =
+  | 'AVAILABLE'
+  | 'UNAVAILABLE'
+  | 'LOADING'
+  | 'SERVICE_NOT_SUPPORTED'
+  | 'LOCATION_REQUIRED'
+  | 'NO_CAPACITY'
+  | 'NO_PARTNER'
+  | 'OUTSIDE_SERVICE_AREA';
+
+export interface FulfillmentCapability {
+  instant: boolean;
+  scheduled: boolean;
+}
+
+export interface FulfillmentOptionDetails {
+  supported: boolean;
+  available: boolean;
+  state: FulfillmentAvailabilityState;
+  estimatedArrivalMinutes?: number;
+  nextAvailableDate?: string;
+  nextAvailableSlotFormatted?: string;
+  reason?: string;
+}
+
+export interface ServiceFulfillmentOptions {
+  serviceId?: string;
+  categorySlug?: string;
+  instant: FulfillmentOptionDetails;
+  scheduled: FulfillmentOptionDetails;
+}
+
+export interface BookingIntent {
+  serviceId: string;
+  customerId: string;
+  fulfillmentMode: FulfillmentMode;
+  addressId: string;
+  serviceAreaId?: string;
+  scheduledStartAt?: string | null;
+  scheduledEndAt?: string | null;
+  durationMinutes?: number;
+  quoteVersion?: string;
+  idempotencyKey: string;
+}
+

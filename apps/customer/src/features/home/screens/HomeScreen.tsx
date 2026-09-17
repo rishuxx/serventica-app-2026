@@ -48,6 +48,11 @@ import { NotificationsScreen } from '../../account/screens/NotificationsScreen';
 import { ReviewsScreen } from '../../account/screens/ReviewsScreen';
 import { ServiceCardShowcaseScreen } from '../../showcase/ServiceCardShowcaseScreen';
 
+import {
+  FulfillmentMode,
+  FulfillmentAvailabilityState,
+} from '../../../../../../packages/types/src';
+
 interface HomeScreenProps {
   onOpenAccount?: () => void;
   onSelectService?: (service: HomeBasicServiceItem) => void;
@@ -105,6 +110,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [supportBookingContext, setSupportBookingContext] = useState<{ id: string; serviceName: string } | undefined>(undefined);
   const [activeServiceTarget, setActiveServiceTarget] = useState<{ id: string; slug: string; fromCategory?: boolean } | null>(null);
   const [isStickyActive, setIsStickyActive] = useState<boolean>(false);
+  const [selectedFulfillmentMode, setSelectedFulfillmentMode] = useState<FulfillmentMode>('INSTANT');
 
   // Native scroll tracking for triggers
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -484,6 +490,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             categoryExperience={activeExperience}
             deliveryTime={formattedETA}
             isCalculatingETA={isETACalculating}
+            selectedFulfillmentMode={selectedFulfillmentMode}
+            onSelectFulfillmentMode={setSelectedFulfillmentMode}
           />
 
           {/* 2. DYNAMIC CATEGORY CATALOG SECTION (Replaces white CategoryScreen with seamless in-home feed) */}

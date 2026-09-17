@@ -37,7 +37,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { ServenticaTokens } from '../../../../../../packages/design-system/src';
 import { AssetRegistry } from '../../../services/home.service';
 import { PaymentMethodIcon, PaymentBrandType } from './PaymentMethodIcon';
-import { paymentService, PaymentTransactionResult } from '../../../services/payment.service';
+import { paymentService, PaymentExecutionResult } from '../../../services/payment.service';
 import { DateSelector } from '../../booking/components/DateSelector';
 import { TimeSlotPicker } from '../../booking/components/TimeSlotPicker';
 import { useServiceAvailability } from '../../../hooks/useServiceAvailability';
@@ -210,7 +210,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
   const [selectedPaymentKey, setSelectedPaymentKey] = useState<PaymentMethodKey>('GOOGLE_PAY');
   const [isPaymentPickerOpen, setIsPaymentPickerOpen] = useState<boolean>(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState<boolean>(false);
-  const [transactionResult, setTransactionResult] = useState<PaymentTransactionResult | null>(null);
+  const [transactionResult, setTransactionResult] = useState<PaymentExecutionResult | null>(null);
   const [walletBalance, setWalletBalance] = useState<number>(0);
 
   useEffect(() => {
@@ -234,7 +234,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
     setIsProcessingPayment(true);
 
     try {
-      const mappedMethod =
+      const mappedMethod: 'UPI' | 'CARDS' | 'WALLET' | 'COD' =
         selectedPaymentKey === 'CARDS'
           ? 'CARDS'
           : selectedPaymentKey === 'WALLET'
@@ -243,46 +243,60 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
           ? 'COD'
           : 'UPI';
 
-      const res = await paymentService.processCheckout({
-        customerId: user?.id,
+      const scheduleDisplay =
+        bookingMode === 'SCHEDULED'
+          ? selectedSlot?.displayTime || 'Scheduled Slot'
+          : 'Express 20m Dispatch';
+
+      const now = new Date();
+      const startAt = selectedSlot?.startAt || now.toISOString();
+      const endAt =
+        selectedSlot?.endAt ||
+        new Date(now.getTime() + (primaryItem?.durationMinutes || 60) * 60000).toISOString();
+
+      const res = await paymentService.processPayment({
+        userId: user?.id,
         customerName,
         customerPhone,
-        items: itemList.map((i) => ({
-          serviceId: i.serviceId,
-          name: i.name,
-          slug: i.slug,
-          basePrice: i.basePrice,
-          quantity: i.quantity,
-          durationMinutes: i.durationMinutes,
-          imageUrl: i.imageUrl,
-        })),
-        fees,
-        bookingMode,
+        customerEmail: user?.email || undefined,
+        serviceId: primaryItem.serviceId,
+        serviceName: primaryItem.name,
+        variantId: null,
+        addressId: 'a1000000-0000-0000-0000-000000000001',
+        serviceAreaId: serviceability?.serviceAreaId || 'e1111111-0000-0000-0000-000000000001',
+        shortAddress: activeLocation.shortAddress || 'Home Address',
+        formattedAddress: activeLocation.formattedAddress || 'Dehradun, India',
+        city: activeLocation.city || 'Dehradun',
+        startAt,
+        endAt,
+        scheduleDisplay,
         paymentMethod: mappedMethod,
         paymentBrand: activePaymentOption.title,
-        scheduleDate: bookingMode === 'SCHEDULED' ? selectedDate || 'Today' : 'Today',
-        scheduleSlot:
-          bookingMode === 'SCHEDULED'
-            ? selectedSlot?.displayTime || 'Scheduled Slot'
-            : 'Express 20m Dispatch',
-        location: {
-          shortAddress: activeLocation.shortAddress,
-          formattedAddress: activeLocation.formattedAddress,
-          city: activeLocation.city,
-        },
+        idempotencyKey: `pay_attempt_${Date.now()}_${primaryItem.serviceId}`,
       });
 
-      setTransactionResult(res);
-      clearCart();
+      if (res.success) {
+        setTransactionResult({
+          success: true,
+          transactionId: res.transactionId || 'TXN-SUCCESS',
+          paymentMethod: res.paymentMethod,
+          amount: res.amount,
+          currency: 'INR',
+          status: 'CAPTURED',
+          timestamp: new Date().toISOString(),
+          bookingId: res.bookingId,
+          bookingNumber: res.bookingNumber,
+        });
+        clearCart();
 
-      // Notify parent app flow
-      onProceedToBooking?.({
-        bookingId: res.bookingId,
-        bookingNumber: res.bookingNumber,
-        transactionId: res.transactionId,
-        paymentMethod: res.paymentMethod,
-        amount: res.amount,
-      });
+        onProceedToBooking?.({
+          bookingId: res.bookingId,
+          bookingNumber: res.bookingNumber,
+          transactionId: res.transactionId,
+          paymentMethod: res.paymentMethod,
+          amount: res.amount,
+        });
+      }
     } catch (err) {
       console.warn('[CartDrawerModal] Checkout error:', err);
     } finally {
@@ -754,6 +768,10 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                                     onPress={() => {
                                       setSelectedPaymentKey(item.id);
                                       setIsPaymentPickerOpen(false);
+                                      // Trigger checkout with selected payment method
+                                      setTimeout(() => {
+                                        handleCheckout();
+                                      }, 150);
                                     }}
                                     activeOpacity={0.7}
                                   >
