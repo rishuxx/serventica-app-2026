@@ -230,7 +230,7 @@ export const FloatingCartBar: React.FC<FloatingCartBarProps> = ({ onPressCheckou
 const styles = StyleSheet.create({
   floatingContainer: {
     position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 78 : 64, // Elegant snug gap right above bottom navigation
+    bottom: Platform.OS === 'ios' ? 94 : 80, // Balanced floating gap above bottom navigation
     alignSelf: 'center',
     zIndex: 999,
   },
