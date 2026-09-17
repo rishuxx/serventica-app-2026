@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -6,8 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  ActivityIndicator,
-  Platform,
   StatusBar,
 } from 'react-native';
 import {
@@ -19,14 +17,17 @@ import {
   XCircle,
   MapPin,
   AlertTriangle,
-  ChevronRight,
+  Heart,
+  ChevronDown,
+  ChevronUp,
+  AlertCircle,
+  RefreshCw,
 } from 'lucide-react-native';
-import { useServiceDetail } from '../../../hooks/useServiceDetail';
+import { useServiceDetails } from '../../../hooks/useServiceDetails';
 import { useLocation } from '../../../context/LocationContext';
 import { useCart } from '../../../features/cart/context/CartContext';
 import { AssetRegistry } from '../../../services/home.service';
-import { ServenticaTokens } from '../../../../../../packages/design-system/src';
-import { AnimatedTouchable } from '../../../shared/components/AnimatedTouchable';
+import { ShimmerPlaceholder } from '../../../shared/components/ShimmerPlaceholder';
 
 export interface ServiceDetailScreenProps {
   serviceId?: string;
@@ -34,6 +35,9 @@ export interface ServiceDetailScreenProps {
   onBack: () => void;
   onContinue?: (bookingPayload: {
     serviceId: string;
+    variantId?: string;
+    price: number;
+    durationMinutes: number;
     locationId?: string;
     serviceAreaId?: string;
   }) => void;
@@ -45,17 +49,45 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({
   onBack,
   onContinue,
 }) => {
-  const { service, isLoading, hasError, refresh } = useServiceDetail(serviceId, slug);
+  const targetIdentifier = slug || serviceId;
+  const {
+    details,
+    selectedVariant,
+    setSelectedVariant,
+    isSaved,
+    isSaving,
+    isLoading,
+    error,
+    toggleSave,
+    refresh,
+    calculatedPrice,
+    calculatedDuration,
+  } = useServiceDetails(targetIdentifier);
+
   const { activeLocation, serviceability } = useLocation();
   const { addItem, openCartDrawer } = useCart();
+  const [expandedFaqId, setExpandedFaqId] = useState<string | null>(null);
 
-  // Evaluate Serviceability against the active location
+  // Evaluate Serviceability
   const isAvailable = serviceability ? serviceability.isServiceable : true;
-  const zoneName = serviceability?.zoneName || activeLocation.city || 'your area';
 
-  const handleContinue = () => {
-    if (service) {
-      addItem(service as any);
+  const handleBookNow = () => {
+    if (!details?.service) return;
+
+    if (onContinue) {
+      onContinue({
+        serviceId: details.service.id,
+        variantId: selectedVariant?.id,
+        price: calculatedPrice,
+        durationMinutes: calculatedDuration,
+      });
+    } else {
+      // Add to cart with variant context and open drawer
+      addItem({
+        ...details.service,
+        base_price: calculatedPrice,
+        duration_minutes: calculatedDuration,
+      } as any);
       openCartDrawer();
       onBack();
     }
@@ -65,44 +97,54 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({
     return (
       <View style={styles.stateContainer}>
         <StatusBar barStyle="dark-content" />
-        <View style={styles.topBackHeader}>
+        <View style={styles.headerBar}>
           <TouchableOpacity
             style={styles.circleBackButton}
             onPress={onBack}
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <ArrowLeft size={20} color='#1E242B' strokeWidth={2.2} />
+            <ArrowLeft size={20} color="#1E242B" strokeWidth={2.2} />
           </TouchableOpacity>
         </View>
-        <View style={styles.centerContent}>
-          <ActivityIndicator size="large" color='#1E242B' />
-          <Text style={styles.loadingText}>Loading service details...</Text>
-        </View>
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+          <ShimmerPlaceholder width="100%" height={220} borderRadius={16} style={{ marginBottom: 16 }} />
+          <ShimmerPlaceholder width="70%" height={24} borderRadius={6} style={{ marginBottom: 10 }} />
+          <ShimmerPlaceholder width="95%" height={16} borderRadius={4} style={{ marginBottom: 6 }} />
+          <ShimmerPlaceholder width="80%" height={16} borderRadius={4} style={{ marginBottom: 16 }} />
+          <View style={{ flexDirection: 'row', gap: 10, marginBottom: 20 }}>
+            <ShimmerPlaceholder width={80} height={28} borderRadius={6} />
+            <ShimmerPlaceholder width={90} height={28} borderRadius={6} />
+          </View>
+          <ShimmerPlaceholder width="100%" height={90} borderRadius={12} style={{ marginBottom: 16 }} />
+          <ShimmerPlaceholder width="100%" height={140} borderRadius={12} />
+        </ScrollView>
       </View>
     );
   }
 
-  if (hasError || !service) {
+  if (error || !details || !details.service) {
     return (
       <View style={styles.stateContainer}>
         <StatusBar barStyle="dark-content" />
-        <View style={styles.topBackHeader}>
+        <View style={styles.headerBar}>
           <TouchableOpacity
             style={styles.circleBackButton}
             onPress={onBack}
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <ArrowLeft size={20} color='#1E242B' strokeWidth={2.2} />
+            <ArrowLeft size={20} color="#1E242B" strokeWidth={2.2} />
           </TouchableOpacity>
         </View>
         <View style={styles.centerContent}>
-          <Text style={styles.errorTitle}>Unable to load this service.</Text>
+          <AlertCircle size={40} color="#EF4444" strokeWidth={1.8} />
+          <Text style={styles.errorTitle}>Couldn't load this service.</Text>
           <Text style={styles.errorSubtitle}>
-            Please verify your network connection or try again.
+            {error || 'This service is currently unavailable. Please verify your connection or try again.'}
           </Text>
           <TouchableOpacity style={styles.retryButton} onPress={refresh} activeOpacity={0.85}>
+            <RefreshCw size={15} color="#FFFFFF" />
             <Text style={styles.retryButtonText}>Try Again</Text>
           </TouchableOpacity>
         </View>
@@ -110,8 +152,10 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({
     );
   }
 
+  const { service, category, variants, inclusions, exclusions, faqs, ratingSummary } = details;
+
   // Resolve Service Image
-  const imgKey = service.image_url || '';
+  const imgKey = service.thumbnail_url || service.hero_image_url || service.image_url || '';
   const isRegistryAsset = Boolean(imgKey && AssetRegistry[imgKey]);
   const imageSource = isRegistryAsset
     ? AssetRegistry[imgKey]
@@ -119,11 +163,8 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({
     ? { uri: imgKey }
     : null;
 
-  const hasRealPrice = typeof service.base_price === 'number' && service.base_price > 0;
-  const hasRealDuration = typeof service.duration_minutes === 'number' && service.duration_minutes > 0;
-  const hasRealRating = typeof service.rating === 'number' && service.rating > 0;
-
-
+  const hasRealRating = ratingSummary.averageRating > 0;
+  const hasRealPrice = calculatedPrice > 0;
 
   return (
     <View style={styles.rootContainer}>
@@ -138,12 +179,26 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
-          <ArrowLeft size={20} color='#1E242B' strokeWidth={2.2} />
+          <ArrowLeft size={20} color="#1E242B" strokeWidth={2.2} />
         </TouchableOpacity>
         <Text style={styles.headerBarTitle} numberOfLines={1}>
           {service.name}
         </Text>
-        <View style={styles.headerSpacer} />
+        <TouchableOpacity
+          style={styles.circleSaveButton}
+          onPress={toggleSave}
+          disabled={isSaving}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={isSaved ? 'Remove from saved' : 'Save service'}
+        >
+          <Heart
+            size={19}
+            color={isSaved ? '#EF4444' : '#1E242B'}
+            fill={isSaved ? '#EF4444' : 'transparent'}
+            strokeWidth={2}
+          />
+        </TouchableOpacity>
       </View>
 
       <ScrollView
@@ -161,49 +216,53 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({
             />
           ) : (
             <View style={styles.heroPlaceholder}>
-              <CheckCircle2 size={40} color="#888888" strokeWidth={1.5} />
+              <CheckCircle2 size={44} color="#94A3B8" strokeWidth={1.5} />
             </View>
           )}
         </View>
 
         {/* SERVICE MAIN TITLE & SUMMARY */}
         <View style={styles.mainInfoBlock}>
-          {service.short_tagline ? (
-            <View style={styles.taglinePill}>
-              <Text style={styles.taglineText}>{service.short_tagline}</Text>
+          {category ? (
+            <View style={styles.categoryPill}>
+              <Text style={styles.categoryPillText}>{category.name}</Text>
             </View>
           ) : null}
 
           <Text style={styles.serviceTitle}>{service.name}</Text>
 
           {service.description ? (
-            <Text style={styles.serviceShortDesc}>
-              {service.description}
-            </Text>
+            <Text style={styles.serviceShortDesc}>{service.description}</Text>
           ) : null}
 
-          {/* RATING & DURATION BADGES (Real data only) */}
+          {/* RATING & DURATION BADGES */}
           <View style={styles.badgeRow}>
             {hasRealRating ? (
               <View style={styles.metricBadge}>
-                <Star size={13} color='#1E242B' fill='#1E242B' />
-                <Text style={styles.metricBoldText}>{service.rating.toFixed(1)}</Text>
-                {service.reviews_count ? (
-                  <Text style={styles.metricDimText}>({service.reviews_count} reviews)</Text>
+                <Star size={13} color="#F59E0B" fill="#F59E0B" />
+                <Text style={styles.metricBoldText}>
+                  {ratingSummary.averageRating.toFixed(1)}
+                </Text>
+                {ratingSummary.reviewsCount > 0 ? (
+                  <Text style={styles.metricDimText}>
+                    ({ratingSummary.reviewsCount} reviews)
+                  </Text>
                 ) : null}
               </View>
-            ) : null}
-
-            {hasRealDuration ? (
+            ) : (
               <View style={styles.metricBadge}>
-                <Clock size={13} color="#555555" strokeWidth={2} />
-                <Text style={styles.metricNormalText}>{service.duration_minutes} mins</Text>
+                <Text style={styles.newBadgeText}>No reviews yet</Text>
               </View>
-            ) : null}
+            )}
+
+            <View style={styles.metricBadge}>
+              <Clock size={13} color="#555555" strokeWidth={2} />
+              <Text style={styles.metricNormalText}>{calculatedDuration} mins</Text>
+            </View>
           </View>
         </View>
 
-        {/* ACTIVE LOCATION & SERVICEABILITY STATUS BADGE */}
+        {/* ACTIVE LOCATION & SERVICEABILITY BANNER */}
         <View
           style={[
             styles.serviceabilityBanner,
@@ -214,7 +273,7 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({
             {isAvailable ? (
               <MapPin size={16} color="#059669" strokeWidth={2.2} />
             ) : (
-              <AlertTriangle size={16} color="#d97706" strokeWidth={2.2} />
+              <AlertTriangle size={16} color="#D97706" strokeWidth={2.2} />
             )}
           </View>
           <View style={styles.serviceabilityTextBox}>
@@ -224,7 +283,7 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({
                 !isAvailable && styles.serviceabilityStatusTitleWarning,
               ]}
             >
-              {isAvailable ? 'Available in your area' : 'Currently unavailable in this area'}
+              {isAvailable ? 'Available at your location' : 'Currently unavailable in this zone'}
             </Text>
             <Text style={styles.serviceabilityAddressSub} numberOfLines={1}>
               {activeLocation.shortAddress}
@@ -232,57 +291,157 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({
           </View>
         </View>
 
-        {/* SERVENTICA PROMISE STRIP */}
+        {/* SELECTABLE PACKAGES / VARIANTS */}
+        {variants && variants.length > 0 ? (
+          <View style={styles.sectionContainer}>
+            <Text style={styles.sectionHeading}>Select Package</Text>
+            <Text style={styles.sectionSubheading}>
+              Choose the option that fits your home requirement
+            </Text>
+            <View style={styles.variantsList}>
+              {variants.map((variant) => {
+                const isSelected = selectedVariant?.id === variant.id;
+                return (
+                  <TouchableOpacity
+                    key={variant.id}
+                    style={[
+                      styles.variantCard,
+                      isSelected && styles.variantCardSelected,
+                    ]}
+                    activeOpacity={0.85}
+                    onPress={() => setSelectedVariant(variant)}
+                  >
+                    <View style={styles.variantTopRow}>
+                      <View style={styles.variantLeft}>
+                        <View
+                          style={[
+                            styles.radioCircle,
+                            isSelected && styles.radioCircleSelected,
+                          ]}
+                        >
+                          {isSelected ? <View style={styles.radioDot} /> : null}
+                        </View>
+                        <Text style={styles.variantName}>{variant.name}</Text>
+                      </View>
+                      <Text style={styles.variantPrice}>₹{variant.price}</Text>
+                    </View>
+
+                    {variant.description ? (
+                      <Text style={styles.variantDescription}>
+                        {variant.description}
+                      </Text>
+                    ) : null}
+
+                    <View style={styles.variantMetaRow}>
+                      <Clock size={11} color="#64748B" strokeWidth={1.8} />
+                      <Text style={styles.variantDuration}>
+                        {variant.duration_minutes} mins
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        ) : null}
+
+        {/* SERVENTICA ASSURANCE */}
         <View style={styles.promiseCard}>
-          <ShieldCheck size={18} color="#059669" strokeWidth={2} />
+          <ShieldCheck size={20} color="#059669" strokeWidth={2} />
           <View style={styles.promiseContent}>
             <Text style={styles.promiseHeading}>Serventica Assured</Text>
             <Text style={styles.promiseSubtitle}>
-              Background verified technicians · Transparent upfront pricing · Post-service warranty
+              Background verified professionals · 100% upfront pricing · 30-day post-service warranty
             </Text>
           </View>
         </View>
 
         {/* WHAT'S INCLUDED */}
-        {service.included_items && service.included_items.length > 0 ? (
+        {inclusions && inclusions.length > 0 ? (
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionHeading}>What's included</Text>
             <View style={styles.itemsList}>
-              {service.included_items.map((item, index) => (
-                <View key={`inc_${index}`} style={styles.itemRow}>
+              {inclusions.map((item) => (
+                <View key={item.id} style={styles.itemRow}>
                   <CheckCircle2 size={16} color="#059669" strokeWidth={2} style={styles.itemIcon} />
-                  <Text style={styles.itemText}>{item}</Text>
+                  <View style={styles.itemTextCol}>
+                    <Text style={styles.itemText}>{item.title}</Text>
+                    {item.description ? (
+                      <Text style={styles.itemSubtext}>{item.description}</Text>
+                    ) : null}
+                  </View>
                 </View>
               ))}
             </View>
           </View>
         ) : null}
 
-        {/* WHAT'S NOT INCLUDED */}
-        {service.excluded_items && service.excluded_items.length > 0 ? (
+        {/* WHAT'S EXCLUDED */}
+        {exclusions && exclusions.length > 0 ? (
           <View style={styles.sectionContainer}>
-            <Text style={styles.sectionHeading}>What's excluded</Text>
+            <Text style={styles.sectionHeading}>What's not included</Text>
             <View style={styles.itemsList}>
-              {service.excluded_items.map((item, index) => (
-                <View key={`exc_${index}`} style={styles.itemRow}>
-                  <XCircle size={16} color="#9ca3af" strokeWidth={1.8} style={styles.itemIcon} />
-                  <Text style={styles.itemTextDim}>{item}</Text>
+              {exclusions.map((item) => (
+                <View key={item.id} style={styles.itemRow}>
+                  <XCircle size={16} color="#94A3B8" strokeWidth={1.8} style={styles.itemIcon} />
+                  <View style={styles.itemTextCol}>
+                    <Text style={styles.itemTextDim}>{item.title}</Text>
+                    {item.description ? (
+                      <Text style={styles.itemSubtextDim}>{item.description}</Text>
+                    ) : null}
+                  </View>
                 </View>
               ))}
+            </View>
+          </View>
+        ) : null}
+
+        {/* FREQUENTLY ASKED QUESTIONS */}
+        {faqs && faqs.length > 0 ? (
+          <View style={styles.sectionContainer}>
+            <Text style={styles.sectionHeading}>Frequently Asked Questions</Text>
+            <View style={styles.faqList}>
+              {faqs.map((faq) => {
+                const isExpanded = expandedFaqId === faq.id;
+                return (
+                  <TouchableOpacity
+                    key={faq.id}
+                    style={styles.faqCard}
+                    activeOpacity={0.8}
+                    onPress={() =>
+                      setExpandedFaqId(isExpanded ? null : faq.id)
+                    }
+                  >
+                    <View style={styles.faqQuestionRow}>
+                      <Text style={styles.faqQuestionText}>{faq.question}</Text>
+                      {isExpanded ? (
+                        <ChevronUp size={16} color="#1E242B" />
+                      ) : (
+                        <ChevronDown size={16} color="#64748B" />
+                      )}
+                    </View>
+                    {isExpanded ? (
+                      <Text style={styles.faqAnswerText}>{faq.answer}</Text>
+                    ) : null}
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
         ) : null}
       </ScrollView>
 
-      {/* FIXED BOTTOM CTA BAR */}
+      {/* FIXED BOTTOM STICKY CTA BAR */}
       <View style={styles.bottomBar}>
         <View style={styles.priceContainer}>
           {hasRealPrice ? (
             <>
-              <Text style={styles.bottomPriceLabel}>Starting from</Text>
+              <Text style={styles.bottomPriceLabel}>
+                {selectedVariant ? 'Selected Package' : 'Starting from'}
+              </Text>
               <View style={styles.bottomPriceRow}>
                 <Text style={styles.bottomPriceCurrency}>₹</Text>
-                <Text style={styles.bottomPriceValue}>{service.base_price}</Text>
+                <Text style={styles.bottomPriceValue}>{calculatedPrice}</Text>
               </View>
             </>
           ) : (
@@ -291,22 +450,15 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({
         </View>
 
         <TouchableOpacity
-          style={[
-            styles.ctaButton,
-            !isAvailable && styles.ctaButtonDisabled,
-          ]}
-          onPress={handleContinue}
+          style={[styles.ctaButton, !isAvailable && styles.ctaButtonDisabled]}
+          onPress={handleBookNow}
           activeOpacity={0.85}
           accessibilityRole="button"
-          accessibilityLabel={isAvailable ? `Book ${service.name}` : 'Service unavailable'}
-          disabled={!isAvailable}
+          accessibilityLabel="Book Now"
         >
           <Text style={styles.ctaButtonText}>
-            {isAvailable ? 'Continue' : 'Unavailable'}
+            {hasRealPrice ? `Book for ₹${calculatedPrice}` : 'Book Now'}
           </Text>
-          {isAvailable ? (
-            <ChevronRight size={16} color="#FFFFFF" strokeWidth={2.4} />
-          ) : null}
         </TouchableOpacity>
       </View>
     </View>
@@ -316,86 +468,46 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({
 const styles = StyleSheet.create({
   rootContainer: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#F8FAFC',
   },
   stateContainer: {
     flex: 1,
-    backgroundColor: '#ffffff',
-  },
-  topBackHeader: {
-    paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 8 : 14,
-    paddingBottom: 10,
-  },
-  centerContent: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  loadingText: {
-    fontSize: 13,
-    fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#666666',
-    marginTop: 12,
-    letterSpacing: -0.1,
-  },
-  errorTitle: {
-    fontSize: 16,
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#1E242B',
-    marginBottom: 6,
-  },
-  errorSubtitle: {
-    fontSize: 13,
-    fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#777777',
-    textAlign: 'center',
-    marginBottom: 16,
-    letterSpacing: -0.1,
-  },
-  retryButton: {
-    backgroundColor: '#1E242B',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-  },
-  retryButtonText: {
-    color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '600',
-    fontFamily: ServenticaTokens.fonts.Medium,
-    letterSpacing: -0.1,
+    backgroundColor: '#F8FAFC',
   },
   headerBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 8 : 12,
+    paddingTop: 12,
     paddingBottom: 12,
+    backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0ed',
-    backgroundColor: '#ffffff',
+    borderBottomColor: 'rgba(0,0,0,0.05)',
   },
   circleBackButton: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: '#f5f5f4',
-    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  circleSaveButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#F3F4F6',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerBarTitle: {
-    flex: 1,
     fontSize: 16,
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
+    fontWeight: '700',
     color: '#1E242B',
+    flex: 1,
     textAlign: 'center',
-    paddingHorizontal: 10,
-  },
-  headerSpacer: {
-    width: 38,
+    marginHorizontal: 12,
   },
   scrollView: {
     flex: 1,
@@ -406,59 +518,53 @@ const styles = StyleSheet.create({
   heroImageContainer: {
     width: '100%',
     height: 220,
-    backgroundColor: '#f8f8f7',
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: '#ebebe8',
+    borderBottomColor: 'rgba(0,0,0,0.04)',
   },
   heroImage: {
-    width: '75%',
-    height: '85%',
+    width: '80%',
+    height: 190,
   },
   heroPlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#e7e7e5',
     justifyContent: 'center',
     alignItems: 'center',
   },
   mainInfoBlock: {
-    paddingHorizontal: 16,
-    paddingTop: 18,
-    paddingBottom: 14,
+    padding: 16,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.05)',
   },
-  taglinePill: {
+  categoryPill: {
     alignSelf: 'flex-start',
-    backgroundColor: '#f4f4f3',
-    paddingHorizontal: 8,
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 10,
     paddingVertical: 3,
-    borderRadius: 4,
+    borderRadius: 6,
     marginBottom: 8,
   },
-  taglineText: {
-    fontSize: 10.5,
-    fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#444444',
-    fontWeight: '600',
+  categoryPillText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#475569',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   serviceTitle: {
     fontSize: 22,
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
+    fontWeight: '800',
     color: '#1E242B',
-    lineHeight: 26,
-    marginBottom: 8,
+    lineHeight: 28,
+    marginBottom: 6,
   },
   serviceShortDesc: {
-    fontSize: 13.5,
-    fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#666666',
+    fontSize: 13,
+    color: '#64748B',
     lineHeight: 19,
     marginBottom: 12,
-    letterSpacing: -0.1,
   },
   badgeRow: {
     flexDirection: 'row',
@@ -468,169 +574,280 @@ const styles = StyleSheet.create({
   metricBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f7f7f6',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 8,
     gap: 4,
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.06)',
   },
   metricBoldText: {
-    fontSize: 12.5,
+    fontSize: 12,
     fontWeight: '700',
     color: '#1E242B',
-    fontFamily: ServenticaTokens.fonts.Regular,
-    letterSpacing: -0.1,
   },
   metricDimText: {
     fontSize: 11,
-    color: '#777777',
-    fontFamily: ServenticaTokens.fonts.Regular,
-    letterSpacing: -0.1,
+    color: '#64748B',
   },
   metricNormalText: {
     fontSize: 12,
-    color: '#444444',
-    fontFamily: ServenticaTokens.fonts.Regular,
-    fontWeight: '500',
-    letterSpacing: -0.1,
+    color: '#1E242B',
+    fontWeight: '600',
+  },
+  newBadgeText: {
+    fontSize: 11,
+    color: '#64748B',
+    fontWeight: '600',
   },
   serviceabilityBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ecfdf5',
+    backgroundColor: '#ECFDF5',
     marginHorizontal: 16,
-    marginBottom: 16,
+    marginTop: 14,
     padding: 12,
-    borderRadius: 12,
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#d1fae5',
+    borderColor: '#D1FAE5',
+    gap: 10,
   },
   serviceabilityBannerWarning: {
-    backgroundColor: '#fffbeb',
-    borderColor: '#fef3c7',
+    backgroundColor: '#FFFBEB',
+    borderColor: '#FEF3C7',
   },
   serviceabilityIconBox: {
-    marginRight: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   serviceabilityTextBox: {
     flex: 1,
   },
   serviceabilityStatusTitle: {
-    fontSize: 12.5,
-    fontFamily: ServenticaTokens.fonts.Regular,
+    fontSize: 12,
     fontWeight: '700',
-    color: '#065f46',
-    letterSpacing: -0.1,
+    color: '#065F46',
   },
   serviceabilityStatusTitleWarning: {
-    color: '#b45309',
+    color: '#B45309',
   },
   serviceabilityAddressSub: {
-    fontSize: 11.5,
-    fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#4b5563',
+    fontSize: 11,
+    color: '#64748B',
     marginTop: 1,
-    letterSpacing: -0.1,
+  },
+  sectionContainer: {
+    marginTop: 16,
+    paddingHorizontal: 16,
+  },
+  sectionHeading: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#1E242B',
+  },
+  sectionSubheading: {
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 2,
+    marginBottom: 10,
+  },
+  variantsList: {
+    gap: 10,
+  },
+  variantCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: 'rgba(0,0,0,0.06)',
+  },
+  variantCardSelected: {
+    borderColor: '#1E242B',
+    backgroundColor: '#F8FAFC',
+  },
+  variantTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  variantLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  radioCircle: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 2,
+    borderColor: '#94A3B8',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  radioCircleSelected: {
+    borderColor: '#1E242B',
+  },
+  radioDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#1E242B',
+  },
+  variantName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1E242B',
+    flex: 1,
+  },
+  variantPrice: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#1E242B',
+  },
+  variantDescription: {
+    fontSize: 12,
+    color: '#64748B',
+    lineHeight: 16,
+    marginLeft: 26,
+    marginTop: 2,
+    marginBottom: 6,
+  },
+  variantMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginLeft: 26,
+  },
+  variantDuration: {
+    fontSize: 11,
+    color: '#64748B',
+    fontWeight: '600',
   },
   promiseCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#FFFFFF',
     marginHorizontal: 16,
-    marginBottom: 20,
-    padding: 12,
+    marginTop: 16,
+    padding: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e7e7e5',
+    borderColor: 'rgba(0,0,0,0.06)',
+    gap: 12,
   },
   promiseContent: {
-    marginLeft: 10,
     flex: 1,
   },
   promiseHeading: {
-    fontSize: 12.5,
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
+    fontSize: 13,
+    fontWeight: '800',
     color: '#1E242B',
-    marginBottom: 2,
   },
   promiseSubtitle: {
     fontSize: 11,
-    fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#666666',
+    color: '#64748B',
     lineHeight: 15,
-    letterSpacing: -0.1,
-  },
-  sectionContainer: {
-    paddingHorizontal: 16,
-    marginBottom: 22,
-  },
-  sectionHeading: {
-    fontSize: 15,
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
-    color: '#1E242B',
-    marginBottom: 12,
+    marginTop: 2,
   },
   itemsList: {
-    backgroundColor: '#fafaf9',
-    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 14,
+    marginTop: 8,
     borderWidth: 1,
-    borderColor: '#ededeb',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    borderColor: 'rgba(0,0,0,0.06)',
+    gap: 10,
   },
   itemRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    paddingVertical: 7,
+    gap: 10,
   },
   itemIcon: {
-    marginRight: 10,
     marginTop: 2,
   },
-  itemText: {
+  itemTextCol: {
     flex: 1,
-    fontSize: 12.5,
-    fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#222222',
+  },
+  itemText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1E242B',
     lineHeight: 18,
-    letterSpacing: -0.1,
+  },
+  itemSubtext: {
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: 2,
   },
   itemTextDim: {
-    flex: 1,
-    fontSize: 12.5,
-    fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#777777',
+    fontSize: 13,
+    color: '#64748B',
     lineHeight: 18,
-    letterSpacing: -0.1,
+  },
+  itemSubtextDim: {
+    fontSize: 11,
+    color: '#94A3B8',
+    marginTop: 2,
+  },
+  faqList: {
+    marginTop: 8,
+    gap: 8,
+  },
+  faqCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.06)',
+  },
+  faqQuestionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 8,
+  },
+  faqQuestionText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#1E242B',
+    flex: 1,
+  },
+  faqAnswerText: {
+    fontSize: 12,
+    color: '#64748B',
+    lineHeight: 18,
+    marginTop: 8,
   },
   bottomBar: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
+    backgroundColor: '#FFFFFF',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingTop: 12,
-    paddingBottom: Platform.OS === 'android' ? 16 : 30,
+    paddingBottom: 24,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0ed',
-    shadowColor: '#1E242B',
+    borderTopColor: 'rgba(0,0,0,0.06)',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
-    elevation: 8,
+    elevation: 6,
   },
   priceContainer: {
     justifyContent: 'center',
   },
   bottomPriceLabel: {
     fontSize: 11,
-    fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#777777',
-    letterSpacing: -0.1,
+    color: '#64748B',
   },
   bottomPriceRow: {
     flexDirection: 'row',
@@ -640,35 +857,59 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     color: '#1E242B',
-    fontFamily: ServenticaTokens.fonts.Regular,
   },
   bottomPriceValue: {
     fontSize: 20,
     fontWeight: '800',
     color: '#1E242B',
-    marginLeft: 2,
-    fontFamily: ServenticaTokens.fonts.Regular,
-    letterSpacing: -0.2,
   },
   ctaButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
     backgroundColor: '#1E242B',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 24,
-    minHeight: 46,
-    gap: 4,
+    paddingHorizontal: 28,
+    paddingVertical: 14,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   ctaButtonDisabled: {
-    backgroundColor: '#9ca3af',
+    backgroundColor: '#94A3B8',
   },
   ctaButtonText: {
-    fontSize: 14,
-    fontFamily: ServenticaTokens.fonts.Medium,
-    color: '#ffffff',
-    fontWeight: '600',
-    letterSpacing: -0.1,
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  centerContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+  },
+  errorTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#1E242B',
+    marginTop: 12,
+  },
+  errorSubtitle: {
+    fontSize: 13,
+    color: '#64748B',
+    textAlign: 'center',
+    marginTop: 4,
+    marginBottom: 16,
+  },
+  retryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#1E242B',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 13,
   },
 });

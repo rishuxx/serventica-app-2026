@@ -708,6 +708,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         onProceedToBooking={(bookingData) => {
           console.log('[Serventica Quick Booking Submitted]:', bookingData);
         }}
+        onSelectService={(service) => {
+          setActiveServiceTarget({
+            id: service.id,
+            slug: service.slug || '',
+            fromCategory: false,
+          });
+        }}
       />
 
       {/* 8. BOTTOM NAVIGATION */}

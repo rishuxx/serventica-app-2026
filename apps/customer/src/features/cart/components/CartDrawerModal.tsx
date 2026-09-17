@@ -41,6 +41,7 @@ import { paymentService, PaymentTransactionResult } from '../../../services/paym
 
 interface CartDrawerModalProps {
   onProceedToBooking?: (bookingData: any) => void;
+  onSelectService?: (service: { id: string; slug?: string; name?: string }) => void;
 }
 
 export type PaymentMethodKey =
@@ -164,7 +165,7 @@ const PERIOD_SLOTS: Record<TimePeriod, string[]> = {
   EVENING: ['04:30 PM', '05:00 PM', '05:30 PM', '06:00 PM', '06:30 PM', '07:00 PM', '07:30 PM', '08:00 PM'],
 };
 
-export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBooking }) => {
+export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBooking, onSelectService }) => {
   const {
     items,
     itemCount,
@@ -338,17 +339,24 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
           ) : (
             <>
               <ScrollView style={styles.scrollList} showsVerticalScrollIndicator={false}>
-                {/* 1. Address & Contact Pill Bar (Minimalist Neutral) */}
+                {/* 1. Location & Booking Summary Pill Card */}
                 <View style={styles.contactBar}>
                   <View style={styles.contactItem}>
-                    <MapPin size={14} color="#1E242B" strokeWidth={2.2} />
+                    <MapPin size={14} color="#64748B" />
                     <View style={styles.contactTextCol}>
                       <Text style={styles.contactLabel}>SERVICE LOCATION</Text>
                       <Text style={styles.contactValue} numberOfLines={1}>
-                        {activeLocation.shortAddress || activeLocation.city || 'Outer Circle, New Delhi'}
+                        {activeLocation?.shortAddress || activeLocation?.city || 'Outer Circle, New Delhi'}
                       </Text>
                     </View>
-                    <TouchableOpacity onPress={() => { closeCartDrawer(); openSelectLocation(); }}>
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={() => {
+                        closeCartDrawer();
+                        openSelectLocation();
+                      }}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
                       <Text style={styles.changeLink}>Change</Text>
                     </TouchableOpacity>
                   </View>
@@ -356,7 +364,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                   <View style={styles.contactDivider} />
 
                   <View style={styles.contactItem}>
-                    <Phone size={13} color="#1E242B" strokeWidth={2.2} />
+                    <Phone size={14} color="#64748B" />
                     <View style={styles.contactTextCol}>
                       <Text style={styles.contactLabel}>BOOKING FOR</Text>
                       <Text style={styles.contactValue} numberOfLines={1}>
@@ -370,7 +378,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                 <View style={styles.sectionBlock}>
                   <View style={styles.sectionTitleRow}>
                     <Text style={styles.sectionLabel}>SELECTED SERVICES</Text>
-                    <TouchableOpacity onPress={clearCart}>
+                    <TouchableOpacity onPress={clearCart} activeOpacity={0.7}>
                       <Text style={styles.clearText}>Clear all</Text>
                     </TouchableOpacity>
                   </View>
@@ -387,24 +395,40 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                     return (
                       <View key={item.serviceId}>
                         <View style={styles.serviceItemCard}>
-                          {/* Service Image */}
-                          <View style={styles.itemImageWrapper}>
-                            {imgSource ? (
-                              <Image source={imgSource} style={styles.itemThumb} resizeMode="contain" />
-                            ) : (
-                              <View style={styles.itemFallbackThumb}>
-                                <Sparkles size={16} color="#64748B" />
-                              </View>
-                            )}
-                          </View>
+                          {/* Service Image & Details - Tapping navigates to Service Detail Screen */}
+                          <TouchableOpacity
+                            style={styles.itemInfoTouchable}
+                            activeOpacity={0.7}
+                            onPress={() => {
+                              closeCartDrawer();
+                              onSelectService?.({
+                                id: item.serviceId,
+                                slug: item.slug,
+                                name: item.name,
+                              });
+                            }}
+                            accessibilityRole="button"
+                            accessibilityLabel={`View ${item.name} details`}
+                          >
+                            {/* Service Image */}
+                            <View style={styles.itemImageWrapper}>
+                              {imgSource ? (
+                                <Image source={imgSource} style={styles.itemThumb} resizeMode="contain" />
+                              ) : (
+                                <View style={styles.itemFallbackThumb}>
+                                  <Sparkles size={16} color="#64748B" />
+                                </View>
+                              )}
+                            </View>
 
-                          {/* Service Details */}
-                          <View style={styles.itemDetailsCol}>
-                            <Text style={styles.itemName}>{item.name}</Text>
-                            <Text style={styles.itemPriceMeta}>
-                              ₹{item.basePrice} <Text style={styles.itemDurationMeta}>• {item.durationMinutes} mins</Text>
-                            </Text>
-                          </View>
+                            {/* Service Details */}
+                            <View style={styles.itemDetailsCol}>
+                              <Text style={styles.itemName}>{item.name}</Text>
+                              <Text style={styles.itemPriceMeta}>
+                                ₹{item.basePrice} <Text style={styles.itemDurationMeta}>• {item.durationMinutes} mins</Text>
+                              </Text>
+                            </View>
+                          </TouchableOpacity>
 
                           {/* Stepper Buttons (Clean Neutral Pill) */}
                           <View style={styles.stepperPill}>
@@ -956,6 +980,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 8,
+  },
+  itemInfoTouchable: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   itemImageWrapper: {
     width: 44,
