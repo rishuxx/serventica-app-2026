@@ -21,9 +21,10 @@ import {
   CheckCircle2,
   MapPin,
   Phone,
-  User as UserIcon,
-  ChevronRight,
   Sparkles,
+  Sun,
+  Sunset,
+  Moon,
 } from 'lucide-react-native';
 import { useCart } from '../context/CartContext';
 import { useLocation } from '../../../context/LocationContext';
@@ -36,40 +37,48 @@ interface CartDrawerModalProps {
   onProceedToBooking?: (bookingData: any) => void;
 }
 
-// Generate next 6 days dynamically from today
+// 1. Service Duration options (matching production screenshot reference)
+const SERVICE_DURATIONS = [
+  { id: '0.5hr', durationLabel: '0.5 hr', priceMultiplier: 1 },
+  { id: '1hr', durationLabel: '1 hr', priceMultiplier: 1.8 },
+  { id: '1.5hr', durationLabel: '1.5 hr', priceMultiplier: 2.5 },
+  { id: '2hr', durationLabel: '2 hr', priceMultiplier: 3.2 },
+];
+
+// 2. Generate next 6 days dynamically from today
 const getAvailableBookingDays = () => {
-  const days: { key: string; label: string; dateStr: string; dayName: string }[] = [];
+  const days: { key: string; dayLabel: string; subLabel: string; dateNumber: number; monthName: string }[] = [];
   const today = new Date();
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
   for (let i = 0; i < 6; i++) {
     const d = new Date(today);
     d.setDate(today.getDate() + i);
 
-    let label = '';
-    if (i === 0) label = 'Today';
-    else if (i === 1) label = 'Tomorrow';
-    else label = `${dayNames[d.getDay()]}, ${d.getDate()} ${monthNames[d.getMonth()]}`;
+    let subLabel = dayNames[d.getDay()];
+    if (i === 0) subLabel = 'TODAY';
+    else if (i === 1) subLabel = 'TOM';
 
     days.push({
       key: d.toISOString().split('T')[0],
-      label,
-      dateStr: `${d.getDate()} ${monthNames[d.getMonth()]}`,
-      dayName: dayNames[d.getDay()],
+      dayLabel: `${d.getDate()} ${monthNames[d.getMonth()]}`,
+      subLabel,
+      dateNumber: d.getDate(),
+      monthName: monthNames[d.getMonth()],
     });
   }
   return days;
 };
 
-// Available realistic slot windows for Home Services
-const SCHEDULE_TIME_SLOTS = [
-  { id: 'morning_1', time: '09:00 AM - 11:00 AM', label: 'Morning Slot' },
-  { id: 'morning_2', time: '11:00 AM - 01:00 PM', label: 'Mid-Day Slot' },
-  { id: 'afternoon_1', time: '02:00 PM - 04:00 PM', label: 'Afternoon Slot' },
-  { id: 'evening_1', time: '05:00 PM - 07:00 PM', label: 'Evening Prime' },
-  { id: 'evening_2', time: '07:00 PM - 09:00 PM', label: 'Night Slot' },
-];
+// 3. Time of Day periods
+type TimePeriod = 'MORNING' | 'AFTERNOON' | 'EVENING';
+
+const PERIOD_SLOTS: Record<TimePeriod, string[]> = {
+  MORNING: ['07:30 AM', '08:00 AM', '08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM'],
+  AFTERNOON: ['12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM'],
+  EVENING: ['04:30 PM', '05:00 PM', '05:30 PM', '06:00 PM', '06:30 PM', '07:00 PM', '07:30 PM', '08:00 PM'],
+};
 
 export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBooking }) => {
   const {
@@ -86,21 +95,22 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
   const { user, profile } = useAuth();
 
   const [bookingMode, setBookingMode] = useState<'EXPRESS' | 'SCHEDULED'>('EXPRESS');
+  const [selectedDurationId, setSelectedDurationId] = useState<string>('1hr');
   const availableDays = useMemo(() => getAvailableBookingDays(), []);
   const [selectedDayKey, setSelectedDayKey] = useState<string>(availableDays[0].key);
-  const [selectedSlotId, setSelectedSlotId] = useState<string>(SCHEDULE_TIME_SLOTS[0].id);
+  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('MORNING');
+  const [selectedSlotTime, setSelectedSlotTime] = useState<string>('09:00 AM');
   const [isSuccessBooked, setIsSuccessBooked] = useState<boolean>(false);
 
   const itemList = Object.values(items);
 
-  // Customer Contact Fallback Info
+  // Customer Contact Info
   const customerName = profile
     ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Verified Customer'
     : 'Verified Customer';
   const customerPhone = user?.phone || '+91 98765 43210';
 
   const selectedDayObj = availableDays.find((d) => d.key === selectedDayKey) || availableDays[0];
-  const selectedSlotObj = SCHEDULE_TIME_SLOTS.find((s) => s.id === selectedSlotId) || SCHEDULE_TIME_SLOTS[0];
 
   const handleCheckout = () => {
     setIsSuccessBooked(true);
@@ -112,8 +122,9 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
         items: itemList,
         fees,
         bookingMode,
-        scheduleDate: bookingMode === 'SCHEDULED' ? selectedDayObj.label : 'Instant Dispatch',
-        scheduleSlot: bookingMode === 'SCHEDULED' ? selectedSlotObj.time : 'Express 20-Min Slot',
+        duration: selectedDurationId,
+        scheduleDate: bookingMode === 'SCHEDULED' ? selectedDayObj.dayLabel : 'Instant Dispatch',
+        scheduleSlot: bookingMode === 'SCHEDULED' ? `${selectedPeriod} (${selectedSlotTime})` : 'Express 20-Min Slot',
         location: activeLocation,
         customer: { name: customerName, phone: customerPhone },
       });
@@ -147,13 +158,13 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
           {isSuccessBooked ? (
             <View style={styles.successState}>
               <View style={styles.successIconCircle}>
-                <CheckCircle2 size={44} color="#10B981" strokeWidth={2.2} />
+                <CheckCircle2 size={44} color="#0D9488" strokeWidth={2.2} />
               </View>
               <Text style={styles.successTitle}>Booking Confirmed!</Text>
               <Text style={styles.successDesc}>
                 {bookingMode === 'EXPRESS'
                   ? 'Your verified professional is dispatched and arriving in ~20 mins.'
-                  : `Your appointment is scheduled for ${selectedDayObj.label} (${selectedSlotObj.time}).`}
+                  : `Your appointment is scheduled for ${selectedDayObj.dayLabel} at ${selectedSlotTime}.`}
               </Text>
             </View>
           ) : (
@@ -162,9 +173,9 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                 {/* 1. Address & Contact Pill Bar */}
                 <View style={styles.contactBar}>
                   <View style={styles.contactItem}>
-                    <MapPin size={14} color="#1E242B" strokeWidth={2.2} />
+                    <MapPin size={14} color="#0F766E" strokeWidth={2.2} />
                     <View style={styles.contactTextCol}>
-                      <Text style={styles.contactLabel}>Service Location</Text>
+                      <Text style={styles.contactLabel}>SERVICE LOCATION</Text>
                       <Text style={styles.contactValue} numberOfLines={1}>
                         {activeLocation.shortAddress || activeLocation.city || 'Your selected address'}
                       </Text>
@@ -177,9 +188,9 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                   <View style={styles.contactDivider} />
 
                   <View style={styles.contactItem}>
-                    <Phone size={13} color="#1E242B" strokeWidth={2.2} />
+                    <Phone size={13} color="#0F766E" strokeWidth={2.2} />
                     <View style={styles.contactTextCol}>
-                      <Text style={styles.contactLabel}>Booking For</Text>
+                      <Text style={styles.contactLabel}>BOOKING FOR</Text>
                       <Text style={styles.contactValue} numberOfLines={1}>
                         {customerName} • {customerPhone}
                       </Text>
@@ -187,7 +198,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                   </View>
                 </View>
 
-                {/* 2. Selected Services with Visual Images */}
+                {/* 2. Selected Services List */}
                 <View style={styles.sectionBlock}>
                   <View style={styles.sectionTitleRow}>
                     <Text style={styles.sectionLabel}>SELECTED SERVICES</Text>
@@ -214,7 +225,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                               <Image source={imgSource} style={styles.itemThumb} resizeMode="contain" />
                             ) : (
                               <View style={styles.itemFallbackThumb}>
-                                <Sparkles size={16} color="#94A3B8" />
+                                <Sparkles size={16} color="#0D9488" />
                               </View>
                             )}
                           </View>
@@ -227,14 +238,14 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                             </Text>
                           </View>
 
-                          {/* Stepper Buttons */}
+                          {/* Stepper Buttons (Very Light Sky Teal Blue) */}
                           <View style={styles.stepperPill}>
                             <TouchableOpacity
                               style={styles.stepperActionBtn}
                               onPress={() => removeItem(item.serviceId)}
                               activeOpacity={0.7}
                             >
-                              <Minus size={12} color="#1E242B" strokeWidth={2.6} />
+                              <Minus size={12} color="#0F766E" strokeWidth={2.8} />
                             </TouchableOpacity>
                             <Text style={styles.stepperValue}>{item.quantity}</Text>
                             <TouchableOpacity
@@ -242,7 +253,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                               onPress={() => addItem(item as any)}
                               activeOpacity={0.7}
                             >
-                              <Plus size={12} color="#1E242B" strokeWidth={2.6} />
+                              <Plus size={12} color="#0F766E" strokeWidth={2.8} />
                             </TouchableOpacity>
                           </View>
                         </View>
@@ -252,7 +263,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                   })}
                 </View>
 
-                {/* 3. Slot Type Switcher: Express vs Schedule */}
+                {/* 3. Booking Mode Selector: Express vs Schedule */}
                 <View style={styles.sectionBlock}>
                   <Text style={styles.sectionLabel}>BOOKING TIME & MODE</Text>
                   <View style={styles.modeToggleRow}>
@@ -266,8 +277,8 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                     >
                       <Zap
                         size={15}
-                        color={bookingMode === 'EXPRESS' ? '#1E242B' : '#64748B'}
-                        fill={bookingMode === 'EXPRESS' ? '#FFCC00' : 'none'}
+                        color={bookingMode === 'EXPRESS' ? '#0F766E' : '#64748B'}
+                        fill={bookingMode === 'EXPRESS' ? '#14B8A6' : 'none'}
                       />
                       <Text
                         style={[
@@ -289,7 +300,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                     >
                       <Calendar
                         size={15}
-                        color={bookingMode === 'SCHEDULED' ? '#1E242B' : '#64748B'}
+                        color={bookingMode === 'SCHEDULED' ? '#0F766E' : '#64748B'}
                       />
                       <Text
                         style={[
@@ -302,14 +313,50 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                     </TouchableOpacity>
                   </View>
 
-                  {/* Dynamic Scheduler Options (when Scheduled mode is active) */}
+                  {/* Dynamic Scheduler Options (Identical to reference screenshot) */}
                   {bookingMode === 'SCHEDULED' && (
-                    <View style={styles.scheduleOptionsCard}>
-                      <Text style={styles.subOptionHeading}>1. SELECT DAY</Text>
+                    <View style={styles.schedulerContainer}>
+                      {/* 3.1 Service Duration Row */}
+                      <Text style={styles.subSectionTitle}>Service duration</Text>
                       <ScrollView
                         horizontal
                         showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={styles.daysScrollList}
+                        contentContainerStyle={styles.horizontalOptionsRow}
+                      >
+                        {SERVICE_DURATIONS.map((dur) => {
+                          const isSelected = selectedDurationId === dur.id;
+                          const calculatedPrice = Math.round((fees.itemTotal || 499) * (dur.priceMultiplier / 1.8));
+                          const strikePrice = Math.round(calculatedPrice * 1.6);
+                          return (
+                            <TouchableOpacity
+                              key={dur.id}
+                              style={[
+                                styles.durationCard,
+                                isSelected && styles.durationCardActive,
+                              ]}
+                              onPress={() => setSelectedDurationId(dur.id)}
+                              activeOpacity={0.75}
+                            >
+                              <Text style={[styles.durationTitle, isSelected && styles.durationTitleActive]}>
+                                {dur.durationLabel}
+                              </Text>
+                              <View style={styles.durationPriceRow}>
+                                <Text style={[styles.durationPriceText, isSelected && styles.durationPriceTextActive]}>
+                                  ₹{calculatedPrice}
+                                </Text>
+                                <Text style={styles.durationStrikeText}>₹{strikePrice}</Text>
+                              </View>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </ScrollView>
+
+                      {/* 3.2 Select Date Row */}
+                      <Text style={[styles.subSectionTitle, { marginTop: 16 }]}>Select date</Text>
+                      <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.horizontalOptionsRow}
                       >
                         {availableDays.map((d) => {
                           const isSelected = selectedDayKey === d.key;
@@ -317,50 +364,113 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                             <TouchableOpacity
                               key={d.key}
                               style={[
-                                styles.dayPillBtn,
-                                isSelected && styles.dayPillBtnActive,
+                                styles.dateCard,
+                                isSelected && styles.dateCardActive,
                               ]}
                               onPress={() => setSelectedDayKey(d.key)}
                               activeOpacity={0.75}
                             >
-                              <Text style={[styles.dayPillDay, isSelected && styles.dayPillTextActive]}>
-                                {d.label === 'Today' || d.label === 'Tomorrow' ? d.label : d.dayName}
+                              <Text style={[styles.dateCardDay, isSelected && styles.dateCardDayActive]}>
+                                {d.dayLabel}
                               </Text>
-                              <Text style={[styles.dayPillDate, isSelected && styles.dayPillTextActive]}>
-                                {d.dateStr}
+                              <Text style={[styles.dateCardSub, isSelected && styles.dateCardSubActive]}>
+                                {d.subLabel}
                               </Text>
                             </TouchableOpacity>
                           );
                         })}
                       </ScrollView>
 
-                      <Text style={[styles.subOptionHeading, { marginTop: 14 }]}>2. SELECT TIME SLOT</Text>
-                      <View style={styles.slotsGrid}>
-                        {SCHEDULE_TIME_SLOTS.map((slot) => {
-                          const isSelected = selectedSlotId === slot.id;
-                          return (
-                            <TouchableOpacity
-                              key={slot.id}
-                              style={[
-                                styles.slotChipBtn,
-                                isSelected && styles.slotChipBtnActive,
-                              ]}
-                              onPress={() => setSelectedSlotId(slot.id)}
-                              activeOpacity={0.75}
-                            >
-                              <Clock size={12} color={isSelected ? '#1E242B' : '#64748B'} />
-                              <Text
-                                style={[
-                                  styles.slotChipText,
-                                  isSelected && styles.slotChipTextActive,
-                                ]}
-                              >
-                                {slot.time}
-                              </Text>
-                            </TouchableOpacity>
-                          );
-                        })}
+                      {/* 3.3 Select Time of Day (Morning / Afternoon / Evening) */}
+                      <Text style={[styles.subSectionTitle, { marginTop: 16 }]}>Select time</Text>
+                      <View style={styles.periodPillBar}>
+                        <TouchableOpacity
+                          style={[
+                            styles.periodSegment,
+                            selectedPeriod === 'MORNING' && styles.periodSegmentActive,
+                          ]}
+                          onPress={() => {
+                            setSelectedPeriod('MORNING');
+                            setSelectedSlotTime(PERIOD_SLOTS.MORNING[0]);
+                          }}
+                          activeOpacity={0.8}
+                        >
+                          <Sun size={13} color={selectedPeriod === 'MORNING' ? '#FFFFFF' : '#475569'} />
+                          <Text style={[styles.periodText, selectedPeriod === 'MORNING' && styles.periodTextActive]}>
+                            Morning
+                          </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          style={[
+                            styles.periodSegment,
+                            selectedPeriod === 'AFTERNOON' && styles.periodSegmentActive,
+                          ]}
+                          onPress={() => {
+                            setSelectedPeriod('AFTERNOON');
+                            setSelectedSlotTime(PERIOD_SLOTS.AFTERNOON[0]);
+                          }}
+                          activeOpacity={0.8}
+                        >
+                          <Sunset size={13} color={selectedPeriod === 'AFTERNOON' ? '#FFFFFF' : '#475569'} />
+                          <Text style={[styles.periodText, selectedPeriod === 'AFTERNOON' && styles.periodTextActive]}>
+                            Afternoon
+                          </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          style={[
+                            styles.periodSegment,
+                            selectedPeriod === 'EVENING' && styles.periodSegmentActive,
+                          ]}
+                          onPress={() => {
+                            setSelectedPeriod('EVENING');
+                            setSelectedSlotTime(PERIOD_SLOTS.EVENING[0]);
+                          }}
+                          activeOpacity={0.8}
+                        >
+                          <Moon size={13} color={selectedPeriod === 'EVENING' ? '#FFFFFF' : '#475569'} />
+                          <Text style={[styles.periodText, selectedPeriod === 'EVENING' && styles.periodTextActive]}>
+                            Evening
+                          </Text>
+                        </TouchableOpacity>
                       </View>
+
+                      {/* 3.4 Standard Slots Card */}
+                      <View style={styles.slotsCardBox}>
+                        <Text style={styles.slotsBoxHeading}>Standard slots</Text>
+                        <View style={styles.slotsGridContainer}>
+                          {PERIOD_SLOTS[selectedPeriod].map((slot) => {
+                            const isSelected = selectedSlotTime === slot;
+                            return (
+                              <TouchableOpacity
+                                key={slot}
+                                style={[
+                                  styles.slotChipItem,
+                                  isSelected && styles.slotChipItemActive,
+                                ]}
+                                onPress={() => setSelectedSlotTime(slot)}
+                                activeOpacity={0.75}
+                              >
+                                <Text
+                                  style={[
+                                    styles.slotChipLabel,
+                                    isSelected && styles.slotChipLabelActive,
+                                  ]}
+                                >
+                                  {slot}
+                                </Text>
+                              </TouchableOpacity>
+                            );
+                          })}
+                        </View>
+                      </View>
+
+                      {/* Note */}
+                      <Text style={styles.schedulerNote}>
+                        <Text style={styles.schedulerNoteBold}>NOTE: </Text>
+                        Professionals arrive within 30 minutes of the selected slot.
+                      </Text>
                     </View>
                   )}
                 </View>
@@ -393,9 +503,9 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                   {/* Promo Discount if any */}
                   {fees.discountAmount > 0 ? (
                     <View style={styles.dottedBillRow}>
-                      <Text style={[styles.billLabel, styles.discountGreen]}>Special Promotion</Text>
+                      <Text style={[styles.billLabel, styles.discountTeal]}>Special Promotion</Text>
                       <View style={styles.dotFiller} />
-                      <Text style={[styles.billValue, styles.discountGreen]}>-₹{fees.discountAmount}</Text>
+                      <Text style={[styles.billValue, styles.discountTeal]}>-₹{fees.discountAmount}</Text>
                     </View>
                   ) : null}
 
@@ -410,14 +520,14 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
 
                 {/* Guarantee Banner */}
                 <View style={styles.trustBanner}>
-                  <ShieldCheck size={16} color="#059669" strokeWidth={2.2} />
+                  <ShieldCheck size={16} color="#0D9488" strokeWidth={2.2} />
                   <Text style={styles.trustBannerText}>
                     30-Day Service Guarantee • Serventica Verified Background Checked Pros
                   </Text>
                 </View>
               </ScrollView>
 
-              {/* Bottom Sticky Checkout Action */}
+              {/* Bottom Sticky Checkout Action (Very Light Sky Teal Blue Button) */}
               <View style={styles.footerRow}>
                 <View style={styles.footerPayCol}>
                   <Text style={styles.footerAmountLabel}>TOTAL PAYABLE</Text>
@@ -431,7 +541,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                   <Text style={styles.proceedButtonText}>
                     {bookingMode === 'EXPRESS' ? 'Book Express (20m)' : 'Confirm Booking'}
                   </Text>
-                  <ArrowRight size={15} color="#1E242B" strokeWidth={2.8} />
+                  <ArrowRight size={15} color="#0F766E" strokeWidth={2.8} />
                 </AnimatedTouchable>
               </View>
             </>
@@ -455,7 +565,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
-    maxHeight: '90%',
+    maxHeight: '92%',
     paddingBottom: Platform.OS === 'android' ? 18 : 32,
   },
   headerRow: {
@@ -471,7 +581,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontFamily: ServenticaTokens.fonts.SFProBold,
-    fontWeight: '800',
+    fontWeight: '700',
     color: '#1E242B',
     letterSpacing: -0.3,
   },
@@ -485,9 +595,9 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#F0FDFA',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#CCFBF1',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -496,12 +606,12 @@ const styles = StyleSheet.create({
     paddingTop: 14,
   },
   contactBar: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#F0FDFA', // Very light sky teal surface
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#CCFBF1',
     marginBottom: 16,
   },
   contactItem: {
@@ -516,7 +626,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontFamily: ServenticaTokens.fonts.SemiBold,
     fontWeight: '700',
-    color: '#64748B',
+    color: '#0D9488',
     textTransform: 'uppercase',
     letterSpacing: 0.4,
   },
@@ -524,18 +634,18 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     fontFamily: ServenticaTokens.fonts.SemiBold,
     fontWeight: '600',
-    color: '#1E242B',
+    color: '#134E4A',
     marginTop: 1,
   },
   changeLink: {
     fontSize: 12,
     fontFamily: ServenticaTokens.fonts.SemiBold,
     fontWeight: '700',
-    color: '#2563EB',
+    color: '#0F766E',
   },
   contactDivider: {
     height: 1,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: '#CCFBF1',
     marginVertical: 8,
   },
   sectionBlock: {
@@ -569,13 +679,13 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#F0FDFA',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#CCFBF1',
   },
   itemThumb: {
     width: '85%',
@@ -611,13 +721,13 @@ const styles = StyleSheet.create({
   stepperPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F1F5F9',
-    borderRadius: 16,
-    paddingHorizontal: 7,
-    paddingVertical: 4,
+    backgroundColor: '#F0FDFA', // Light sky teal
+    borderRadius: 18,
+    paddingHorizontal: 8,
+    paddingVertical: 4.5,
     gap: 9,
-    borderWidth: 1,
-    borderColor: '#CBD5E1',
+    borderWidth: 1.2,
+    borderColor: '#99F6E4',
   },
   stepperActionBtn: {
     padding: 2,
@@ -626,7 +736,7 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     fontFamily: ServenticaTokens.fonts.SemiBold,
     fontWeight: '700',
-    color: '#1E242B',
+    color: '#0F766E',
   },
   itemDivider: {
     height: 1,
@@ -651,8 +761,8 @@ const styles = StyleSheet.create({
     gap: 7,
   },
   modeTabActive: {
-    backgroundColor: '#FFFBEB',
-    borderColor: '#FFCC00',
+    backgroundColor: '#F0FDFA', // Light sky teal
+    borderColor: '#2DD4BF',
   },
   modeTabText: {
     fontSize: 13,
@@ -661,92 +771,189 @@ const styles = StyleSheet.create({
     color: '#475569',
   },
   modeTabTextActive: {
-    color: '#1E242B',
+    color: '#0F766E',
     fontWeight: '700',
   },
-  scheduleOptionsCard: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 22,
-    padding: 14,
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+  schedulerContainer: {
+    marginTop: 14,
   },
-  subOptionHeading: {
-    fontSize: 10,
+  subSectionTitle: {
+    fontSize: 13,
     fontFamily: ServenticaTokens.fonts.SemiBold,
     fontWeight: '700',
-    color: '#64748B',
-    letterSpacing: 0.5,
+    color: '#1E242B',
     marginBottom: 8,
   },
-  daysScrollList: {
+  horizontalOptionsRow: {
     gap: 8,
     paddingVertical: 2,
   },
-  dayPillBtn: {
+  durationCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1.2,
     borderColor: '#E2E8F0',
     paddingHorizontal: 14,
     paddingVertical: 9,
-    alignItems: 'center',
     minWidth: 78,
+    alignItems: 'center',
   },
-  dayPillBtnActive: {
-    backgroundColor: '#1E242B',
-    borderColor: '#1E242B',
+  durationCardActive: {
+    backgroundColor: '#F0FDF4', // Light green-teal tint
+    borderColor: '#34D399',
   },
-  dayPillDay: {
+  durationTitle: {
+    fontSize: 12,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontWeight: '700',
+    color: '#1E242B',
+  },
+  durationTitleActive: {
+    color: '#065F46',
+  },
+  durationPriceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 3,
+  },
+  durationPriceText: {
+    fontSize: 11,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontWeight: '700',
+    color: '#1E242B',
+  },
+  durationPriceTextActive: {
+    color: '#065F46',
+  },
+  durationStrikeText: {
+    fontSize: 9.5,
+    fontFamily: ServenticaTokens.fonts.Regular,
+    color: '#94A3B8',
+    textDecorationLine: 'line-through',
+  },
+  dateCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 1.2,
+    borderColor: '#E2E8F0',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    minWidth: 72,
+    alignItems: 'center',
+  },
+  dateCardActive: {
+    backgroundColor: '#F0FDF4',
+    borderColor: '#34D399',
+  },
+  dateCardDay: {
     fontSize: 11.5,
     fontFamily: ServenticaTokens.fonts.SemiBold,
     fontWeight: '700',
     color: '#1E242B',
   },
-  dayPillDate: {
-    fontSize: 10,
-    fontFamily: ServenticaTokens.fonts.Regular,
+  dateCardDayActive: {
+    color: '#065F46',
+  },
+  dateCardSub: {
+    fontSize: 9.5,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontWeight: '600',
     color: '#64748B',
     marginTop: 2,
   },
-  dayPillTextActive: {
-    color: '#FFFFFF',
+  dateCardSubActive: {
+    color: '#047857',
   },
-  slotsGrid: {
+  periodPillBar: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 22,
+    padding: 3,
+    marginBottom: 12,
   },
-  slotChipBtn: {
+  periodSegment: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    borderWidth: 1.2,
-    borderColor: '#E2E8F0',
-    paddingHorizontal: 11,
-    paddingVertical: 8,
+    justifyContent: 'center',
+    paddingVertical: 7,
+    borderRadius: 18,
     gap: 5,
   },
-  slotChipBtnActive: {
-    backgroundColor: '#FFCC00',
-    borderColor: '#FFCC00',
+  periodSegmentActive: {
+    backgroundColor: '#059669', // Emerald green
   },
-  slotChipText: {
+  periodText: {
     fontSize: 11.5,
     fontFamily: ServenticaTokens.fonts.SemiBold,
     fontWeight: '600',
     color: '#475569',
   },
-  slotChipTextActive: {
-    color: '#1E242B',
+  periodTextActive: {
+    color: '#FFFFFF',
     fontWeight: '700',
+  },
+  slotsCardBox: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    borderWidth: 1.2,
+    borderColor: '#E2E8F0',
+    padding: 12,
+  },
+  slotsBoxHeading: {
+    fontSize: 12,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontWeight: '700',
+    color: '#1E242B',
+    marginBottom: 10,
+  },
+  slotsGridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  slotChipItem: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1.2,
+    borderColor: '#E2E8F0',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    minWidth: '22%',
+    alignItems: 'center',
+  },
+  slotChipItemActive: {
+    backgroundColor: '#F0FDF4',
+    borderColor: '#34D399',
+  },
+  slotChipLabel: {
+    fontSize: 11,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontWeight: '600',
+    color: '#1E242B',
+  },
+  slotChipLabelActive: {
+    color: '#065F46',
+    fontWeight: '700',
+  },
+  schedulerNote: {
+    fontSize: 10,
+    fontFamily: ServenticaTokens.fonts.Regular,
+    color: '#64748B',
+    marginTop: 8,
+    paddingHorizontal: 4,
+  },
+  schedulerNoteBold: {
+    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontWeight: '700',
+    color: '#475569',
   },
   billContainer: {
     backgroundColor: '#F8FAFC',
     borderRadius: 22,
     padding: 16,
+    marginTop: 14,
     marginBottom: 14,
     borderWidth: 1,
     borderColor: '#E2E8F0',
@@ -782,8 +989,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1E242B',
   },
-  discountGreen: {
-    color: '#059669',
+  discountTeal: {
+    color: '#0D9488',
     fontWeight: '700',
   },
   solidDivider: {
@@ -812,16 +1019,18 @@ const styles = StyleSheet.create({
   trustBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ECFDF5',
+    backgroundColor: '#F0FDFA',
     borderRadius: 16,
     padding: 11,
     gap: 8,
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#CCFBF1',
   },
   trustBannerText: {
     fontSize: 11,
     fontFamily: ServenticaTokens.fonts.Medium,
-    color: '#047857',
+    color: '#0F766E',
     flexShrink: 1,
     lineHeight: 15,
   },
@@ -853,20 +1062,22 @@ const styles = StyleSheet.create({
   proceedButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFCC00',
+    backgroundColor: '#CCFBF1', // Light sky teal blue button
+    borderWidth: 1.2,
+    borderColor: '#5EEAD4',
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 22,
     gap: 7,
     ...Platform.select({
       ios: {
-        shadowColor: '#1E242B',
+        shadowColor: '#0F766E',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.15,
+        shadowOpacity: 0.12,
         shadowRadius: 4,
       },
       android: {
-        elevation: 3,
+        elevation: 2,
       },
     }),
   },
@@ -874,7 +1085,7 @@ const styles = StyleSheet.create({
     fontSize: 13.5,
     fontFamily: ServenticaTokens.fonts.SemiBold,
     fontWeight: '700',
-    color: '#1E242B',
+    color: '#0F766E',
   },
   successState: {
     alignItems: 'center',
@@ -885,10 +1096,12 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: '#ECFDF5',
+    backgroundColor: '#F0FDFA',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 14,
+    borderWidth: 1,
+    borderColor: '#CCFBF1',
   },
   successTitle: {
     fontSize: 20,

@@ -98,15 +98,16 @@ export const HorizontalOfferCard: React.FC<HorizontalOfferCardProps> = React.mem
         </View>
       ) : null}
 
-      {/* 2. Full Surface Readability Vignette Gradient */}
+      {/* 2. Full Surface Readability Vignette Gradient (Smooth progressive transition from bottom to top) */}
       <Svg width={cardWidth} height={cardHeight} style={StyleSheet.absoluteFill}>
         <Defs>
           <LinearGradient id="horizontalCardVignette" x1="0%" y1="0%" x2="0%" y2="100%">
-            <Stop offset="0%" stopColor="#000000" stopOpacity="0.25" />
-            <Stop offset="35%" stopColor="#000000" stopOpacity="0.10" />
-            <Stop offset="60%" stopColor="#000000" stopOpacity="0.55" />
-            <Stop offset="90%" stopColor="#000000" stopOpacity="0.88" />
-            <Stop offset="100%" stopColor="#000000" stopOpacity="0.94" />
+            <Stop offset="0%" stopColor="#000000" stopOpacity="0.08" />
+            <Stop offset="25%" stopColor="#000000" stopOpacity="0.02" />
+            <Stop offset="50%" stopColor="#000000" stopOpacity="0.18" />
+            <Stop offset="70%" stopColor="#000000" stopOpacity="0.48" />
+            <Stop offset="88%" stopColor="#000000" stopOpacity="0.75" />
+            <Stop offset="100%" stopColor="#000000" stopOpacity="0.88" />
           </LinearGradient>
         </Defs>
         <Rect x="0" y="0" width={cardWidth} height={cardHeight} fill="url(#horizontalCardVignette)" />
@@ -146,7 +147,7 @@ export const HorizontalOfferCard: React.FC<HorizontalOfferCardProps> = React.mem
         />
       </View>
 
-      {/* 5. Bottom Offer & Typography Content (Coolvetica Display + Poppins Body) */}
+      {/* 5. Bottom Offer & Typography Content (Coolvetica Display + SF Pro Body) */}
       <View style={styles.bottomContent}>
         <View style={styles.headlineRow}>
           <Text style={styles.offerValueText}>{offerValue}</Text>
@@ -171,7 +172,7 @@ export const HorizontalOfferCard: React.FC<HorizontalOfferCardProps> = React.mem
 
 const styles = StyleSheet.create({
   cardContainer: {
-    borderRadius: 22,
+    borderRadius: 26,
     overflow: 'hidden',
     backgroundColor: '#1E242B',
     position: 'relative',
@@ -219,48 +220,34 @@ const styles = StyleSheet.create({
   offerValueText: {
     color: '#FFE100', // Reference Yellow
     fontFamily: ServiceCardTokens.typography.fontDisplay, // Coolvetica
-    fontSize: 34,
-    lineHeight: 38,
-    fontWeight: '800',
+    fontSize: 38,
+    lineHeight: 42,
+    letterSpacing: -1,
     includeFontPadding: false,
-    textShadowColor: 'rgba(0, 0, 0, 0.4)',
-    textShadowOffset: { width: 0, height: 1.5 },
-    textShadowRadius: 3,
   },
   offerSuffixText: {
     color: '#FFFFFF',
     fontFamily: ServiceCardTokens.typography.fontDisplay, // Coolvetica
-    fontSize: 22,
-    lineHeight: 28,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    fontSize: 24,
+    lineHeight: 30,
+    letterSpacing: -0.5,
     includeFontPadding: false,
-    textShadowColor: 'rgba(0, 0, 0, 0.4)',
-    textShadowOffset: { width: 0, height: 1.5 },
-    textShadowRadius: 3,
   },
   descriptionText: {
     color: '#FFFFFF',
-    fontFamily: ServiceCardTokens.typography.fontPrimaryBold, // Poppins-Bold
-    fontSize: 14,
-    lineHeight: 18,
-    fontWeight: '700',
-    letterSpacing: -0.2,
+    fontFamily: ServiceCardTokens.typography.fontPrimaryBold, // SF Pro Bold
+    fontSize: 14.5,
+    lineHeight: 18.5,
+    letterSpacing: -0.3,
     marginTop: 2,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
   },
   termsText: {
-    color: '#E2E8F0',
-    fontFamily: ServiceCardTokens.typography.fontPrimaryMedium, // Poppins-Medium
-    fontSize: 13,
-    lineHeight: 17,
+    color: '#CBD5E1',
+    fontFamily: ServiceCardTokens.typography.fontPrimaryMedium, // SF Pro Medium
+    fontSize: 12.5,
+    lineHeight: 16.5,
     letterSpacing: -0.2,
-    marginTop: 2,
+    marginTop: 1.5,
     opacity: 0.95,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
   },
 });

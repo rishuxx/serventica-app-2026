@@ -55,13 +55,13 @@ const styles = StyleSheet.create({
   brandText: {
     color: ServiceCardTokens.colors.white,
     fontFamily: ServiceCardTokens.typography.fontDisplay,
-    letterSpacing: 0.2,
+    letterSpacing: -0.5,
     opacity: 0.95,
   },
   highlightText: {
     color: ServiceCardTokens.colors.accentYellowVibrant,
     fontFamily: ServiceCardTokens.typography.fontDisplay,
-    letterSpacing: 0.2,
+    letterSpacing: -1,
     includeFontPadding: false,
   },
 });

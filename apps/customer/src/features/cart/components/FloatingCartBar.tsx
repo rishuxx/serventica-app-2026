@@ -126,7 +126,7 @@ export const FloatingCartBar: React.FC<FloatingCartBarProps> = ({ onPressCheckou
               },
             ]}
           >
-            <ShoppingBag size={21} color="#1E242B" strokeWidth={2.3} />
+            <ShoppingBag size={21} color="#0F766E" strokeWidth={2.3} />
             <View style={styles.badgePill}>
               <Text style={styles.badgeCount}>{itemCount}</Text>
             </View>
@@ -134,16 +134,16 @@ export const FloatingCartBar: React.FC<FloatingCartBarProps> = ({ onPressCheckou
 
           {/* Express Delivery Badge */}
           <View style={styles.expressTag}>
-            <Zap size={11} color="#EAB308" fill="#EAB308" />
+            <Zap size={11} color="#0D9488" fill="#0D9488" />
             <Text style={styles.expressText}>20-Min Express</Text>
           </View>
         </View>
 
-        {/* Right Side: Clean "View Cart" CTA with Gold Arrow */}
+        {/* Right Side: Clean "View Cart" CTA with Light Sky Teal Arrow */}
         <View style={styles.rightCol}>
           <Text style={styles.viewCartText}>View Cart</Text>
-          <View style={styles.goldArrowBtn}>
-            <ArrowRight size={13} color="#1E242B" strokeWidth={2.8} />
+          <View style={styles.tealArrowBtn}>
+            <ArrowRight size={13} color="#0F766E" strokeWidth={2.8} />
           </View>
         </View>
       </AnimatedTouchable>
@@ -154,7 +154,7 @@ export const FloatingCartBar: React.FC<FloatingCartBarProps> = ({ onPressCheckou
 const styles = StyleSheet.create({
   floatingContainer: {
     position: 'absolute',
-    bottom: 74, // Perfectly sits directly above bottom nav bar
+    bottom: 74, // Sits directly above bottom nav bar
     left: 20,
     right: 20,
     zIndex: 999,
@@ -169,10 +169,10 @@ const styles = StyleSheet.create({
     paddingRight: 10,
     paddingVertical: 8,
     borderWidth: 1.2,
-    borderColor: 'rgba(230, 235, 240, 0.95)',
+    borderColor: '#CCFBF1', // Light sky teal border
     ...Platform.select({
       ios: {
-        shadowColor: '#0F172A',
+        shadowColor: '#0F766E',
         shadowOffset: { width: 0, height: 6 },
         shadowOpacity: 0.12,
         shadowRadius: 16,
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -3,
     right: -7,
-    backgroundColor: '#FFCC00',
+    backgroundColor: '#CCFBF1', // Light sky teal
     minWidth: 16,
     height: 16,
     borderRadius: 8,
@@ -206,21 +206,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#FFFFFF',
+    borderColor: '#0D9488',
   },
   badgeCount: {
     fontSize: 9.5,
-    fontFamily: ServenticaTokens.fonts.Bold,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
     fontWeight: '800',
-    color: '#1E242B',
+    color: '#0F766E',
     lineHeight: 11,
   },
   expressTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#F0FDFA', // Light sky teal tint
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: '#CCFBF1',
     paddingHorizontal: 8,
     paddingVertical: 3.5,
     borderRadius: 14,
@@ -228,9 +228,9 @@ const styles = StyleSheet.create({
   },
   expressText: {
     fontSize: 11,
-    fontFamily: ServenticaTokens.fonts.Medium,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
     fontWeight: '600',
-    color: '#475569',
+    color: '#0F766E',
     letterSpacing: -0.1,
   },
   rightCol: {
@@ -245,11 +245,13 @@ const styles = StyleSheet.create({
     color: '#1E242B',
     letterSpacing: -0.2,
   },
-  goldArrowBtn: {
+  tealArrowBtn: {
     width: 26,
     height: 26,
     borderRadius: 13,
-    backgroundColor: '#FFCC00',
+    backgroundColor: '#CCFBF1', // Light sky teal blue
+    borderWidth: 1,
+    borderColor: '#5EEAD4',
     justifyContent: 'center',
     alignItems: 'center',
   },

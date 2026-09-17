@@ -130,10 +130,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addItem = useCallback((service: any) => {
     setItems((prev) => {
-      const id = service.id;
+      const id = service.id || service.serviceId;
+      if (!id) return prev;
       const existing = prev[id];
-      const basePrice = Number(service.base_price || service.basePrice || 0);
-      const durationMinutes = Number(service.duration_minutes || service.durationMinutes || 45);
+      const basePrice = Number(service.base_price ?? service.basePrice ?? 0);
+      const durationMinutes = Number(service.duration_minutes ?? service.durationMinutes ?? 45);
       const name = service.name || 'Service';
       const slug = service.slug || '';
       const imageUrl = service.image_url || service.imageUrl || '';

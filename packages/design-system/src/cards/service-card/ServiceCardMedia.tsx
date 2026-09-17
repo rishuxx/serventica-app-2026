@@ -62,13 +62,15 @@ export const ServiceCardMedia: React.FC<ServiceCardMediaProps> = React.memo(({
         </View>
       ) : null}
 
-      {/* 2. Media Bottom Readability Gradient */}
+      {/* 2. Media Bottom Readability Gradient (Progressive smooth bottom to top) */}
       <Svg width={width} height={height} style={StyleSheet.absoluteFill}>
         <Defs>
           <LinearGradient id="bottomShadowGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <Stop offset="0%" stopColor="#000000" stopOpacity="0" />
-            <Stop offset="25%" stopColor="#000000" stopOpacity="0.04" />
-            <Stop offset="60%" stopColor="#000000" stopOpacity="0.55" />
+            <Stop offset="0%" stopColor="#000000" stopOpacity="0.04" />
+            <Stop offset="25%" stopColor="#000000" stopOpacity="0.01" />
+            <Stop offset="50%" stopColor="#000000" stopOpacity="0.16" />
+            <Stop offset="72%" stopColor="#000000" stopOpacity="0.52" />
+            <Stop offset="90%" stopColor="#000000" stopOpacity="0.78" />
             <Stop offset="100%" stopColor="#000000" stopOpacity="0.88" />
           </LinearGradient>
         </Defs>

@@ -166,7 +166,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
               onPress={() => addItem(service)}
             >
               <Text style={styles.actionButtonText}>ADD</Text>
-              <Plus size={12} color="#FFFFFF" strokeWidth={2.5} />
+              <Plus size={12} color="#0F766E" strokeWidth={2.8} />
             </TouchableOpacity>
           )}
         </View>
@@ -329,29 +329,31 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#262B34',
+    backgroundColor: '#F0FDFA',
+    borderWidth: 1.2,
+    borderColor: '#5EEAD4',
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 16,
     minHeight: 32,
     width: '100%',
-    gap: 2,
+    gap: 3,
   },
   actionButtonText: {
     fontSize: 11.5,
-    fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#FFFFFF',
-    fontWeight: '600',
+    fontFamily: ServenticaTokens.fonts.SemiBold,
+    color: '#0F766E',
+    fontWeight: '700',
     letterSpacing: -0.1,
   },
   stepperContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#F0FDFA',
     borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#CBD5E1',
+    borderWidth: 1.2,
+    borderColor: '#5EEAD4',
     paddingHorizontal: 6,
     paddingVertical: 4,
     minHeight: 32,
@@ -365,7 +367,7 @@ const styles = StyleSheet.create({
   stepperQtyText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#1E242B',
-    fontFamily: ServenticaTokens.fonts.Medium,
+    color: '#0F766E',
+    fontFamily: ServenticaTokens.fonts.SemiBold,
   },
 });
