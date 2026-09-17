@@ -6,6 +6,142 @@ export interface GeocodingProvider {
   reverseGeocode(lat: number, lon: number): Promise<LocationItem | null>;
 }
 
+export class GoogleGeocodingProvider implements GeocodingProvider {
+  private apiKey: string;
+  private fallbackProvider: GeocodingProvider;
+
+  constructor(apiKey?: string) {
+    this.apiKey = apiKey || process.env.GOOGLE_MAPS_API_KEY || '';
+    this.fallbackProvider = new NominatimGeocodingProvider();
+  }
+
+  setApiKey(key: string) {
+    this.apiKey = key;
+  }
+
+  async search(query: string): Promise<LocationItem[]> {
+    if (!query || query.trim().length < 2) return [];
+
+    if (!this.apiKey) {
+      return this.fallbackProvider.search(query);
+    }
+
+    try {
+      const encoded = encodeURIComponent(query.trim());
+      // Google Places Autocomplete & Geocoding API
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encoded}&key=${this.apiKey}&region=in`;
+      const res = await fetch(url);
+      const data: any = await res.json();
+
+      if (data.status === 'OK' && Array.isArray(data.results) && data.results.length > 0) {
+        return data.results.map((result: any) => {
+          const lat = result.geometry?.location?.lat;
+          const lon = result.geometry?.location?.lng;
+
+          let road = '';
+          let city = 'Nearby';
+          let state = '';
+          let postalCode = '';
+          let country = 'India';
+          let houseNumber = '';
+          let suburb = '';
+
+          for (const comp of result.address_components || []) {
+            const types: string[] = comp.types || [];
+            if (types.includes('street_number')) houseNumber = comp.long_name;
+            if (types.includes('route')) road = comp.long_name;
+            if (types.includes('sublocality') || types.includes('neighborhood')) suburb = comp.long_name;
+            if (types.includes('locality')) city = comp.long_name;
+            if (types.includes('administrative_area_level_1')) state = comp.long_name;
+            if (types.includes('postal_code')) postalCode = comp.long_name;
+            if (types.includes('country')) country = comp.long_name;
+          }
+
+          const short = road && road !== city
+            ? `${road}, ${city}`
+            : (suburb && suburb !== city ? `${suburb}, ${city}` : (city || result.formatted_address.split(',')[0]));
+
+          return {
+            latitude: lat,
+            longitude: lon,
+            shortAddress: short,
+            formattedAddress: result.formatted_address,
+            city,
+            state,
+            postalCode,
+            country,
+            road: road || suburb,
+            suburb,
+            houseNumber,
+          };
+        });
+      }
+
+      return this.fallbackProvider.search(query);
+    } catch (err) {
+      console.warn('Google search places error, falling back:', err);
+      return this.fallbackProvider.search(query);
+    }
+  }
+
+  async reverseGeocode(lat: number, lon: number): Promise<LocationItem | null> {
+    if (!this.apiKey) {
+      return this.fallbackProvider.reverseGeocode(lat, lon);
+    }
+
+    try {
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${this.apiKey}`;
+      const res = await fetch(url);
+      const data: any = await res.json();
+
+      if (data.status === 'OK' && Array.isArray(data.results) && data.results.length > 0) {
+        const topResult = data.results[0];
+        let road = '';
+        let city = 'Nearby';
+        let state = '';
+        let postalCode = '';
+        let country = 'India';
+        let houseNumber = '';
+        let suburb = '';
+
+        for (const comp of topResult.address_components || []) {
+          const types: string[] = comp.types || [];
+          if (types.includes('street_number')) houseNumber = comp.long_name;
+          if (types.includes('route')) road = comp.long_name;
+          if (types.includes('sublocality') || types.includes('neighborhood')) suburb = comp.long_name;
+          if (types.includes('locality')) city = comp.long_name;
+          if (types.includes('administrative_area_level_1')) state = comp.long_name;
+          if (types.includes('postal_code')) postalCode = comp.long_name;
+          if (types.includes('country')) country = comp.long_name;
+        }
+
+        const short = road && road !== city
+          ? `${road}, ${city}`
+          : (suburb && suburb !== city ? `${suburb}, ${city}` : (city || topResult.formatted_address.split(',')[0]));
+
+        return {
+          latitude: lat,
+          longitude: lon,
+          shortAddress: short,
+          formattedAddress: topResult.formatted_address,
+          city,
+          state,
+          postalCode,
+          country,
+          road: road || suburb,
+          suburb,
+          houseNumber,
+        };
+      }
+
+      return this.fallbackProvider.reverseGeocode(lat, lon);
+    } catch (err) {
+      console.warn('Google reverse geocode error, falling back:', err);
+      return this.fallbackProvider.reverseGeocode(lat, lon);
+    }
+  }
+}
+
 class NominatimGeocodingProvider implements GeocodingProvider {
   private userAgent = 'ServenticaApp/1.0 (contact@serventica.com)';
 
@@ -185,7 +321,7 @@ class NominatimGeocodingProvider implements GeocodingProvider {
 }
 
 class LocationService {
-  private geocoder: GeocodingProvider = new NominatimGeocodingProvider();
+  private geocoder: GeocodingProvider = new GoogleGeocodingProvider();
 
   setGeocodingProvider(provider: GeocodingProvider) {
     this.geocoder = provider;

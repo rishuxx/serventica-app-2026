@@ -305,8 +305,12 @@ export const MapLocationPickerModal: React.FC<MapLocationPickerModalProps> = ({
           const left = Math.round(mapCenterX - offsetX + dx * TILE_SIZE);
           const top = Math.round(mapCenterY - offsetY + dy * TILE_SIZE);
 
-          // Crystal clear, watermark-free high-precision street map
-          const url = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/${zoom}/${ty}/${tx}`;
+          // Google Maps standard tile source (with high-res satellite & street fallback)
+          const googleTileKey = process.env.GOOGLE_MAPS_API_KEY;
+          const url = googleTileKey
+            ? `https://maps.googleapis.com/maps/api/staticmap?center=${tile2lat(ty + 0.5, zoom)},${tile2lon(tx + 0.5, zoom)}&zoom=${zoom}&size=256x256&key=${googleTileKey}`
+            : `https://mt1.google.com/vt/lyrs=m&x=${tx}&y=${ty}&z=${zoom}`;
+
           tileList.push({
             key: `${zoom}_${tx}_${ty}`,
             url,
