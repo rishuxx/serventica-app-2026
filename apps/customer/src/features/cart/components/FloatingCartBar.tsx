@@ -149,7 +149,7 @@ export const FloatingCartBar: React.FC<FloatingCartBarProps> = ({ onPressCheckou
 const styles = StyleSheet.create({
   floatingContainer: {
     position: 'absolute',
-    bottom: 74, // Sits above the white bottom nav
+    bottom: 96, // Increased spacing for clear visual gap above bottom navigation panel
     alignSelf: 'center',
     zIndex: 999,
   },
@@ -157,23 +157,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFCC00', // Solid bright vibrant light yellow
-    borderRadius: 30, // Clean rounded capsule
+    backgroundColor: '#FCF403', // Solid bright vibrant light yellow #fcf403
+    borderRadius: 30,
     paddingLeft: 12,
     paddingRight: 10,
     paddingVertical: 7,
     gap: 12,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#B45309',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.22,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 6,
-      },
-    }),
+    shadowColor: '#1E242B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 5,
+    elevation: 3,
   },
   leftCol: {
     flexDirection: 'row',

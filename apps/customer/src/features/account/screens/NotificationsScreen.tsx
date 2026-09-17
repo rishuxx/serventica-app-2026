@@ -10,6 +10,7 @@ import {
 import { ArrowLeft, Bell, Calendar, CheckCircle2, AlertCircle, Sparkles, CreditCard, ChevronRight } from 'lucide-react-native';
 import { useNotifications } from '../../../hooks/useNotifications';
 import { NotificationRecord } from '@serventica/types';
+import { ServenticaTokens } from '../../../../../../packages/design-system/src';
 
 interface NotificationsScreenProps {
   onBack: () => void;
@@ -165,13 +166,13 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   headerTitle: {
-    fontFamily: 'Coolvetica',
+    fontFamily: ServenticaTokens.fonts.Bold,
     fontSize: 20,
     color: '#1E242B',
     letterSpacing: 0.3,
   },
   markAllText: {
-    fontFamily: 'Coolvetica',
+    fontFamily: ServenticaTokens.fonts.SemiBold,
     fontSize: 13,
     color: '#444444',
   },
@@ -182,7 +183,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 10,
-    fontFamily: 'Coolvetica',
+    fontFamily: ServenticaTokens.fonts.Regular,
     fontSize: 14,
     color: '#777777',
   },
@@ -202,13 +203,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyTitle: {
-    fontFamily: 'Coolvetica',
+    fontFamily: ServenticaTokens.fonts.Bold,
     fontSize: 18,
     color: '#1E242B',
     marginBottom: 8,
   },
   emptySubtitle: {
-    fontFamily: 'Coolvetica',
+    fontFamily: ServenticaTokens.fonts.Regular,
     fontSize: 14,
     color: '#888888',
     textAlign: 'center',
@@ -252,7 +253,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   title: {
-    fontFamily: 'Coolvetica',
+    fontFamily: ServenticaTokens.fonts.SemiBold,
     fontSize: 15,
     color: '#222222',
     flex: 1,
@@ -269,14 +270,14 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   body: {
-    fontFamily: 'Coolvetica',
+    fontFamily: ServenticaTokens.fonts.Regular,
     fontSize: 13,
     color: '#666666',
     lineHeight: 18,
     marginBottom: 6,
   },
   timestamp: {
-    fontFamily: 'Coolvetica',
+    fontFamily: ServenticaTokens.fonts.Regular,
     fontSize: 11,
     color: '#999999',
   },

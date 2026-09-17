@@ -11,6 +11,7 @@ import {
 import { ArrowLeft, Star, MessageSquare } from 'lucide-react-native';
 import { accountRepository } from '../../../repositories/account.repository';
 import { ServiceReviewRecord } from '@serventica/types';
+import { ServenticaTokens } from '../../../../../../packages/design-system/src';
 
 interface ReviewsScreenProps {
   onBack: () => void;
@@ -33,8 +34,8 @@ export const ReviewsScreen: React.FC<ReviewsScreenProps> = ({
       setIsLoading(true);
       const data = await accountRepository.getUserReviews();
       setReviews(data);
-    } catch (err: any) {
-      Alert.alert('Error', 'Unable to load your reviews at this time.');
+    } catch (e) {
+      console.warn('Failed to load reviews', e);
     } finally {
       setIsLoading(false);
     }
@@ -46,10 +47,9 @@ export const ReviewsScreen: React.FC<ReviewsScreenProps> = ({
         {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
-            size={15}
-            color={star <= rating ? '#EAB308' : '#D1D5DB'}
-            fill={star <= rating ? '#EAB308' : 'transparent'}
-            strokeWidth={1.5}
+            size={14}
+            color="#FFB800"
+            fill={star <= rating ? '#FFB800' : 'transparent'}
             style={{ marginRight: 2 }}
           />
         ))}
@@ -61,13 +61,8 @@ export const ReviewsScreen: React.FC<ReviewsScreenProps> = ({
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={onBack}
-          style={styles.backButton}
-          activeOpacity={0.7}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-        >
-          <ArrowLeft size={22} color='#1E242B' strokeWidth={2} />
+        <TouchableOpacity style={styles.backBtn} onPress={onBack}>
+          <ArrowLeft size={20} color="#1E242B" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Reviews</Text>
         <View style={{ width: 32 }} />
@@ -75,24 +70,20 @@ export const ReviewsScreen: React.FC<ReviewsScreenProps> = ({
 
       {isLoading ? (
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="small" color='#1E242B' />
+          <ActivityIndicator size="small" color="#1E242B" />
           <Text style={styles.loadingText}>Loading reviews...</Text>
         </View>
       ) : reviews.length === 0 ? (
         <View style={styles.emptyContainer}>
           <View style={styles.emptyIconCircle}>
-            <Star size={32} color="#999999" strokeWidth={1.5} />
+            <MessageSquare size={32} color="#999999" />
           </View>
-          <Text style={styles.emptyTitle}>No reviews yet</Text>
+          <Text style={styles.emptyTitle}>No Reviews Yet</Text>
           <Text style={styles.emptySubtitle}>
-            Once a booked service is completed, you can rate and review your experience with our verified professionals.
+            When you complete bookings and review our service partners, your feedback will appear here.
           </Text>
-          <TouchableOpacity
-            style={styles.exploreBtn}
-            onPress={onExploreServices}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.exploreBtnText}>Explore Services</Text>
+          <TouchableOpacity style={styles.exploreBtn} onPress={onExploreServices}>
+            <Text style={styles.exploreBtnText}>Book a Service</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -100,29 +91,18 @@ export const ReviewsScreen: React.FC<ReviewsScreenProps> = ({
           data={reviews}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
             <View style={styles.reviewCard}>
               <View style={styles.cardTopRow}>
-                <Text style={styles.serviceName}>Home Service #{item.serviceId.slice(0, 6)}</Text>
+                <Text style={styles.serviceName}>{item.serviceName}</Text>
                 {renderStars(item.rating)}
               </View>
-
-              {item.reviewText ? (
+              {item.comment ? (
                 <View style={styles.commentContainer}>
-                  <MessageSquare size={14} color="#777777" strokeWidth={1.5} style={{ marginRight: 6, marginTop: 2 }} />
-                  <Text style={styles.commentText}>{item.reviewText}</Text>
+                  <Text style={styles.commentText}>"{item.comment}"</Text>
                 </View>
               ) : null}
-
-              <Text style={styles.dateText}>
-                Reviewed on{' '}
-                {new Date(item.createdAt).toLocaleDateString('en-IN', {
-                  day: 'numeric',
-                  month: 'short',
-                  year: 'numeric',
-                })}
-              </Text>
+              <Text style={styles.dateText}>{item.createdAt}</Text>
             </View>
           )}
         />
@@ -134,23 +114,24 @@ export const ReviewsScreen: React.FC<ReviewsScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FAF9F6',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: 54,
-    paddingBottom: 16,
+    paddingTop: 16,
+    paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: '#EEEEEE',
+    backgroundColor: '#FAF9F6',
   },
-  backButton: {
+  backBtn: {
     padding: 4,
   },
   headerTitle: {
-    fontFamily: 'Coolvetica',
+    fontFamily: ServenticaTokens.fonts.Bold,
     fontSize: 20,
     color: '#1E242B',
     letterSpacing: 0.3,
@@ -162,7 +143,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 10,
-    fontFamily: 'Coolvetica',
+    fontFamily: ServenticaTokens.fonts.Regular,
     fontSize: 14,
     color: '#777777',
   },
@@ -182,13 +163,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyTitle: {
-    fontFamily: 'Coolvetica',
+    fontFamily: ServenticaTokens.fonts.Bold,
     fontSize: 18,
     color: '#1E242B',
     marginBottom: 8,
   },
   emptySubtitle: {
-    fontFamily: 'Coolvetica',
+    fontFamily: ServenticaTokens.fonts.Regular,
     fontSize: 14,
     color: '#888888',
     textAlign: 'center',
@@ -202,7 +183,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
   },
   exploreBtnText: {
-    fontFamily: 'Coolvetica',
+    fontFamily: ServenticaTokens.fonts.SemiBold,
     fontSize: 14,
     color: '#FFFFFF',
   },
@@ -224,7 +205,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   serviceName: {
-    fontFamily: 'Coolvetica',
+    fontFamily: ServenticaTokens.fonts.SemiBold,
     fontSize: 16,
     color: '#1E242B',
     fontWeight: '500',
@@ -243,13 +224,13 @@ const styles = StyleSheet.create({
   },
   commentText: {
     flex: 1,
-    fontFamily: 'Coolvetica',
+    fontFamily: ServenticaTokens.fonts.Regular,
     fontSize: 13,
     color: '#444444',
     lineHeight: 18,
   },
   dateText: {
-    fontFamily: 'Coolvetica',
+    fontFamily: ServenticaTokens.fonts.Regular,
     fontSize: 12,
     color: '#999999',
   },

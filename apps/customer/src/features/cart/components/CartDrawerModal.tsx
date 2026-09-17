@@ -733,7 +733,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                     </Text>
                   </TouchableOpacity>
 
-                  {/* Right Side: Exact Reference Place Order Button (Red/Coral Rounded Pill with Price on Left & Place Order on Right) */}
+                  {/* Right Side: Place Order Button (Yellow #FCF403 Rounded Pill with Price on Left & Place Order on Right, No Shadow) */}
                   <TouchableOpacity
                     style={[styles.placeOrderButton, isProcessingPayment && { opacity: 0.75 }]}
                     onPress={handleCheckout}
@@ -742,7 +742,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                   >
                     {isProcessingPayment ? (
                       <View style={styles.processingRow}>
-                        <ActivityIndicator size="small" color="#FFFFFF" />
+                        <ActivityIndicator size="small" color="#1E242B" />
                         <Text style={styles.processingText}>Processing...</Text>
                       </View>
                     ) : (
@@ -753,7 +753,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                         </View>
                         <View style={styles.buttonActionRow}>
                           <Text style={styles.placeOrderText}>Place Order</Text>
-                          <Play size={10} color="#FFFFFF" fill="#FFFFFF" style={{ marginLeft: 2 }} />
+                          <Play size={10} color="#1E242B" fill="#1E242B" style={{ marginLeft: 2 }} />
                         </View>
                       </>
                     )}
@@ -1395,22 +1395,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#E23744',
+    backgroundColor: '#FCF403',
     borderRadius: 14,
     paddingHorizontal: 18,
     paddingVertical: 10,
     minWidth: 175,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#E23744',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.35,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
+    elevation: 0,
+    shadowOpacity: 0,
   },
   processingRow: {
     flexDirection: 'row',
@@ -1421,8 +1412,8 @@ const styles = StyleSheet.create({
   },
   processingText: {
     fontSize: 13,
-    fontFamily: ServenticaTokens.fonts.PoppinsSemiBold,
-    color: '#FFFFFF',
+    fontFamily: ServenticaTokens.fonts.SemiBold,
+    color: '#1E242B',
     fontWeight: '600',
   },
   buttonPriceCol: {
@@ -1430,16 +1421,16 @@ const styles = StyleSheet.create({
   },
   buttonPriceText: {
     fontSize: 15,
-    fontFamily: ServenticaTokens.fonts.SFProBold,
+    fontFamily: ServenticaTokens.fonts.Bold,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: '#1E242B',
     lineHeight: 18,
   },
   buttonTotalLabel: {
     fontSize: 8.5,
-    fontFamily: ServenticaTokens.fonts.SFProBold,
+    fontFamily: ServenticaTokens.fonts.Bold,
     fontWeight: '800',
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: 'rgba(30, 36, 43, 0.75)',
     letterSpacing: 0.6,
   },
   buttonActionRow: {
@@ -1449,9 +1440,9 @@ const styles = StyleSheet.create({
   },
   placeOrderText: {
     fontSize: 14,
-    fontFamily: ServenticaTokens.fonts.PoppinsBold,
+    fontFamily: ServenticaTokens.fonts.Bold,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#1E242B',
   },
 
   // Payment Picker Modal
