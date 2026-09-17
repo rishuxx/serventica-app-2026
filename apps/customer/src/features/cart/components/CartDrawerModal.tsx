@@ -18,6 +18,8 @@ import {
   Zap,
   Calendar,
   ChevronUp,
+  ChevronDown,
+  ChevronRight,
   CheckCircle2,
   MapPin,
   Phone,
@@ -41,24 +43,70 @@ interface CartDrawerModalProps {
   onProceedToBooking?: (bookingData: any) => void;
 }
 
-export type PaymentMethodKey = 'GOOGLE_PAY' | 'PHONEPE' | 'PAYTM' | 'CARDS' | 'WALLET' | 'COD';
+export type PaymentMethodKey =
+  | 'NAVI'
+  | 'GOOGLE_PAY'
+  | 'CARDS'
+  | 'PLUXEE'
+  | 'YONO_SBI'
+  | 'UPI_ADD'
+  | 'AMAZON_PAY'
+  | 'MOBIKWIK'
+  | 'WALLET'
+  | 'COD';
 
-interface PaymentOption {
+export interface PaymentMethodItem {
   id: PaymentMethodKey;
   brand: PaymentBrandType;
   title: string;
-  subtitle: string;
-  badge?: string;
+  actionType: 'chevron' | 'plus';
 }
 
-const PAYMENT_OPTIONS: PaymentOption[] = [
-  { id: 'GOOGLE_PAY', brand: 'GOOGLE_PAY', title: 'Google Pay UPI', subtitle: 'Fastest 1-step verification', badge: 'FAST' },
-  { id: 'PHONEPE', brand: 'PHONEPE', title: 'PhonePe UPI', subtitle: 'Instant UPI payments', badge: 'POPULAR' },
-  { id: 'PAYTM', brand: 'PAYTM', title: 'Paytm UPI & Wallet', subtitle: 'Fast checkout with Paytm' },
-  { id: 'CARDS', brand: 'CARDS', title: 'Credit / Debit Card', subtitle: 'Visa, MasterCard, RuPay' },
-  { id: 'WALLET', brand: 'WALLET', title: 'Serventica Wallet', subtitle: 'Instant 1-click payment' },
-  { id: 'COD', brand: 'COD', title: 'Pay After Service', subtitle: 'Cash or QR when pro arrives' },
+export interface PaymentCategoryGroup {
+  categoryTitle: string;
+  items: PaymentMethodItem[];
+}
+
+export const PAYMENT_CATEGORIES: PaymentCategoryGroup[] = [
+  {
+    categoryTitle: 'RECOMMENDED',
+    items: [
+      { id: 'NAVI', brand: 'NAVI', title: 'Navi UPI', actionType: 'chevron' },
+      { id: 'GOOGLE_PAY', brand: 'GOOGLE_PAY', title: 'Google Pay UPI', actionType: 'chevron' },
+    ],
+  },
+  {
+    categoryTitle: 'CARDS',
+    items: [
+      { id: 'CARDS', brand: 'CARDS_ADD', title: 'Add credit or debit cards', actionType: 'plus' },
+      { id: 'PLUXEE', brand: 'PLUXEE', title: 'Add Pluxee', actionType: 'plus' },
+    ],
+  },
+  {
+    categoryTitle: 'PAY BY ANY UPI APP',
+    items: [
+      { id: 'YONO_SBI', brand: 'YONO_SBI', title: 'Yono SBI UPI', actionType: 'chevron' },
+      { id: 'UPI_ADD', brand: 'UPI_ADD', title: 'Add new UPI ID', actionType: 'plus' },
+    ],
+  },
+  {
+    categoryTitle: 'WALLETS',
+    items: [
+      { id: 'AMAZON_PAY', brand: 'AMAZON_PAY', title: 'Amazon Pay Balance', actionType: 'plus' },
+      { id: 'MOBIKWIK', brand: 'MOBIKWIK', title: 'Mobikwik', actionType: 'plus' },
+      { id: 'WALLET', brand: 'WALLET', title: 'Serventica Wallet', actionType: 'chevron' },
+    ],
+  },
+  {
+    categoryTitle: 'PAY ON DELIVERY',
+    items: [
+      { id: 'COD', brand: 'COD', title: 'Pay After Service (Cash / UPI)', actionType: 'chevron' },
+    ],
+  },
 ];
+
+export const ALL_PAYMENT_ITEMS: PaymentMethodItem[] = PAYMENT_CATEGORIES.flatMap((g) => g.items);
+
 
 // Hourly duration options ONLY for ondemand / househelp / massage / gardening
 const HOURLY_SERVICE_DURATIONS = [
@@ -158,7 +206,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
   const customerPhone = user?.phone || '+91 98765 43210';
 
   const selectedDayObj = availableDays.find((d) => d.key === selectedDayKey) || availableDays[0];
-  const activePaymentOption = PAYMENT_OPTIONS.find((p) => p.id === selectedPaymentKey) || PAYMENT_OPTIONS[0];
+  const activePaymentOption = ALL_PAYMENT_ITEMS.find((p) => p.id === selectedPaymentKey) || ALL_PAYMENT_ITEMS[0];
 
   const handleCheckout = async () => {
     if (itemList.length === 0 || isProcessingPayment) return;
@@ -653,16 +701,18 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                 {/* Top Balance strip */}
                 <View style={styles.balanceStrip}>
                   <Text style={styles.balanceStripText}>
-                    Serventica Wallet Balance: <Text style={styles.balanceStripBold}>₹{walletBalance}</Text> •{' '}
-                    <TouchableOpacity
-                      onPress={async () => {
-                        const newBal = await paymentService.addWalletBalance(500);
-                        setWalletBalance(newBal);
-                      }}
-                    >
-                      <Text style={styles.addMoneyText}>+ Add ₹500</Text>
-                    </TouchableOpacity>
+                    Serventica Wallet Balance: <Text style={styles.balanceStripBold}>₹{walletBalance}</Text>
                   </Text>
+                  <Text style={styles.balanceStripDot}> • </Text>
+                  <TouchableOpacity
+                    onPress={async () => {
+                      const newBal = await paymentService.addWalletBalance(500);
+                      setWalletBalance(newBal);
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.addMoneyText}>+ Add ₹500</Text>
+                  </TouchableOpacity>
                 </View>
 
                 {/* Main Action Bar */}
@@ -711,13 +761,8 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                 </View>
               </View>
 
-              {/* Payment Methods Selection Bottom Sheet Modal */}
-              <Modal
-                visible={isPaymentPickerOpen}
-                animationType="fade"
-                transparent={true}
-                onRequestClose={() => setIsPaymentPickerOpen(false)}
-              >
+              {/* Payment Methods Selection Bottom Sheet Modal matching reference image */}
+              {isPaymentPickerOpen && (
                 <View style={styles.paymentModalOverlay}>
                   <TouchableOpacity
                     style={styles.paymentModalDismiss}
@@ -725,59 +770,70 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                     onPress={() => setIsPaymentPickerOpen(false)}
                   />
                   <View style={styles.paymentSheet}>
-                    <View style={styles.paymentSheetHeader}>
-                      <Text style={styles.paymentSheetTitle}>Select Payment Method</Text>
+                    {/* Top Header: Down chevron circle button + Bill total */}
+                    <View style={styles.paymentSheetTopBar}>
                       <TouchableOpacity
-                        style={styles.sheetCloseBtn}
+                        style={styles.chevronDownCircleBtn}
                         onPress={() => setIsPaymentPickerOpen(false)}
+                        activeOpacity={0.7}
                       >
-                        <X size={16} color="#64748B" strokeWidth={2.4} />
+                        <ChevronDown size={20} color="#1E242B" strokeWidth={2.4} />
                       </TouchableOpacity>
+                      <Text style={styles.billTotalText}>
+                        Bill total: <Text style={styles.billTotalAmount}>₹{fees.finalPayable}</Text>
+                      </Text>
                     </View>
 
-                    <View style={styles.paymentOptionsList}>
-                      {PAYMENT_OPTIONS.map((opt) => {
-                        const isSelected = selectedPaymentKey === opt.id;
-                        return (
-                          <TouchableOpacity
-                            key={opt.id}
-                            style={[
-                              styles.paymentOptionItem,
-                              isSelected && styles.paymentOptionItemActive,
-                            ]}
-                            onPress={() => {
-                              setSelectedPaymentKey(opt.id);
-                              setIsPaymentPickerOpen(false);
-                            }}
-                            activeOpacity={0.75}
-                          >
-                            <View style={styles.paymentOptionLeft}>
-                              <View style={[styles.paymentRadio, isSelected && styles.paymentRadioActive]}>
-                                {isSelected && <View style={styles.paymentRadioInner} />}
-                              </View>
-                              <PaymentMethodIcon brand={opt.brand} size={28} />
-                              <View style={{ flex: 1 }}>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                                  <Text style={[styles.paymentOptionName, isSelected && styles.paymentOptionNameActive]}>
-                                    {opt.title}
-                                  </Text>
-                                  {opt.badge && (
-                                    <View style={styles.paymentBadge}>
-                                      <Text style={styles.paymentBadgeText}>{opt.badge}</Text>
+                    <ScrollView
+                      showsVerticalScrollIndicator={false}
+                      contentContainerStyle={styles.paymentSheetScrollContent}
+                    >
+                      {PAYMENT_CATEGORIES.map((category) => (
+                        <View key={category.categoryTitle} style={styles.paymentCategoryContainer}>
+                          <Text style={styles.paymentCategoryHeader}>{category.categoryTitle}</Text>
+
+                          <View style={styles.paymentCardGroup}>
+                            {category.items.map((item, idx) => {
+                              const isSelected = selectedPaymentKey === item.id;
+                              const isLast = idx === category.items.length - 1;
+
+                              return (
+                                <React.Fragment key={item.id}>
+                                  <TouchableOpacity
+                                    style={styles.paymentRowItem}
+                                    onPress={() => {
+                                      setSelectedPaymentKey(item.id);
+                                      setIsPaymentPickerOpen(false);
+                                    }}
+                                    activeOpacity={0.7}
+                                  >
+                                    <View style={styles.paymentRowLeft}>
+                                      <PaymentMethodIcon brand={item.brand} size={36} />
+                                      <Text style={[styles.paymentRowTitle, isSelected && styles.paymentRowTitleSelected]}>
+                                        {item.title}
+                                      </Text>
                                     </View>
-                                  )}
-                                </View>
-                                <Text style={styles.paymentOptionDesc}>{opt.subtitle}</Text>
-                              </View>
-                            </View>
-                            {isSelected && <Check size={16} color="#E23744" strokeWidth={2.8} />}
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </View>
+
+                                    <View style={styles.paymentRowRight}>
+                                      {item.actionType === 'plus' ? (
+                                        <Plus size={18} color="#E23744" strokeWidth={2.4} />
+                                      ) : (
+                                        <ChevronRight size={18} color="#94A3B8" strokeWidth={2.2} />
+                                      )}
+                                    </View>
+                                  </TouchableOpacity>
+
+                                  {!isLast && <View style={styles.paymentRowDivider} />}
+                                </React.Fragment>
+                              );
+                            })}
+                          </View>
+                        </View>
+                      ))}
+                    </ScrollView>
                   </View>
                 </View>
-              </Modal>
+              )}
             </>
           )}
         </View>
@@ -1277,6 +1333,8 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   balanceStrip: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 4,
     paddingHorizontal: 4,
     marginBottom: 6,
@@ -1291,10 +1349,16 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1E242B',
   },
+  balanceStripDot: {
+    fontSize: 11.5,
+    fontFamily: ServenticaTokens.fonts.SFProRegular,
+    color: '#94A3B8',
+  },
   addMoneyText: {
     fontFamily: ServenticaTokens.fonts.SFProBold,
     color: '#E23744',
     fontWeight: '700',
+    fontSize: 11.5,
   },
   footerMainRow: {
     flexDirection: 'row',
@@ -1392,111 +1456,115 @@ const styles = StyleSheet.create({
 
   // Payment Picker Modal
   paymentModalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(15, 23, 42, 0.55)',
     justifyContent: 'flex-end',
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    overflow: 'hidden',
+    zIndex: 999,
   },
   paymentModalDismiss: {
     flex: 1,
   },
   paymentSheet: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F4F5F8',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
-    paddingHorizontal: 20,
-    paddingTop: 18,
-    paddingBottom: Platform.OS === 'android' ? 24 : 36,
+    maxHeight: '90%',
+    minHeight: '65%',
+    paddingBottom: Platform.OS === 'android' ? 20 : 36,
   },
-  paymentSheetHeader: {
+  paymentSheetTopBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 14,
+    gap: 14,
   },
-  paymentSheetTitle: {
+  chevronDownCircleBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  billTotalText: {
     fontSize: 16,
+    fontFamily: ServenticaTokens.fonts.SFProBold,
+    fontWeight: '700',
+    color: '#1E242B',
+  },
+  billTotalAmount: {
+    fontSize: 16.5,
     fontFamily: ServenticaTokens.fonts.PoppinsBold,
     fontWeight: '700',
     color: '#1E242B',
   },
-  sheetCloseBtn: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: '#F1F5F9',
-    alignItems: 'center',
-    justifyContent: 'center',
+  paymentSheetScrollContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 28,
   },
-  paymentOptionsList: {
-    gap: 8,
+  paymentCategoryContainer: {
+    marginTop: 14,
   },
-  paymentOptionItem: {
+  paymentCategoryHeader: {
+    fontSize: 11.5,
+    fontFamily: ServenticaTokens.fonts.SFProBold,
+    fontWeight: '700',
+    color: '#8E95A5',
+    letterSpacing: 0.8,
+    marginBottom: 8,
+    marginLeft: 4,
+    textTransform: 'uppercase',
+  },
+  paymentCardGroup: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: '#ECEEF2',
+    overflow: 'hidden',
+  },
+  paymentRowItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 16,
-    backgroundColor: '#F8FAFC',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    paddingVertical: 14,
   },
-  paymentOptionItemActive: {
-    backgroundColor: '#FFF1F2',
-    borderColor: '#FECDD3',
-  },
-  paymentOptionLeft: {
+  paymentRowLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 14,
     flex: 1,
   },
-  paymentRadio: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    borderWidth: 1.5,
-    borderColor: '#CBD5E1',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  paymentRadioActive: {
-    borderColor: '#E23744',
-  },
-  paymentRadioInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#E23744',
-  },
-  paymentOptionName: {
-    fontSize: 13,
+  paymentRowTitle: {
+    fontSize: 14,
     fontFamily: ServenticaTokens.fonts.SFProBold,
     fontWeight: '600',
     color: '#1E242B',
   },
-  paymentOptionNameActive: {
-    color: '#E23744',
+  paymentRowTitleSelected: {
+    color: '#1E242B',
     fontWeight: '700',
   },
-  paymentOptionDesc: {
-    fontSize: 10.5,
-    fontFamily: ServenticaTokens.fonts.SFProRegular,
-    color: '#64748B',
-    marginTop: 1,
+  paymentRowRight: {
+    paddingLeft: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  paymentBadge: {
-    backgroundColor: '#10B981',
-    paddingHorizontal: 5,
-    paddingVertical: 1,
-    borderRadius: 5,
-  },
-  paymentBadgeText: {
-    fontSize: 8.5,
-    fontFamily: ServenticaTokens.fonts.SFProBold,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: 0.3,
+  paymentRowDivider: {
+    height: 1,
+    backgroundColor: '#F1F3F6',
+    marginLeft: 50,
   },
   successState: {
     alignItems: 'center',
