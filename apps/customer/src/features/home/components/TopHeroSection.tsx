@@ -558,10 +558,11 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     fontSize: 23,
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
+    fontFamily: ServenticaTokens.fonts.PoppinsBold,
     color: '#FFFFFF',
     textAlign: 'center',
     lineHeight: 28,
+    letterSpacing: -0.3,
     marginBottom: 4,
   },
   heroDescription: {

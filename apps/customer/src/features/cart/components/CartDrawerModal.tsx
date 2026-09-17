@@ -1502,12 +1502,14 @@ const styles = StyleSheet.create({
     fontFamily: ServenticaTokens.fonts.PoppinsMedium,
     fontWeight: '600',
     color: '#1E242B',
+    letterSpacing: -0.3,
   },
   billTotalAmount: {
     fontSize: 16.5,
     fontFamily: ServenticaTokens.fonts.PoppinsBold,
     fontWeight: '700',
     color: '#1E242B',
+    letterSpacing: -0.3,
   },
   paymentSheetScrollContent: {
     paddingHorizontal: 16,
@@ -1550,11 +1552,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: ServenticaTokens.fonts.PoppinsRegular,
     color: '#1E242B',
+    letterSpacing: -0.2,
   },
   paymentRowTitleSelected: {
     fontFamily: ServenticaTokens.fonts.PoppinsMedium,
     color: '#1E242B',
     fontWeight: '600',
+    letterSpacing: -0.2,
   },
   paymentRowRight: {
     paddingLeft: 8,
