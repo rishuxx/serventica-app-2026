@@ -80,8 +80,7 @@ const styles = StyleSheet.create({
   },
   categoryTitle: {
     fontSize: 13,
-    fontFamily: ServenticaTokens.fonts.PoppinsSemiBold,
-    fontWeight: '600',
+    fontFamily: ServenticaTokens.fonts.SemiBold,
     color: '#1E242B',
     textAlign: 'center',
     marginTop: 2,

@@ -72,7 +72,7 @@ export const CategoryRailItem: React.FC<CategoryItemProps> = React.memo(({
       >
         <View style={styles.iconWrapper}>
           <CategoryIcon
-            name={category.icon}
+            name={category.icon || undefined}
             size={21}
             color={iconColor}
             strokeWidth={isSelected ? 1.9 : 1.55}
@@ -138,8 +138,7 @@ const styles = StyleSheet.create({
     lineHeight: 14,
   },
   selectedLabel: {
-    fontWeight: '700',
-    fontFamily: ServenticaTokens.fonts.SemiBold || ServenticaTokens.fonts.Regular,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
   },
   activeIndicator: {
     width: 16,

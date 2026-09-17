@@ -780,9 +780,8 @@ const styles = StyleSheet.create({
   },
   stickyAddressText: {
     fontSize: 12,
-    fontWeight: '600',
     color: '#1E242B',
-    fontFamily: ServenticaTokens.fonts.Medium,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
     flexShrink: 1,
   },
   stickySearchButton: {

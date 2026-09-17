@@ -97,17 +97,16 @@ const styles = StyleSheet.create({
   },
   serviceName: {
     fontSize: 11.5,
-    fontFamily: ServenticaTokens.fonts.PoppinsSemiBold,
-    fontWeight: '600',
+    fontFamily: ServenticaTokens.fonts.SemiBold,
     color: '#1E242B',
     textAlign: 'center',
   },
   serviceTagline: {
     fontSize: 10,
-    fontFamily: ServenticaTokens.fonts.SFProRegular,
+    fontFamily: ServenticaTokens.fonts.Regular,
     color: '#64748B',
     textAlign: 'center',
     marginTop: 1,
-    letterSpacing: -0.1,
+    letterSpacing: 0,
   },
 });

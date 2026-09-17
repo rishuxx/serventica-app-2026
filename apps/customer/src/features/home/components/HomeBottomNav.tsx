@@ -20,78 +20,61 @@ export interface HomeBottomNavProps {
 interface TabThemeConfig {
   id: BottomNavTab;
   label: string;
-  activeFill: string;
-  activePillBg: string;
-  activeBorder: string;
   activeStroke: string;
-  labelColor: string;
+  activeFill: string;
 }
 
 const TAB_CONFIGS: Record<BottomNavTab, TabThemeConfig> = {
   HOME: {
     id: 'HOME',
     label: 'Home',
-    activeFill: '#FACC15', // Vibrant Gold
-    activePillBg: 'rgba(250, 204, 21, 0.22)',
-    activeBorder: 'rgba(250, 204, 21, 0.40)',
-    activeStroke: '#111111',
-    labelColor: '#111111',
+    activeStroke: '#1E242B',
+    activeFill: '#FAC420', // Serventica warm gold accent
   },
   ORDERS: {
     id: 'ORDERS',
     label: 'Orders',
-    activeFill: '#38BDF8', // Cyan / Notes Blue
-    activePillBg: 'rgba(56, 189, 248, 0.20)',
-    activeBorder: 'rgba(56, 189, 248, 0.45)',
-    activeStroke: '#0C4A6E',
-    labelColor: '#111111',
+    activeStroke: '#1E242B',
+    activeFill: '#38BDF8', // Cyan accent
   },
   CATEGORIES: {
     id: 'CATEGORIES',
     label: 'Categories',
-    activeFill: '#A855F7', // Deep Purple / Catalog
-    activePillBg: 'rgba(168, 85, 247, 0.20)',
-    activeBorder: 'rgba(168, 85, 247, 0.45)',
-    activeStroke: '#3B0764',
-    labelColor: '#111111',
+    activeStroke: '#1E242B',
+    activeFill: '#A855F7', // Purple accent
   },
   SAVED: {
     id: 'SAVED',
     label: 'Saved',
-    activeFill: '#F43F5E', // Reddish Pink / Rose Heart
-    activePillBg: 'rgba(244, 63, 94, 0.20)',
-    activeBorder: 'rgba(244, 63, 94, 0.45)',
-    activeStroke: '#881337',
-    labelColor: '#111111',
+    activeStroke: '#1E242B',
+    activeFill: '#F43F5E', // Rose accent
   },
   PROFILE: {
     id: 'PROFILE',
     label: 'Profile',
-    activeFill: '#10B981', // Emerald Teal / User
-    activePillBg: 'rgba(16, 185, 129, 0.20)',
-    activeBorder: 'rgba(16, 185, 129, 0.45)',
-    activeStroke: '#064E3B',
-    labelColor: '#111111',
+    activeStroke: '#1E242B',
+    activeFill: '#10B981', // Emerald accent
   },
 };
 
-// Crisp SVG Icons with thematic active fills and high-contrast dark inactive strokes
+// Crisp, refined SVG Icons with light glass aesthetics
 const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThemeConfig }> = ({
   tab,
   isActive,
   theme,
 }) => {
-  const stroke = isActive ? theme.activeStroke : '#475569';
-  const strokeWidth = isActive ? 2.2 : 1.9;
+  const stroke = isActive ? '#1E242B' : '#64748B';
+  const strokeWidth = isActive ? 2.2 : 1.8;
   const fill = isActive ? theme.activeFill : 'none';
 
   switch (tab) {
     case 'HOME':
       return (
-        <Svg width={22} height={22} viewBox="0 0 24 24">
+        <Svg width={21} height={21} viewBox="0 0 24 24">
           <Path
             d="M3 10.5L12 3l9 7.5V20a1.5 1.5 0 0 1-1.5 1.5H4.5A1.5 1.5 0 0 1 3 20V10.5z"
             fill={fill}
+            fillOpacity={isActive ? 0.35 : 0}
             stroke={stroke}
             strokeWidth={strokeWidth}
             strokeLinecap="round"
@@ -110,14 +93,15 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
 
     case 'ORDERS':
       return (
-        <Svg width={22} height={22} viewBox="0 0 24 24">
+        <Svg width={21} height={21} viewBox="0 0 24 24">
           <Rect
             x="4"
             y="4.5"
             width="16"
             height="16"
-            rx="3"
+            rx="3.5"
             fill={fill}
+            fillOpacity={isActive ? 0.3 : 0}
             stroke={stroke}
             strokeWidth={strokeWidth}
           />
@@ -130,7 +114,7 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
           <Path
             d="M8.5 10.5h7M8.5 14.5h4.5"
             fill="none"
-            stroke={isActive ? '#FFFFFF' : stroke}
+            stroke={stroke}
             strokeWidth={strokeWidth}
             strokeLinecap="round"
           />
@@ -139,14 +123,15 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
 
     case 'CATEGORIES':
       return (
-        <Svg width={22} height={22} viewBox="0 0 24 24">
+        <Svg width={21} height={21} viewBox="0 0 24 24">
           <Rect
             x="3"
             y="3"
             width="7.5"
             height="7.5"
-            rx="2"
+            rx="2.2"
             fill={fill}
+            fillOpacity={isActive ? 0.35 : 0}
             stroke={stroke}
             strokeWidth={strokeWidth}
           />
@@ -155,8 +140,9 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
             y="3"
             width="7.5"
             height="7.5"
-            rx="2"
+            rx="2.2"
             fill={fill}
+            fillOpacity={isActive ? 0.35 : 0}
             stroke={stroke}
             strokeWidth={strokeWidth}
           />
@@ -165,8 +151,9 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
             y="13.5"
             width="7.5"
             height="7.5"
-            rx="2"
+            rx="2.2"
             fill={fill}
+            fillOpacity={isActive ? 0.35 : 0}
             stroke={stroke}
             strokeWidth={strokeWidth}
           />
@@ -175,8 +162,9 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
             y="13.5"
             width="7.5"
             height="7.5"
-            rx="2"
+            rx="2.2"
             fill={fill}
+            fillOpacity={isActive ? 0.35 : 0}
             stroke={stroke}
             strokeWidth={strokeWidth}
           />
@@ -185,10 +173,11 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
 
     case 'SAVED':
       return (
-        <Svg width={22} height={22} viewBox="0 0 24 24">
+        <Svg width={21} height={21} viewBox="0 0 24 24">
           <Path
             d="M19.5 13.572L12 21l-7.5-7.428A5 5 0 1 1 12 6.706a5 5 0 1 1 7.5 6.866z"
             fill={fill}
+            fillOpacity={isActive ? 0.35 : 0}
             stroke={stroke}
             strokeWidth={strokeWidth}
             strokeLinecap="round"
@@ -199,7 +188,7 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
 
     case 'PROFILE':
       return (
-        <Svg width={22} height={22} viewBox="0 0 24 24">
+        <Svg width={21} height={21} viewBox="0 0 24 24">
           <Path
             d="M20 21v-1.5A4.5 4.5 0 0 0 15.5 15h-7A4.5 4.5 0 0 0 4 19.5V21"
             fill="none"
@@ -211,6 +200,7 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
           <Path
             d="M12 11.5a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"
             fill={fill}
+            fillOpacity={isActive ? 0.35 : 0}
             stroke={stroke}
             strokeWidth={strokeWidth}
             strokeLinecap="round"
@@ -221,41 +211,41 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
   }
 };
 
-// Fluid animated Tab Button with spring physics, scale pop, and dedicated color pill
+// Fast, fluid animated Tab Button with light glass shadow and rapid spring response
 const FluidNavTabButton: React.FC<{
   tabConfig: TabThemeConfig;
   isActive: boolean;
   onPress: () => void;
 }> = ({ tabConfig, isActive, onPress }) => {
-  const scaleAnim = useRef(new Animated.Value(isActive ? 1 : 0.94)).current;
-  const pillOpacity = useRef(new Animated.Value(isActive ? 1 : 0)).current;
-  const iconTranslateY = useRef(new Animated.Value(isActive ? -2 : 0)).current;
+  const scaleAnim = useRef(new Animated.Value(isActive ? 1 : 0.95)).current;
+  const glassOpacity = useRef(new Animated.Value(isActive ? 1 : 0)).current;
+  const iconTranslateY = useRef(new Animated.Value(isActive ? -1.5 : 0)).current;
 
   useEffect(() => {
     if (isActive) {
       Animated.parallel([
         Animated.spring(scaleAnim, {
-          toValue: 1.08,
-          friction: 4,
-          tension: 180,
+          toValue: 1.05,
+          friction: 6,
+          tension: 280,
           useNativeDriver: true,
         }),
-        Animated.timing(pillOpacity, {
+        Animated.timing(glassOpacity, {
           toValue: 1,
-          duration: 180,
+          duration: 150,
           useNativeDriver: true,
         }),
         Animated.spring(iconTranslateY, {
-          toValue: -2,
-          friction: 5,
-          tension: 200,
+          toValue: -1.5,
+          friction: 6,
+          tension: 280,
           useNativeDriver: true,
         }),
       ]).start(() => {
         Animated.spring(scaleAnim, {
           toValue: 1,
-          friction: 5,
-          tension: 150,
+          friction: 7,
+          tension: 220,
           useNativeDriver: true,
         }).start();
       });
@@ -263,35 +253,37 @@ const FluidNavTabButton: React.FC<{
       Animated.parallel([
         Animated.spring(scaleAnim, {
           toValue: 1,
-          friction: 6,
+          friction: 7,
           useNativeDriver: true,
         }),
-        Animated.timing(pillOpacity, {
+        Animated.timing(glassOpacity, {
           toValue: 0,
-          duration: 150,
+          duration: 120,
           useNativeDriver: true,
         }),
         Animated.spring(iconTranslateY, {
           toValue: 0,
-          friction: 6,
+          friction: 7,
           useNativeDriver: true,
         }),
       ]).start();
     }
-  }, [isActive]);
+  }, [isActive, glassOpacity, iconTranslateY, scaleAnim]);
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
-      toValue: 0.88,
-      friction: 4,
+      toValue: 0.90,
+      friction: 6,
+      tension: 300,
       useNativeDriver: true,
     }).start();
   };
 
   const handlePressOut = () => {
     Animated.spring(scaleAnim, {
-      toValue: isActive ? 1 : 0.96,
-      friction: 5,
+      toValue: 1,
+      friction: 6,
+      tension: 250,
       useNativeDriver: true,
     }).start();
   };
@@ -299,7 +291,7 @@ const FluidNavTabButton: React.FC<{
   return (
     <TouchableOpacity
       style={styles.tabItem}
-      activeOpacity={0.85}
+      activeOpacity={0.88}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       onPress={onPress}
@@ -318,14 +310,12 @@ const FluidNavTabButton: React.FC<{
           },
         ]}
       >
-        {/* Animated fluid color pill background */}
+        {/* Very light glass effect background with soft ambient shadow */}
         <Animated.View
           style={[
-            styles.activePillBackground,
+            styles.activeGlassPill,
             {
-              backgroundColor: tabConfig.activePillBg,
-              borderColor: tabConfig.activeBorder,
-              opacity: pillOpacity,
+              opacity: glassOpacity,
             },
           ]}
         />
@@ -335,11 +325,7 @@ const FluidNavTabButton: React.FC<{
       <Text
         style={[
           styles.tabLabel,
-          isActive && {
-            color: '#111111',
-            fontFamily: ServenticaTokens.fonts.Bold,
-            fontWeight: '700',
-          },
+          isActive ? styles.tabLabelActive : styles.tabLabelInactive,
         ]}
       >
         {tabConfig.label}
@@ -383,19 +369,17 @@ const styles = StyleSheet.create({
   navContainer: {
     width: '100%',
     backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 36,
-    borderTopRightRadius: 36,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
     borderTopWidth: 1,
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.06)',
+    borderColor: 'rgba(0, 0, 0, 0.05)',
     paddingTop: 8,
     paddingBottom: Platform.OS === 'ios' ? 18 : 10,
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 12,
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 8,
   },
   row: {
     flexDirection: 'row',
@@ -410,22 +394,35 @@ const styles = StyleSheet.create({
     minWidth: 58,
   },
   iconContainer: {
-    width: 48,
+    width: 46,
     height: 30,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 3,
     position: 'relative',
   },
-  activePillBackground: {
-    ...StyleSheet.absoluteFill,
+  activeGlassPill: {
+    ...StyleSheet.absoluteFillObject,
     borderRadius: 15,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.06)',
+    shadowColor: '#1E242B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
   },
   tabLabel: {
     fontSize: 11,
-    fontFamily: ServenticaTokens.fonts.Medium,
-    color: '#64748B',
     letterSpacing: 0,
+  },
+  tabLabelInactive: {
+    color: '#64748B',
+    fontFamily: ServenticaTokens.fonts.Medium,
+  },
+  tabLabelActive: {
+    color: '#1E242B',
+    fontFamily: ServenticaTokens.fonts.Bold,
   },
 });

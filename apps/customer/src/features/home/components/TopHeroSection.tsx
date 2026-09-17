@@ -462,7 +462,6 @@ const styles = StyleSheet.create({
     fontFamily: ServenticaTokens.fonts.Medium,
     color: 'rgba(255, 255, 255, 0.92)',
     maxWidth: '85%',
-    fontWeight: '500',
   },
   chevronIcon: {
     marginLeft: 3,
@@ -511,7 +510,7 @@ const styles = StyleSheet.create({
   },
   inputTextActive: {
     color: '#1E242B',
-    fontWeight: '500',
+    fontFamily: ServenticaTokens.fonts.Medium,
   },
   actionButton: {
     padding: 4,
@@ -588,6 +587,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: ServenticaTokens.fonts.Bold,
     color: '#1E242B',
-    fontWeight: '700',
   },
 });

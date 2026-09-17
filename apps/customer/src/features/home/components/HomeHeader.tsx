@@ -87,10 +87,9 @@ const styles = StyleSheet.create({
   },
   brandText: {
     fontSize: 20,
-    fontWeight: '800',
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#1E242B',
-    letterSpacing: -0.3,
+    letterSpacing: 0,
   },
   brandDot: {
     color: '#1E242B',
@@ -104,10 +103,10 @@ const styles = StyleSheet.create({
   },
   addressText: {
     fontSize: 14,
-    fontWeight: '600',
-    fontFamily: ServenticaTokens.fonts.Medium,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
     color: '#171717',
     maxWidth: '85%',
+    letterSpacing: 0,
   },
   chevronIcon: {
     marginLeft: 3,

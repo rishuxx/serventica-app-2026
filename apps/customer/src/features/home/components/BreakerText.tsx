@@ -31,8 +31,7 @@ const styles = StyleSheet.create({
   text: {
     marginHorizontal: 14,
     fontSize: 12.5,
-    fontFamily: ServenticaTokens.fonts.PoppinsSemiBold,
-    fontWeight: '600',
+    fontFamily: ServenticaTokens.fonts.SemiBold,
     color: '#94A3B8',
     textTransform: 'uppercase',
     letterSpacing: 0.8,

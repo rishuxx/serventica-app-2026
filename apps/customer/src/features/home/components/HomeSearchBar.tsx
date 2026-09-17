@@ -136,7 +136,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: ServenticaTokens.fonts.Medium,
     color: '#1E242B',
-    fontWeight: '400',
     paddingVertical: 0,
   },
   divider: {
