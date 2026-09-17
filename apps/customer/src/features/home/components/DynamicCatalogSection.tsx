@@ -134,15 +134,14 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#1E242B',
   },
   sectionSubtitle: {
-    fontSize: 12,
+    fontSize: 12.5,
     fontFamily: ServenticaTokens.fonts.Regular,
     color: '#5E6672',
     marginTop: 2,
-    letterSpacing: -0.1,
   },
   cardsList: {
     paddingHorizontal: 16,
@@ -174,7 +173,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 16,
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#374151',
     marginTop: 12,
     textAlign: 'center',
@@ -186,7 +185,6 @@ const styles = StyleSheet.create({
     marginTop: 6,
     textAlign: 'center',
     lineHeight: 18,
-    letterSpacing: -0.1,
   },
   errorContainer: {
     alignItems: 'center',
@@ -199,7 +197,7 @@ const styles = StyleSheet.create({
   },
   errorTitle: {
     fontSize: 16,
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#1E242B',
     marginTop: 12,
     textAlign: 'center',
@@ -211,7 +209,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 4,
     marginBottom: 16,
-    letterSpacing: -0.1,
   },
   retryButton: {
     flexDirection: 'row',
@@ -229,7 +226,6 @@ const styles = StyleSheet.create({
     fontFamily: ServenticaTokens.fonts.Medium,
     fontWeight: '600',
     color: '#FFFFFF',
-    letterSpacing: -0.1,
   },
   shimmerCardContainer: {
     flexDirection: 'row',

@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FCF403', // Solid bright vibrant light yellow #fcf403
+    backgroundColor: '#fac420', // Warm golden yellow #fac420
     borderRadius: 30,
     paddingLeft: 12,
     paddingRight: 10,
@@ -209,7 +209,6 @@ const styles = StyleSheet.create({
     fontFamily: ServenticaTokens.fonts.SemiBold,
     fontWeight: '700',
     color: '#1E242B',
-    letterSpacing: -0.2,
   },
   arrowCircle: {
     width: 22,

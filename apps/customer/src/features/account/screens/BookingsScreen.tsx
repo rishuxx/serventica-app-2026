@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 17,
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#1E242B',
   },
   headerSpacer: {
@@ -258,10 +258,10 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     fontFamily: ServenticaTokens.fonts.Medium,
     color: '#666666',
-    letterSpacing: -0.1,
   },
   tabTextActive: {
     color: '#FFFFFF',
+    fontFamily: ServenticaTokens.fonts.SemiBold,
     fontWeight: '600',
   },
   listContent: {
@@ -309,10 +309,9 @@ const styles = StyleSheet.create({
   },
   statusBadgeText: {
     fontSize: 11,
-    fontFamily: ServenticaTokens.fonts.Medium,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
     fontWeight: '600',
-    textTransform: 'capitalize',
-    letterSpacing: -0.1,
+    textTransform: 'uppercase',
   },
   textSuccess: {
     color: '#059669',
@@ -327,7 +326,6 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
     fontFamily: ServenticaTokens.fonts.Regular,
     color: '#888888',
-    letterSpacing: -0.1,
   },
   serviceRow: {
     flexDirection: 'row',
@@ -350,11 +348,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   serviceName: {
-    fontSize: 14.5,
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
+    fontSize: 15,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
     color: '#1E242B',
     marginBottom: 3,
-    letterSpacing: -1.5,
   },
   addressRow: {
     flexDirection: 'row',
@@ -366,14 +363,12 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
     fontFamily: ServenticaTokens.fonts.Regular,
     color: '#777777',
-    letterSpacing: -0.1,
   },
   priceText: {
-    fontSize: 13,
-    fontFamily: ServenticaTokens.fonts.Regular,
+    fontSize: 14,
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#1E242B',
     fontWeight: '700',
-    letterSpacing: -0.2,
   },
   centerBox: {
     flex: 1,
@@ -386,14 +381,12 @@ const styles = StyleSheet.create({
     fontFamily: ServenticaTokens.fonts.Regular,
     color: '#777777',
     marginTop: 12,
-    letterSpacing: -0.1,
   },
   errorTitle: {
     fontSize: 15,
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#1E242B',
     marginBottom: 6,
-    letterSpacing: -1.5,
   },
   errorSubtitle: {
     fontSize: 12.5,
@@ -401,7 +394,6 @@ const styles = StyleSheet.create({
     color: '#777777',
     textAlign: 'center',
     marginBottom: 16,
-    letterSpacing: -0.1,
   },
   retryBtn: {
     paddingHorizontal: 20,
@@ -413,7 +405,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: ServenticaTokens.fonts.Medium,
     color: '#FFFFFF',
-    letterSpacing: -0.1,
   },
   emptyBox: {
     flex: 1,
@@ -432,11 +423,10 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 16,
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#1E242B',
     marginBottom: 8,
     textAlign: 'center',
-    letterSpacing: -1.8,
   },
   emptySubtitle: {
     fontSize: 13,
@@ -445,7 +435,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 19,
     marginBottom: 24,
-    letterSpacing: -0.1,
   },
   exploreBtn: {
     paddingHorizontal: 24,
@@ -457,6 +446,5 @@ const styles = StyleSheet.create({
     fontSize: 13.5,
     fontFamily: ServenticaTokens.fonts.Medium,
     color: '#FFFFFF',
-    letterSpacing: -0.1,
   },
 });

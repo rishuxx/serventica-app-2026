@@ -166,7 +166,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
               onPress={() => addItem(service)}
             >
               <Text style={styles.actionButtonText}>ADD</Text>
-              <Plus size={12} color="#FFFFFF" strokeWidth={2.6} />
+              <Plus size={12} color="#1E242B" strokeWidth={2.6} />
             </TouchableOpacity>
           )}
         </View>
@@ -213,18 +213,17 @@ const styles = StyleSheet.create({
     color: '#333333',
     fontWeight: '600',
     textTransform: 'uppercase',
-    letterSpacing: 0.4,
   },
   serviceName: {
     fontSize: 15,
-    fontFamily: ServenticaTokens.fonts.PoppinsSemiBold,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
     color: '#1E242B',
     lineHeight: 20,
     marginBottom: 4,
   },
   serviceDescription: {
     fontSize: 12,
-    fontFamily: ServenticaTokens.fonts.SFProRegular,
+    fontFamily: ServenticaTokens.fonts.Regular,
     color: '#5E6672',
     lineHeight: 16,
     marginBottom: 8,
@@ -245,13 +244,12 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
     fontWeight: '700',
     color: '#1E242B',
-    fontFamily: ServenticaTokens.fonts.SFProMedium,
-    letterSpacing: -0.1,
+    fontFamily: ServenticaTokens.fonts.Medium,
   },
   reviewsCount: {
     fontSize: 11,
     color: '#94A3B8',
-    fontFamily: ServenticaTokens.fonts.SFProRegular,
+    fontFamily: ServenticaTokens.fonts.Regular,
   },
   durationBox: {
     flexDirection: 'row',
@@ -261,7 +259,7 @@ const styles = StyleSheet.create({
   durationText: {
     fontSize: 11.5,
     color: '#5E6672',
-    fontFamily: ServenticaTokens.fonts.SFProRegular,
+    fontFamily: ServenticaTokens.fonts.Regular,
   },
   priceRow: {
     flexDirection: 'row',
@@ -270,22 +268,20 @@ const styles = StyleSheet.create({
   },
   priceFromLabel: {
     fontSize: 11,
-    fontFamily: ServenticaTokens.fonts.SFProRegular,
+    fontFamily: ServenticaTokens.fonts.Regular,
     color: '#94A3B8',
-    letterSpacing: -0.1,
   },
   priceCurrency: {
     fontSize: 13,
     fontWeight: '700',
     color: '#1E242B',
-    fontFamily: ServenticaTokens.fonts.SFProBold,
+    fontFamily: ServenticaTokens.fonts.Bold,
   },
   priceValue: {
     fontSize: 16,
     fontWeight: '700',
     color: '#1E242B',
-    fontFamily: ServenticaTokens.fonts.SFProBold,
-    letterSpacing: -0.2,
+    fontFamily: ServenticaTokens.fonts.Bold,
   },
   imageActionCol: {
     alignItems: 'center',
@@ -325,20 +321,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1E242B',
+    backgroundColor: '#FFFFFF',
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 16,
     minHeight: 32,
     width: '100%',
-    gap: 3,
+    gap: 4,
+    borderWidth: 1,
+    borderColor: '#D8DCE3',
+    shadowColor: '#1E242B',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   actionButtonText: {
     fontSize: 11.5,
-    fontFamily: ServenticaTokens.fonts.SFProBold,
-    color: '#FFFFFF',
+    fontFamily: ServenticaTokens.fonts.Bold,
+    color: '#1E242B',
     fontWeight: '700',
-    letterSpacing: -0.1,
   },
   stepperContainer: {
     flexDirection: 'row',
@@ -362,6 +364,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     color: '#1E242B',
-    fontFamily: ServenticaTokens.fonts.SFProBold,
+    fontFamily: ServenticaTokens.fonts.Bold,
   },
 });

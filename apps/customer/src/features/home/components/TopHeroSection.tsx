@@ -443,7 +443,7 @@ const styles = StyleSheet.create({
   },
   deliveryTimeHighlight: {
     fontSize: 24,
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#FFFFFF',
     lineHeight: 28,
   },
@@ -459,10 +459,9 @@ const styles = StyleSheet.create({
   },
   addressText: {
     fontSize: 12.5,
-    fontFamily: ServenticaTokens.fonts.Regular,
+    fontFamily: ServenticaTokens.fonts.Medium,
     color: 'rgba(255, 255, 255, 0.92)',
     maxWidth: '85%',
-    letterSpacing: -0.1,
     fontWeight: '500',
   },
   chevronIcon: {
@@ -509,7 +508,6 @@ const styles = StyleSheet.create({
     fontSize: 13.5,
     fontFamily: ServenticaTokens.fonts.Regular,
     color: '#888888',
-    letterSpacing: -0.1,
   },
   inputTextActive: {
     color: '#1E242B',
@@ -558,11 +556,10 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     fontSize: 23,
-    fontFamily: ServenticaTokens.fonts.PoppinsBold,
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#FFFFFF',
     textAlign: 'center',
     lineHeight: 28,
-    letterSpacing: -0.3,
     marginBottom: 4,
   },
   heroDescription: {
@@ -571,12 +568,11 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     textAlign: 'center',
     lineHeight: 18,
-    letterSpacing: -0.1,
     marginBottom: 12,
     paddingHorizontal: 16,
   },
   shopNowButton: {
-    backgroundColor: '#FFCC00', // Serventica signature yellow
+    backgroundColor: '#fac420', // Warm golden yellow #fac420
     paddingHorizontal: 24,
     paddingVertical: 9,
     borderRadius: 18,
@@ -590,9 +586,8 @@ const styles = StyleSheet.create({
   },
   shopNowText: {
     fontSize: 13,
-    fontFamily: ServenticaTokens.fonts.Medium,
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#1E242B',
-    letterSpacing: -0.1,
     fontWeight: '700',
   },
 });
