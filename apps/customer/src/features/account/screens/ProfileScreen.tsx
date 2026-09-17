@@ -23,6 +23,7 @@ import {
   FileText,
   Heart,
   ChevronRight,
+  FlaskConical,
 } from 'lucide-react-native';
 import { ServenticaTokens } from '../../../../../../packages/design-system/src';
 import { useAuth } from '../../../context/AuthContext';
@@ -46,6 +47,7 @@ export interface ProfileScreenProps {
   onNavigateNotifications: () => void;
   onNavigateSupport: () => void;
   onNavigateReviews: () => void;
+  onNavigateSandbox?: () => void;
 }
 
 export const ProfileScreen: React.FC<ProfileScreenProps> = ({
@@ -58,6 +60,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
   onNavigateNotifications,
   onNavigateSupport,
   onNavigateReviews,
+  onNavigateSandbox,
 }) => {
   const { signOut, user } = useAuth();
   const { profile } = useProfile();
@@ -213,7 +216,19 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
           />
         </ProfileSection>
 
-        {/* 7. ACCOUNT ACTION (LOGOUT) */}
+        {/* 7. DEVELOPER SANDBOX (TESTING & PREVIEW) */}
+        {onNavigateSandbox ? (
+          <ProfileSection title="Developer Tools (Testing)">
+            <ProfileMenuItem
+              label="UI Card System Sandbox"
+              Icon={FlaskConical}
+              badge="Preview"
+              onPress={onNavigateSandbox}
+            />
+          </ProfileSection>
+        ) : null}
+
+        {/* 8. ACCOUNT ACTION (LOGOUT) */}
         <ProfileSection>
           <ProfileMenuItem
             label="Log Out"

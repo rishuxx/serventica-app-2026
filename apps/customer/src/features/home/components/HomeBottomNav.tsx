@@ -12,7 +12,7 @@ import { ServenticaTokens } from '../../../../../../packages/design-system/src';
 
 export type BottomNavTab = 'HOME' | 'ORDERS' | 'CATEGORIES' | 'SAVED' | 'PROFILE';
 
-interface HomeBottomNavProps {
+export interface HomeBottomNavProps {
   activeTab: BottomNavTab;
   onSelectTab: (tab: BottomNavTab) => void;
 }
@@ -35,7 +35,7 @@ const TAB_CONFIGS: Record<BottomNavTab, TabThemeConfig> = {
     activePillBg: 'rgba(250, 204, 21, 0.22)',
     activeBorder: 'rgba(250, 204, 21, 0.40)',
     activeStroke: '#111111',
-    labelColor: '#D97706',
+    labelColor: '#111111',
   },
   ORDERS: {
     id: 'ORDERS',
@@ -44,7 +44,7 @@ const TAB_CONFIGS: Record<BottomNavTab, TabThemeConfig> = {
     activePillBg: 'rgba(56, 189, 248, 0.20)',
     activeBorder: 'rgba(56, 189, 248, 0.45)',
     activeStroke: '#0C4A6E',
-    labelColor: '#0284C7',
+    labelColor: '#111111',
   },
   CATEGORIES: {
     id: 'CATEGORIES',
@@ -53,7 +53,7 @@ const TAB_CONFIGS: Record<BottomNavTab, TabThemeConfig> = {
     activePillBg: 'rgba(168, 85, 247, 0.20)',
     activeBorder: 'rgba(168, 85, 247, 0.45)',
     activeStroke: '#3B0764',
-    labelColor: '#9333EA',
+    labelColor: '#111111',
   },
   SAVED: {
     id: 'SAVED',
@@ -62,7 +62,7 @@ const TAB_CONFIGS: Record<BottomNavTab, TabThemeConfig> = {
     activePillBg: 'rgba(244, 63, 94, 0.20)',
     activeBorder: 'rgba(244, 63, 94, 0.45)',
     activeStroke: '#881337',
-    labelColor: '#E11D48',
+    labelColor: '#111111',
   },
   PROFILE: {
     id: 'PROFILE',
@@ -71,7 +71,7 @@ const TAB_CONFIGS: Record<BottomNavTab, TabThemeConfig> = {
     activePillBg: 'rgba(16, 185, 129, 0.20)',
     activeBorder: 'rgba(16, 185, 129, 0.45)',
     activeStroke: '#064E3B',
-    labelColor: '#059669',
+    labelColor: '#111111',
   },
 };
 
@@ -337,6 +337,7 @@ const FluidNavTabButton: React.FC<{
           styles.tabLabel,
           isActive && {
             color: '#111111',
+            fontFamily: ServenticaTokens.fonts.Bold,
             fontWeight: '700',
           },
         ]}
@@ -425,6 +426,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: ServenticaTokens.fonts.Medium,
     color: '#64748B',
-    letterSpacing: -0.1,
+    letterSpacing: 0,
   },
 });

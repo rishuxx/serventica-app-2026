@@ -44,6 +44,7 @@ import { SavedServicesScreen } from '../../account/screens/SavedServicesScreen';
 import { SupportScreen } from '../../account/screens/SupportScreen';
 import { NotificationsScreen } from '../../account/screens/NotificationsScreen';
 import { ReviewsScreen } from '../../account/screens/ReviewsScreen';
+import { ServiceCardShowcaseScreen } from '../../showcase/ServiceCardShowcaseScreen';
 
 interface HomeScreenProps {
   onOpenAccount?: () => void;
@@ -59,6 +60,7 @@ export type AccountSubRoute =
   | 'NOTIFICATIONS'
   | 'SUPPORT'
   | 'REVIEWS'
+  | 'SANDBOX'
   | null;
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
@@ -100,28 +102,29 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [activeServiceTarget, setActiveServiceTarget] = useState<{ id: string; slug: string; fromCategory?: boolean } | null>(null);
   const [isStickyActive, setIsStickyActive] = useState<boolean>(false);
 
-  // Scroll offset tracking for threshold trigger
+  // Native scroll tracking for triggers
   const scrollY = useRef(new Animated.Value(0)).current;
 
-  // Dedicated slide animation value: 0 = completely hidden above (-180), 1 = dropped in place (0)
+  // Trigger-based animation value: 0 = hidden offscreen (-160px), 1 = fully in view (0px)
   const stickyAnim = useRef(new Animated.Value(0)).current;
-  const isStickyActiveRef = useRef(false);
+  const stickyActiveRef = useRef(false);
 
-  // Smooth autonomous drop / retract animation triggered at a specific scroll point (280)
+  // Trigger smooth full slide-in when reaching the trigger threshold
   useEffect(() => {
     const listenerId = scrollY.addListener(({ value }) => {
-      const THRESHOLD = 280;
-      if (value > THRESHOLD && !isStickyActiveRef.current) {
-        isStickyActiveRef.current = true;
+      // Trigger threshold with hysteresis: slide down past 220px, slide up back before 160px
+      if (value > 220 && !stickyActiveRef.current) {
+        stickyActiveRef.current = true;
         setIsStickyActive(true);
         Animated.spring(stickyAnim, {
           toValue: 1,
-          tension: 65,
-          friction: 11,
+          damping: 20,
+          mass: 0.8,
+          stiffness: 160,
           useNativeDriver: true,
         }).start();
-      } else if (value <= THRESHOLD && isStickyActiveRef.current) {
-        isStickyActiveRef.current = false;
+      } else if (value < 160 && stickyActiveRef.current) {
+        stickyActiveRef.current = false;
         setIsStickyActive(false);
         Animated.timing(stickyAnim, {
           toValue: 0,
@@ -133,7 +136,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     return () => {
       scrollY.removeListener(listenerId);
     };
-  }, [stickyAnim]);
+  }, [scrollY, stickyAnim]);
 
   const isSearchActive = search.query.trim().length > 0 || search.isSearchActive;
 
@@ -174,10 +177,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const stickyInputBg = isDarkSticky ? 'rgba(255, 255, 255, 0.20)' : 'rgba(0, 0, 0, 0.06)';
   const stickyInputBorder = isDarkSticky ? 'rgba(255, 255, 255, 0.28)' : 'rgba(0, 0, 0, 0.08)';
 
-  // Sticky Header Translation derived from stickyAnim (smooth autonomous drop in from -180 to 0)
+  // Smooth slide down from -160 to 0
   const stickyHeaderTranslateY = stickyAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [-180, 0],
+    outputRange: [-160, 0],
+  });
+
+  const stickyHeaderOpacity = stickyAnim.interpolate({
+    inputRange: [0, 0.4, 1],
+    outputRange: [0, 0.9, 1],
   });
 
   const handleTabSwitch = React.useCallback((tab: BottomNavTab) => {
@@ -222,6 +230,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           onSelectTab={handleTabSwitch}
         />
       </View>
+    );
+  }
+
+  if (activeAccountRoute === 'SANDBOX') {
+    return (
+      <ServiceCardShowcaseScreen
+        onBack={() => {
+          setActiveAccountRoute(null);
+          setActiveTab('HOME');
+        }}
+      />
     );
   }
 
@@ -340,6 +359,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           onNavigateSupport={() => {
             setSupportBookingContext(undefined);
             setActiveAccountRoute('SUPPORT');
+          }}
+          onNavigateSandbox={() => {
+            setActiveAccountRoute('SANDBOX');
           }}
         />
       );
@@ -523,7 +545,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       {renderTabContent()}
 
       {/* 4. HIGH-PERFORMANCE STICKY HEADER SURFACE */}
-      {!activeAccountRoute && !isSearchActive && isStickyActive && (
+      {!activeAccountRoute && !isSearchActive && (
         <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
           <Animated.View
             pointerEvents={isStickyActive ? 'auto' : 'none'}
@@ -531,6 +553,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               styles.stickyHeaderSurface,
               {
                 backgroundColor: stickyGradientColors[0],
+                opacity: stickyHeaderOpacity,
                 transform: [{ translateY: stickyHeaderTranslateY }],
               },
             ]}
@@ -676,7 +699,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         <SelectLocationScreen onClose={location.closeSelectLocation} />
       </Modal>
 
-      {/* 6. MONOCHROMATIC BOTTOM NAVIGATION */}
+      {/* 6. BOTTOM NAVIGATION */}
       <HomeBottomNav
         activeTab={activeTab}
         onSelectTab={handleTabSwitch}
