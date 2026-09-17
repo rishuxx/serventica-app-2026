@@ -1,5 +1,5 @@
 export const Fonts = {
-  // SF Pro Display pairings for body, subheadings, labels & metadata
+  // SF Pro Display typography (body, metadata, labels, buttons)
   Regular: 'SFPRODISPLAYREGULAR',
   Medium: 'SFPRODISPLAYMEDIUM',
   Light: 'SFPRODISPLAYREGULAR',
@@ -13,7 +13,21 @@ export const Fonts = {
   SFProBold: 'SFPRODISPLAYBOLD',
   SFProSemiBold: 'SFPRODISPLAYBOLD',
 
-  // Coolvetica Display Typography for major headings (-2 letter spacing pairing)
+  // Poppins Typography for headings, titles and branding
+  PoppinsRegular: 'Poppins-Regular',
+  PoppinsMedium: 'Poppins-Medium',
+  PoppinsSemiBold: 'Poppins-SemiBold',
+  PoppinsBold: 'Poppins-Bold',
+
+  // Headings & Brand
+  Heading: 'Poppins-Bold',
+  SubHeading: 'Poppins-SemiBold',
+  Title: 'Poppins-Bold',
+  Body: 'SFPRODISPLAYREGULAR',
+  BodyMedium: 'SFPRODISPLAYMEDIUM',
+  BodyBold: 'SFPRODISPLAYBOLD',
+
+  // Coolvetica Display Typography
   Coolvetica: 'Coolvetica-Regular',
   CoolveticaRegular: 'Coolvetica-Regular',
   CoolveticaCondensed: 'Coolvetica-Condensed',
@@ -21,8 +35,8 @@ export const Fonts = {
   CoolveticaCremed: 'Coolvetica-Cremed',
 
   // Legacy mappings for backwards compatibility
-  OkraBold: 'SFPRODISPLAYBOLD',
-  OkraMedium: 'SFPRODISPLAYMEDIUM',
+  OkraBold: 'Poppins-Bold',
+  OkraMedium: 'Poppins-SemiBold',
 } as const;
 
 export const ServenticaTokens = {

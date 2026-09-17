@@ -17,7 +17,8 @@ import {
   Zap,
   Calendar,
   Clock,
-  ArrowRight,
+  ChevronRight,
+  ChevronUp,
   CheckCircle2,
   MapPin,
   Phone,
@@ -28,13 +29,12 @@ import {
   CreditCard,
   Wallet,
   Banknote,
-  ChevronRight,
   Check,
+  Play,
 } from 'lucide-react-native';
 import { useCart } from '../context/CartContext';
 import { useLocation } from '../../../context/LocationContext';
 import { useAuth } from '../../../context/AuthContext';
-import { AnimatedTouchable } from '../../../shared/components/AnimatedTouchable';
 import { ServenticaTokens } from '../../../../../../packages/design-system/src';
 import { AssetRegistry } from '../../../services/home.service';
 
@@ -53,10 +53,10 @@ interface PaymentOption {
 }
 
 const PAYMENT_OPTIONS: PaymentOption[] = [
-  { id: 'UPI', title: 'UPI / Google Pay / PhonePe', subtitle: 'Fastest 1-step verification', badge: 'FAST' },
+  { id: 'UPI', title: 'Google Pay UPI', subtitle: 'Fastest 1-step verification', badge: 'FAST' },
   { id: 'CARDS', title: 'Credit / Debit Card', subtitle: 'Visa, MasterCard, RuPay' },
-  { id: 'WALLET', title: 'Serventica Balance & Wallets', subtitle: 'Paytm, Amazon Pay' },
-  { id: 'COD', title: 'Pay After Service (Cash / Online)', subtitle: 'Pay directly to pro when job done' },
+  { id: 'WALLET', title: 'Serventica Wallet', subtitle: 'Paytm, Amazon Pay' },
+  { id: 'COD', title: 'Pay After Service (Cash/UPI)', subtitle: 'Pay directly to pro when job done' },
 ];
 
 // Hourly duration options ONLY for ondemand / househelp / massage / gardening
@@ -99,7 +99,7 @@ const getAvailableBookingDays = () => {
     else if (i === 1) subLabel = 'TOM';
 
     days.push({
-      key: d.toISOString().split('T')[0],
+      key: `day_${i}`,
       dayLabel: `${d.getDate()} ${monthNames[d.getMonth()]}`,
       subLabel,
       dateNumber: d.getDate(),
@@ -109,7 +109,7 @@ const getAvailableBookingDays = () => {
   return days;
 };
 
-// Time of Day periods
+// Available time periods
 type TimePeriod = 'MORNING' | 'AFTERNOON' | 'EVENING';
 
 const PERIOD_SLOTS: Record<TimePeriod, string[]> = {
@@ -220,14 +220,14 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
           ) : (
             <>
               <ScrollView style={styles.scrollList} showsVerticalScrollIndicator={false}>
-                {/* 1. Address & Contact Pill Bar (Glass-like Soft Light Yellow) */}
+                {/* 1. Address & Contact Pill Bar (Minimalist Neutral) */}
                 <View style={styles.contactBar}>
                   <View style={styles.contactItem}>
                     <MapPin size={14} color="#1E242B" strokeWidth={2.2} />
                     <View style={styles.contactTextCol}>
                       <Text style={styles.contactLabel}>SERVICE LOCATION</Text>
                       <Text style={styles.contactValue} numberOfLines={1}>
-                        {activeLocation.shortAddress || activeLocation.city || 'Your selected address'}
+                        {activeLocation.shortAddress || activeLocation.city || 'Outer Circle, New Delhi'}
                       </Text>
                     </View>
                     <TouchableOpacity onPress={() => { closeCartDrawer(); openSelectLocation(); }}>
@@ -275,7 +275,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                               <Image source={imgSource} style={styles.itemThumb} resizeMode="contain" />
                             ) : (
                               <View style={styles.itemFallbackThumb}>
-                                <Sparkles size={16} color="#FFCC00" />
+                                <Sparkles size={16} color="#64748B" />
                               </View>
                             )}
                           </View>
@@ -288,7 +288,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                             </Text>
                           </View>
 
-                          {/* Stepper Buttons in Light Yellow Pill (No shadows/outlines) */}
+                          {/* Stepper Buttons (Clean Neutral Pill) */}
                           <View style={styles.stepperPill}>
                             <TouchableOpacity
                               style={styles.stepperActionBtn}
@@ -327,8 +327,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                     >
                       <Zap
                         size={15}
-                        color="#1E242B"
-                        fill={bookingMode === 'EXPRESS' ? '#FFCC00' : 'none'}
+                        color={bookingMode === 'EXPRESS' ? '#FFFFFF' : '#64748B'}
                       />
                       <Text
                         style={[
@@ -350,7 +349,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                     >
                       <Calendar
                         size={15}
-                        color={bookingMode === 'SCHEDULED' ? '#1E242B' : '#64748B'}
+                        color={bookingMode === 'SCHEDULED' ? '#FFFFFF' : '#64748B'}
                       />
                       <Text
                         style={[
@@ -363,10 +362,10 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                     </TouchableOpacity>
                   </View>
 
-                  {/* Dynamic Scheduler Options (When Scheduled mode is active) */}
+                  {/* Dynamic Scheduler Options */}
                   {bookingMode === 'SCHEDULED' && (
                     <View style={styles.schedulerContainer}>
-                      {/* 3.1 Service Duration Row ONLY for ondemand/hourly tasks */}
+                      {/* Service Duration Row ONLY for ondemand/hourly tasks */}
                       {hasHourlyService && (
                         <>
                           <Text style={styles.subSectionTitle}>Service duration</Text>
@@ -405,7 +404,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                         </>
                       )}
 
-                      {/* 3.2 Select Date Row */}
+                      {/* Select Date Row */}
                       <Text style={[styles.subSectionTitle, hasHourlyService && { marginTop: 16 }]}>Select date</Text>
                       <ScrollView
                         horizontal
@@ -435,7 +434,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                         })}
                       </ScrollView>
 
-                      {/* 3.3 Select Time of Day (Morning / Afternoon / Evening) */}
+                      {/* Select Time of Day (Morning / Afternoon / Evening) */}
                       <Text style={[styles.subSectionTitle, { marginTop: 16 }]}>Select time</Text>
                       <View style={styles.periodPillBar}>
                         <TouchableOpacity
@@ -449,7 +448,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                           }}
                           activeOpacity={0.8}
                         >
-                          <Sun size={13} color={selectedPeriod === 'MORNING' ? '#1E242B' : '#475569'} />
+                          <Sun size={13} color={selectedPeriod === 'MORNING' ? '#FFFFFF' : '#475569'} />
                           <Text style={[styles.periodText, selectedPeriod === 'MORNING' && styles.periodTextActive]}>
                             Morning
                           </Text>
@@ -466,7 +465,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                           }}
                           activeOpacity={0.8}
                         >
-                          <Sunset size={13} color={selectedPeriod === 'AFTERNOON' ? '#1E242B' : '#475569'} />
+                          <Sunset size={13} color={selectedPeriod === 'AFTERNOON' ? '#FFFFFF' : '#475569'} />
                           <Text style={[styles.periodText, selectedPeriod === 'AFTERNOON' && styles.periodTextActive]}>
                             Afternoon
                           </Text>
@@ -483,14 +482,14 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                           }}
                           activeOpacity={0.8}
                         >
-                          <Moon size={13} color={selectedPeriod === 'EVENING' ? '#1E242B' : '#475569'} />
+                          <Moon size={13} color={selectedPeriod === 'EVENING' ? '#FFFFFF' : '#475569'} />
                           <Text style={[styles.periodText, selectedPeriod === 'EVENING' && styles.periodTextActive]}>
                             Evening
                           </Text>
                         </TouchableOpacity>
                       </View>
 
-                      {/* 3.4 Standard Slots Card */}
+                      {/* Standard Slots */}
                       <View style={styles.slotsCardBox}>
                         <Text style={styles.slotsBoxHeading}>Standard slots</Text>
                         <View style={styles.slotsGridContainer}>
@@ -529,72 +528,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                   )}
                 </View>
 
-                {/* 4. Payment Method Selector Glass Card */}
-                <View style={styles.sectionBlock}>
-                  <Text style={styles.sectionLabel}>PAYMENT METHOD</Text>
-                  <TouchableOpacity
-                    style={styles.paymentMethodCard}
-                    activeOpacity={0.85}
-                    onPress={() => setIsPaymentPickerOpen(!isPaymentPickerOpen)}
-                  >
-                    <View style={styles.paymentMethodIconWrap}>
-                      {selectedPaymentMethod === 'UPI' && <Zap size={16} color="#1E242B" fill="#FFCC00" />}
-                      {selectedPaymentMethod === 'CARDS' && <CreditCard size={16} color="#1E242B" />}
-                      {selectedPaymentMethod === 'WALLET' && <Wallet size={16} color="#1E242B" />}
-                      {selectedPaymentMethod === 'COD' && <Banknote size={16} color="#1E242B" />}
-                    </View>
-                    <View style={styles.paymentMethodTextCol}>
-                      <View style={styles.paymentMethodTitleRow}>
-                        <Text style={styles.paymentMethodTitle}>{activePaymentOption.title}</Text>
-                        {activePaymentOption.badge && (
-                          <View style={styles.paymentBadge}>
-                            <Text style={styles.paymentBadgeText}>{activePaymentOption.badge}</Text>
-                          </View>
-                        )}
-                      </View>
-                      <Text style={styles.paymentMethodSubtitle}>{activePaymentOption.subtitle}</Text>
-                    </View>
-                    <Text style={styles.changeLink}>Change</Text>
-                  </TouchableOpacity>
-
-                  {/* Expandable Payment Methods Picker */}
-                  {isPaymentPickerOpen && (
-                    <View style={styles.paymentOptionsList}>
-                      {PAYMENT_OPTIONS.map((opt) => {
-                        const isSelected = selectedPaymentMethod === opt.id;
-                        return (
-                          <TouchableOpacity
-                            key={opt.id}
-                            style={[
-                              styles.paymentOptionItem,
-                              isSelected && styles.paymentOptionItemActive,
-                            ]}
-                            onPress={() => {
-                              setSelectedPaymentMethod(opt.id);
-                              setIsPaymentPickerOpen(false);
-                            }}
-                            activeOpacity={0.75}
-                          >
-                            <View style={styles.paymentOptionLeft}>
-                              <View style={[styles.paymentRadio, isSelected && styles.paymentRadioActive]}>
-                                {isSelected && <View style={styles.paymentRadioInner} />}
-                              </View>
-                              <View>
-                                <Text style={[styles.paymentOptionName, isSelected && styles.paymentOptionNameActive]}>
-                                  {opt.title}
-                                </Text>
-                                <Text style={styles.paymentOptionDesc}>{opt.subtitle}</Text>
-                              </View>
-                            </View>
-                            {isSelected && <Check size={16} color="#1E242B" strokeWidth={2.8} />}
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </View>
-                  )}
-                </View>
-
-                {/* 5. Dotted Rate List & Bill Summary */}
+                {/* 4. Dotted Rate List & Bill Summary */}
                 <View style={styles.billContainer}>
                   <Text style={styles.billHeading}>Bill Summary</Text>
 
@@ -646,23 +580,122 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                 </View>
               </ScrollView>
 
-              {/* Bottom Sticky Checkout Action (Solid Vibrant Yellow with Soft Shadow matching reference) */}
-              <View style={styles.footerRow}>
-                <View style={styles.footerPayCol}>
-                  <Text style={styles.footerAmountLabel}>TOTAL PAYABLE</Text>
-                  <Text style={styles.footerAmountValue}>₹{fees.finalPayable}</Text>
+              {/* 5. ZOMATO/BLINKIT REFERENCE BOTTOM BAR: Payment Method on Left + Exact Place Order Button on Right */}
+              <View style={styles.footerStickyContainer}>
+                {/* Top Balance strip */}
+                <View style={styles.balanceStrip}>
+                  <Text style={styles.balanceStripText}>
+                    Serventica Wallet Balance: <Text style={styles.balanceStripBold}>₹0</Text> • <Text style={styles.addMoneyText}>Add money</Text>
+                  </Text>
                 </View>
 
-                <AnimatedTouchable
-                  style={styles.payButton}
-                  onPress={handleCheckout}
-                >
-                  <Text style={styles.payButtonText}>
-                    {bookingMode === 'EXPRESS' ? `Pay ₹${fees.finalPayable}` : `Pay ₹${fees.finalPayable}`}
-                  </Text>
-                  <ArrowRight size={15} color="#1E242B" strokeWidth={2.8} />
-                </AnimatedTouchable>
+                {/* Main Action Bar */}
+                <View style={styles.footerMainRow}>
+                  {/* Left Side: PAY USING ▲ & Selected Payment Method */}
+                  <TouchableOpacity
+                    style={styles.payUsingTouchable}
+                    activeOpacity={0.75}
+                    onPress={() => setIsPaymentPickerOpen(true)}
+                  >
+                    <View style={styles.payUsingHeaderRow}>
+                      <View style={styles.payUsingMiniIcon}>
+                        {selectedPaymentMethod === 'UPI' && <Zap size={11} color="#0284C7" />}
+                        {selectedPaymentMethod === 'CARDS' && <CreditCard size={11} color="#0284C7" />}
+                        {selectedPaymentMethod === 'WALLET' && <Wallet size={11} color="#0284C7" />}
+                        {selectedPaymentMethod === 'COD' && <Banknote size={11} color="#0284C7" />}
+                      </View>
+                      <Text style={styles.payUsingLabel}>PAY USING</Text>
+                      <ChevronUp size={12} color="#64748B" strokeWidth={2.6} />
+                    </View>
+                    <Text style={styles.payUsingMethodName} numberOfLines={1}>
+                      {activePaymentOption.title}
+                    </Text>
+                  </TouchableOpacity>
+
+                  {/* Right Side: Exact Reference Place Order Button (Red/Coral Rounded Pill with Price on Left & Place Order on Right) */}
+                  <TouchableOpacity
+                    style={styles.placeOrderButton}
+                    onPress={handleCheckout}
+                    activeOpacity={0.88}
+                  >
+                    <View style={styles.buttonPriceCol}>
+                      <Text style={styles.buttonPriceText}>₹{fees.finalPayable}</Text>
+                      <Text style={styles.buttonTotalLabel}>TOTAL</Text>
+                    </View>
+                    <View style={styles.buttonActionRow}>
+                      <Text style={styles.placeOrderText}>Place Order</Text>
+                      <Play size={10} color="#FFFFFF" fill="#FFFFFF" style={{ marginLeft: 2 }} />
+                    </View>
+                  </TouchableOpacity>
+                </View>
               </View>
+
+              {/* Payment Methods Selection Bottom Sheet Modal */}
+              <Modal
+                visible={isPaymentPickerOpen}
+                animationType="fade"
+                transparent={true}
+                onRequestClose={() => setIsPaymentPickerOpen(false)}
+              >
+                <View style={styles.paymentModalOverlay}>
+                  <TouchableOpacity
+                    style={styles.paymentModalDismiss}
+                    activeOpacity={1}
+                    onPress={() => setIsPaymentPickerOpen(false)}
+                  />
+                  <View style={styles.paymentSheet}>
+                    <View style={styles.paymentSheetHeader}>
+                      <Text style={styles.paymentSheetTitle}>Select Payment Method</Text>
+                      <TouchableOpacity
+                        style={styles.sheetCloseBtn}
+                        onPress={() => setIsPaymentPickerOpen(false)}
+                      >
+                        <X size={16} color="#64748B" strokeWidth={2.4} />
+                      </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.paymentOptionsList}>
+                      {PAYMENT_OPTIONS.map((opt) => {
+                        const isSelected = selectedPaymentMethod === opt.id;
+                        return (
+                          <TouchableOpacity
+                            key={opt.id}
+                            style={[
+                              styles.paymentOptionItem,
+                              isSelected && styles.paymentOptionItemActive,
+                            ]}
+                            onPress={() => {
+                              setSelectedPaymentMethod(opt.id);
+                              setIsPaymentPickerOpen(false);
+                            }}
+                            activeOpacity={0.75}
+                          >
+                            <View style={styles.paymentOptionLeft}>
+                              <View style={[styles.paymentRadio, isSelected && styles.paymentRadioActive]}>
+                                {isSelected && <View style={styles.paymentRadioInner} />}
+                              </View>
+                              <View>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                  <Text style={[styles.paymentOptionName, isSelected && styles.paymentOptionNameActive]}>
+                                    {opt.title}
+                                  </Text>
+                                  {opt.badge && (
+                                    <View style={styles.paymentBadge}>
+                                      <Text style={styles.paymentBadgeText}>{opt.badge}</Text>
+                                    </View>
+                                  )}
+                                </View>
+                                <Text style={styles.paymentOptionDesc}>{opt.subtitle}</Text>
+                              </View>
+                            </View>
+                            {isSelected && <Check size={16} color="#E23744" strokeWidth={2.8} />}
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  </View>
+                </View>
+              </Modal>
             </>
           )}
         </View>
@@ -685,7 +718,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     maxHeight: '92%',
-    paddingBottom: Platform.OS === 'android' ? 18 : 32,
+    paddingBottom: Platform.OS === 'android' ? 14 : 28,
   },
   headerRow: {
     flexDirection: 'row',
@@ -699,7 +732,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontFamily: ServenticaTokens.fonts.SFProBold,
+    fontFamily: ServenticaTokens.fonts.PoppinsBold,
     fontWeight: '700',
     color: '#1E242B',
     letterSpacing: -0.3,
@@ -707,7 +740,7 @@ const styles = StyleSheet.create({
   headerSubtitle: {
     fontSize: 12,
     color: '#64748B',
-    fontFamily: ServenticaTokens.fonts.Regular,
+    fontFamily: ServenticaTokens.fonts.SFProRegular,
     marginTop: 2,
   },
   closeBtn: {
@@ -723,11 +756,13 @@ const styles = StyleSheet.create({
     paddingTop: 14,
   },
   contactBar: {
-    backgroundColor: '#FFFDF0', // Clean soft glass-like light yellow
-    borderRadius: 20,
+    backgroundColor: '#F8FAFC', // Minimalist clean neutral
+    borderRadius: 18,
     paddingHorizontal: 16,
     paddingVertical: 14,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   contactItem: {
     flexDirection: 'row',
@@ -739,28 +774,28 @@ const styles = StyleSheet.create({
   },
   contactLabel: {
     fontSize: 10,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontFamily: ServenticaTokens.fonts.SFProBold,
     fontWeight: '700',
-    color: '#B45309',
+    color: '#64748B',
     textTransform: 'uppercase',
-    letterSpacing: 0.4,
+    letterSpacing: 0.5,
   },
   contactValue: {
     fontSize: 12.5,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontFamily: ServenticaTokens.fonts.SFProBold,
     fontWeight: '600',
     color: '#1E242B',
     marginTop: 1,
   },
   changeLink: {
     fontSize: 12,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontFamily: ServenticaTokens.fonts.SFProBold,
     fontWeight: '700',
-    color: '#D97706',
+    color: '#E23744',
   },
   contactDivider: {
     height: 1,
-    backgroundColor: 'rgba(253, 230, 138, 0.45)',
+    backgroundColor: '#E2E8F0',
     marginVertical: 8,
   },
   sectionBlock: {
@@ -774,14 +809,14 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     fontSize: 11,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontFamily: ServenticaTokens.fonts.SFProBold,
     fontWeight: '700',
     color: '#475569',
     letterSpacing: 0.6,
   },
   clearText: {
     fontSize: 11.5,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontFamily: ServenticaTokens.fonts.SFProBold,
     color: '#EF4444',
     fontWeight: '600',
   },
@@ -799,6 +834,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 12,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   itemThumb: {
     width: '85%',
@@ -814,38 +851,40 @@ const styles = StyleSheet.create({
   },
   itemName: {
     fontSize: 13.5,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontFamily: ServenticaTokens.fonts.PoppinsSemiBold,
     fontWeight: '600',
     color: '#1E242B',
     lineHeight: 18,
   },
   itemPriceMeta: {
     fontSize: 12,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontFamily: ServenticaTokens.fonts.SFProBold,
     fontWeight: '700',
     color: '#1E242B',
     marginTop: 2,
   },
   itemDurationMeta: {
-    fontFamily: ServenticaTokens.fonts.Regular,
+    fontFamily: ServenticaTokens.fonts.SFProRegular,
     fontWeight: '400',
     color: '#64748B',
   },
   stepperPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFDF0', // Clean soft light yellow pill
+    backgroundColor: '#F1F5F9', // Clean neutral pill
     borderRadius: 18,
     paddingHorizontal: 9,
     paddingVertical: 5,
     gap: 9,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   stepperActionBtn: {
     padding: 2,
   },
   stepperValue: {
     fontSize: 12.5,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontFamily: ServenticaTokens.fonts.SFProBold,
     fontWeight: '700',
     color: '#1E242B',
   },
@@ -868,18 +907,21 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingVertical: 11,
     gap: 7,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   modeTabActive: {
-    backgroundColor: '#FFFDF0', // Clean soft glass light yellow
+    backgroundColor: '#1E242B',
+    borderColor: '#1E242B',
   },
   modeTabText: {
     fontSize: 13,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontFamily: ServenticaTokens.fonts.SFProBold,
     fontWeight: '600',
     color: '#475569',
   },
   modeTabTextActive: {
-    color: '#1E242B',
+    color: '#FFFFFF',
     fontWeight: '700',
   },
   schedulerContainer: {
@@ -887,7 +929,7 @@ const styles = StyleSheet.create({
   },
   subSectionTitle: {
     fontSize: 13,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontFamily: ServenticaTokens.fonts.PoppinsSemiBold,
     fontWeight: '700',
     color: '#1E242B',
     marginBottom: 8,
@@ -903,18 +945,21 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
     minWidth: 78,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   durationCardActive: {
-    backgroundColor: '#FFFDF0',
+    backgroundColor: '#1E242B',
+    borderColor: '#1E242B',
   },
   durationTitle: {
     fontSize: 12,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontFamily: ServenticaTokens.fonts.SFProBold,
     fontWeight: '700',
     color: '#1E242B',
   },
   durationTitleActive: {
-    color: '#B45309',
+    color: '#FFFFFF',
   },
   durationPriceRow: {
     flexDirection: 'row',
@@ -924,16 +969,16 @@ const styles = StyleSheet.create({
   },
   durationPriceText: {
     fontSize: 11,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontFamily: ServenticaTokens.fonts.SFProBold,
     fontWeight: '700',
     color: '#1E242B',
   },
   durationPriceTextActive: {
-    color: '#B45309',
+    color: '#FFFFFF',
   },
   durationStrikeText: {
     fontSize: 9.5,
-    fontFamily: ServenticaTokens.fonts.Regular,
+    fontFamily: ServenticaTokens.fonts.SFProRegular,
     color: '#94A3B8',
     textDecorationLine: 'line-through',
   },
@@ -944,28 +989,31 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     minWidth: 72,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   dateCardActive: {
-    backgroundColor: '#FFFDF0',
+    backgroundColor: '#1E242B',
+    borderColor: '#1E242B',
   },
   dateCardDay: {
     fontSize: 11.5,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontFamily: ServenticaTokens.fonts.SFProBold,
     fontWeight: '700',
     color: '#1E242B',
   },
   dateCardDayActive: {
-    color: '#1E242B',
+    color: '#FFFFFF',
   },
   dateCardSub: {
     fontSize: 9.5,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontFamily: ServenticaTokens.fonts.SFProBold,
     fontWeight: '600',
     color: '#64748B',
     marginTop: 2,
   },
   dateCardSubActive: {
-    color: '#B45309',
+    color: 'rgba(255, 255, 255, 0.75)',
   },
   periodPillBar: {
     flexDirection: 'row',
@@ -984,26 +1032,28 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   periodSegmentActive: {
-    backgroundColor: '#FFCC00', // Solid light yellow
+    backgroundColor: '#1E242B',
   },
   periodText: {
     fontSize: 11.5,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontFamily: ServenticaTokens.fonts.SFProBold,
     fontWeight: '600',
     color: '#475569',
   },
   periodTextActive: {
-    color: '#1E242B',
+    color: '#FFFFFF',
     fontWeight: '700',
   },
   slotsCardBox: {
     backgroundColor: '#F8FAFC',
     borderRadius: 18,
     padding: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   slotsBoxHeading: {
     fontSize: 12,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontFamily: ServenticaTokens.fonts.SFProBold,
     fontWeight: '700',
     color: '#1E242B',
     marginBottom: 10,
@@ -1020,142 +1070,34 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     minWidth: '22%',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   slotChipItemActive: {
-    backgroundColor: '#FFFDF0',
+    backgroundColor: '#1E242B',
+    borderColor: '#1E242B',
   },
   slotChipLabel: {
     fontSize: 11,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontFamily: ServenticaTokens.fonts.SFProBold,
     fontWeight: '600',
     color: '#1E242B',
   },
   slotChipLabelActive: {
-    color: '#B45309',
+    color: '#FFFFFF',
     fontWeight: '700',
   },
   schedulerNote: {
     fontSize: 10,
-    fontFamily: ServenticaTokens.fonts.Regular,
+    fontFamily: ServenticaTokens.fonts.SFProRegular,
     color: '#64748B',
     marginTop: 8,
     paddingHorizontal: 4,
   },
   schedulerNoteBold: {
-    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontFamily: ServenticaTokens.fonts.SFProBold,
     fontWeight: '700',
     color: '#475569',
-  },
-  paymentMethodCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFDF0', // Glass-like soft light yellow
-    borderRadius: 18,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    marginTop: 6,
-    gap: 12,
-  },
-  paymentMethodIconWrap: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 204, 0, 0.35)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  paymentMethodTextCol: {
-    flex: 1,
-  },
-  paymentMethodTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  paymentMethodTitle: {
-    fontSize: 12.5,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
-    fontWeight: '700',
-    color: '#1E242B',
-  },
-  paymentBadge: {
-    backgroundColor: '#10B981',
-    paddingHorizontal: 5,
-    paddingVertical: 1,
-    borderRadius: 6,
-  },
-  paymentBadgeText: {
-    fontSize: 8.5,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: 0.3,
-  },
-  paymentMethodSubtitle: {
-    fontSize: 11,
-    fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#64748B',
-    marginTop: 1,
-  },
-  paymentOptionsList: {
-    marginTop: 8,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    padding: 6,
-    gap: 4,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-  },
-  paymentOptionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 14,
-  },
-  paymentOptionItemActive: {
-    backgroundColor: '#FFFDF0',
-  },
-  paymentOptionLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    flex: 1,
-  },
-  paymentRadio: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    borderWidth: 1.5,
-    borderColor: '#CBD5E1',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  paymentRadioActive: {
-    borderColor: '#FFCC00',
-  },
-  paymentRadioInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#FFCC00',
-  },
-  paymentOptionName: {
-    fontSize: 12,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
-    fontWeight: '600',
-    color: '#1E242B',
-  },
-  paymentOptionNameActive: {
-    color: '#B45309',
-    fontWeight: '700',
-  },
-  paymentOptionDesc: {
-    fontSize: 10,
-    fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#64748B',
-    marginTop: 1,
   },
   billContainer: {
     backgroundColor: '#F8FAFC',
@@ -1163,10 +1105,12 @@ const styles = StyleSheet.create({
     padding: 16,
     marginTop: 14,
     marginBottom: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   billHeading: {
     fontSize: 13.5,
-    fontFamily: ServenticaTokens.fonts.SFProBold,
+    fontFamily: ServenticaTokens.fonts.PoppinsSemiBold,
     fontWeight: '700',
     color: '#1E242B',
     marginBottom: 12,
@@ -1178,7 +1122,7 @@ const styles = StyleSheet.create({
   },
   billLabel: {
     fontSize: 12.5,
-    fontFamily: ServenticaTokens.fonts.Regular,
+    fontFamily: ServenticaTokens.fonts.SFProRegular,
     color: '#475569',
   },
   dotFiller: {
@@ -1191,7 +1135,7 @@ const styles = StyleSheet.create({
   },
   billValue: {
     fontSize: 12.5,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontFamily: ServenticaTokens.fonts.SFProBold,
     fontWeight: '600',
     color: '#1E242B',
   },
@@ -1212,7 +1156,7 @@ const styles = StyleSheet.create({
   },
   toPayLabel: {
     fontSize: 14,
-    fontFamily: ServenticaTokens.fonts.SFProBold,
+    fontFamily: ServenticaTokens.fonts.PoppinsBold,
     fontWeight: '800',
     color: '#1E242B',
   },
@@ -1230,64 +1174,243 @@ const styles = StyleSheet.create({
     padding: 11,
     gap: 8,
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
   },
   trustBannerText: {
     fontSize: 11,
-    fontFamily: ServenticaTokens.fonts.Medium,
+    fontFamily: ServenticaTokens.fonts.SFProMedium,
     color: '#065F46',
     flexShrink: 1,
     lineHeight: 15,
   },
-  footerRow: {
+
+  // Zomato/Blinkit Sticky Footer styles
+  footerStickyContainer: {
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 4,
+  },
+  balanceStrip: {
+    paddingVertical: 4,
+    paddingHorizontal: 4,
+    marginBottom: 6,
+  },
+  balanceStripText: {
+    fontSize: 11.5,
+    fontFamily: ServenticaTokens.fonts.SFProRegular,
+    color: '#475569',
+  },
+  balanceStripBold: {
+    fontFamily: ServenticaTokens.fonts.SFProBold,
+    fontWeight: '700',
+    color: '#1E242B',
+  },
+  addMoneyText: {
+    fontFamily: ServenticaTokens.fonts.SFProBold,
+    color: '#E23744',
+    fontWeight: '700',
+  },
+  footerMainRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 22,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
+    gap: 12,
   },
-  footerPayCol: {
+  payUsingTouchable: {
+    flex: 1,
     justifyContent: 'center',
+    paddingVertical: 4,
   },
-  footerAmountLabel: {
+  payUsingHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  payUsingMiniIcon: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#E0F2FE',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  payUsingLabel: {
     fontSize: 9.5,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontFamily: ServenticaTokens.fonts.SFProBold,
     fontWeight: '700',
     color: '#64748B',
     letterSpacing: 0.5,
   },
-  footerAmountValue: {
-    fontSize: 18,
-    fontFamily: ServenticaTokens.fonts.SFProBold,
-    fontWeight: '800',
+  payUsingMethodName: {
+    fontSize: 13,
+    fontFamily: ServenticaTokens.fonts.PoppinsSemiBold,
+    fontWeight: '700',
     color: '#1E242B',
+    marginTop: 2,
   },
-  payButton: {
+
+  // Exact Zomato reference button
+  placeOrderButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFCC00', // Solid light yellow CTA matching reference
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 24,
-    gap: 8,
+    justifyContent: 'space-between',
+    backgroundColor: '#E23744', // Zomato reference coral red
+    borderRadius: 14,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    minWidth: 175,
     ...Platform.select({
       ios: {
-        shadowColor: '#B45309',
+        shadowColor: '#E23744',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.28,
+        shadowOpacity: 0.35,
         shadowRadius: 8,
       },
       android: {
-        elevation: 5,
+        elevation: 4,
       },
     }),
   },
-  payButtonText: {
-    fontSize: 14,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
+  buttonPriceCol: {
+    marginRight: 14,
+  },
+  buttonPriceText: {
+    fontSize: 15,
+    fontFamily: ServenticaTokens.fonts.SFProBold,
     fontWeight: '800',
+    color: '#FFFFFF',
+    lineHeight: 18,
+  },
+  buttonTotalLabel: {
+    fontSize: 8.5,
+    fontFamily: ServenticaTokens.fonts.SFProBold,
+    fontWeight: '800',
+    color: 'rgba(255, 255, 255, 0.8)',
+    letterSpacing: 0.6,
+  },
+  buttonActionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  placeOrderText: {
+    fontSize: 14,
+    fontFamily: ServenticaTokens.fonts.PoppinsBold,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+
+  // Payment Picker Modal
+  paymentModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    justifyContent: 'flex-end',
+  },
+  paymentModalDismiss: {
+    flex: 1,
+  },
+  paymentSheet: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: Platform.OS === 'android' ? 24 : 36,
+  },
+  paymentSheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  paymentSheetTitle: {
+    fontSize: 16,
+    fontFamily: ServenticaTokens.fonts.PoppinsBold,
+    fontWeight: '700',
     color: '#1E242B',
+  },
+  sheetCloseBtn: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  paymentOptionsList: {
+    gap: 8,
+  },
+  paymentOptionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 16,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  paymentOptionItemActive: {
+    backgroundColor: '#FFF1F2',
+    borderColor: '#FECDD3',
+  },
+  paymentOptionLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  paymentRadio: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  paymentRadioActive: {
+    borderColor: '#E23744',
+  },
+  paymentRadioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#E23744',
+  },
+  paymentOptionName: {
+    fontSize: 13,
+    fontFamily: ServenticaTokens.fonts.SFProBold,
+    fontWeight: '600',
+    color: '#1E242B',
+  },
+  paymentOptionNameActive: {
+    color: '#E23744',
+    fontWeight: '700',
+  },
+  paymentOptionDesc: {
+    fontSize: 10.5,
+    fontFamily: ServenticaTokens.fonts.SFProRegular,
+    color: '#64748B',
+    marginTop: 1,
+  },
+  paymentBadge: {
+    backgroundColor: '#10B981',
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 5,
+  },
+  paymentBadgeText: {
+    fontSize: 8.5,
+    fontFamily: ServenticaTokens.fonts.SFProBold,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: 0.3,
   },
   successState: {
     alignItems: 'center',
@@ -1305,21 +1428,21 @@ const styles = StyleSheet.create({
   },
   successTitle: {
     fontSize: 20,
-    fontFamily: ServenticaTokens.fonts.SFProBold,
+    fontFamily: ServenticaTokens.fonts.PoppinsBold,
     fontWeight: '800',
     color: '#1E242B',
     marginBottom: 6,
   },
   successDesc: {
     fontSize: 13,
-    fontFamily: ServenticaTokens.fonts.Regular,
+    fontFamily: ServenticaTokens.fonts.SFProRegular,
     color: '#475569',
     textAlign: 'center',
     lineHeight: 18,
   },
   successPaymentMeta: {
     fontSize: 12,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontFamily: ServenticaTokens.fonts.SFProBold,
     color: '#059669',
     marginTop: 10,
     fontWeight: '700',

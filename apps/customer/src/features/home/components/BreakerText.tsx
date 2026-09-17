@@ -30,10 +30,11 @@ const styles = StyleSheet.create({
   },
   text: {
     marginHorizontal: 14,
-    fontSize: 13,
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
+    fontSize: 12.5,
+    fontFamily: ServenticaTokens.fonts.PoppinsSemiBold,
     fontWeight: '600',
-    color: '#9A9A9A',
+    color: '#94A3B8',
     textTransform: 'uppercase',
+    letterSpacing: 0.8,
   },
 });

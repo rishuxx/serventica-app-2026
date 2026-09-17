@@ -121,20 +121,20 @@ const styles = StyleSheet.create({
   badgeText: {
     color: '#ffffff',
     fontSize: 10,
-    fontFamily: ServenticaTokens.fonts.Bold,
+    fontFamily: ServenticaTokens.fonts.SFProBold,
     fontWeight: '800',
   },
   titleText: {
     color: '#eab308',
     fontSize: 22,
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
+    fontFamily: ServenticaTokens.fonts.PoppinsBold,
     fontWeight: '800',
     letterSpacing: 0,
   },
   subtitleText: {
     color: '#ffffff',
     fontSize: 12,
-    fontFamily: ServenticaTokens.fonts.Medium,
+    fontFamily: ServenticaTokens.fonts.SFProRegular,
     marginTop: 2,
     lineHeight: 16,
   },

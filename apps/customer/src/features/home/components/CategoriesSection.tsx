@@ -79,10 +79,11 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   categoryTitle: {
-    fontSize: 14,
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
-    fontWeight: '700',
-    color: '#374151',
+    fontSize: 13,
+    fontFamily: ServenticaTokens.fonts.PoppinsSemiBold,
+    fontWeight: '600',
+    color: '#1E242B',
     textAlign: 'center',
+    marginTop: 2,
   },
 });

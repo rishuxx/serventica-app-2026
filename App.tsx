@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, LogBox } from 'react-native';
+
+LogBox.ignoreAllLogs(true);
 import { AuthProvider, useAuth } from './apps/customer/src/context/AuthContext';
 import { LocationProvider } from './apps/customer/src/context/LocationContext';
 import { WelcomeSplashScreen } from './apps/customer/src/screens/WelcomeSplashScreen';
