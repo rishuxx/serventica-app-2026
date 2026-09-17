@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Text } from 'react-native';
-import Svg, { Path, Rect, Circle, G, Polygon } from 'react-native-svg';
+import Svg, { Path, Rect, Circle, Polygon, G } from 'react-native-svg';
 import { ServenticaTokens } from '../../../../../../packages/design-system/src';
 
 export type PaymentBrandType =
@@ -25,42 +25,157 @@ interface PaymentMethodIconProps {
 export const PaymentMethodIcon: React.FC<PaymentMethodIconProps> = ({ brand, size = 36 }) => {
   const iconSize = size * 0.65;
 
+  // 1. NAVI UPI: Dark purple background with official mint-green 'n^' mark
   if (brand === 'NAVI') {
     return (
-      <View style={[styles.badgeContainer, { width: size, height: size, backgroundColor: '#1A0E38' }]}>
-        <Svg width={iconSize * 0.9} height={iconSize * 0.9} viewBox="0 0 24 24">
-          <Path d="M4 18V6l7 7V6h2v12l-7-7v7H4z" fill="#00D09C" />
-          <Path d="M15 11l4-4v11h-2V9.8l-2 2V11z" fill="#00D09C" />
+      <View style={[styles.badgeContainer, { width: size, height: size, backgroundColor: '#180B3A' }]}>
+        <Svg width={iconSize * 0.95} height={iconSize * 0.95} viewBox="0 0 24 24">
+          <Path
+            d="M4.5 18.5V8C4.5 7.2 5.2 6.5 6 6.5C6.8 6.5 7.5 7.2 7.5 8V18.5"
+            stroke="#00D09C"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+          />
+          <Path
+            d="M7.5 12.5C8.8 9.8 11.2 8.5 13.8 8.5C16.8 8.5 18.5 10.5 18.5 13.5V18.5"
+            stroke="#00D09C"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            fill="none"
+          />
+          <Path
+            d="M13.5 5.5H18.5V10.5M18.5 5.5L13.5 10.5"
+            stroke="#00D09C"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </Svg>
       </View>
     );
   }
 
+  // 2. GOOGLE PAY UPI: Official GPay dual interlocking colored ribbon capsules
   if (brand === 'GOOGLE_PAY') {
     return (
       <View style={[styles.badgeContainer, styles.whiteBadge, { width: size, height: size }]}>
-        <Svg width={iconSize * 1.05} height={iconSize * 1.05} viewBox="0 0 48 48">
+        <Svg width={iconSize * 1.05} height={iconSize * 0.8} viewBox="0 0 36 28">
+          {/* Top-Left Blue Arc */}
           <Path
+            d="M12 4C7.6 4 4 7.6 4 12C4 16.4 7.6 20 12 20H15.5V15.5H12C10.1 15.5 8.5 13.9 8.5 12C8.5 10.1 10.1 8.5 12 8.5H19.5V4H12Z"
             fill="#4285F4"
-            d="M43.6 20.5H42V20H24v8h11.3C33.7 32.3 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l5.7-5.7C34.2 6.1 29.4 4 24 4 13 4 4 13 4 24s9 20 20 20c11 0 19.7-8 19.7-20 0-1.2-.1-2.4-.3-3.5z"
           />
+          {/* Bottom-Left Green Arc */}
           <Path
+            d="M12 24C16.4 24 20 20.4 20 16V12.5H15.5V16C15.5 17.9 13.9 19.5 12 19.5C10.1 19.5 8.5 17.9 8.5 16H4C4 20.4 7.6 24 12 24Z"
             fill="#34A853"
-            d="M6.3 14.7l6.6 4.8C14.7 16 19 12 24 12c3.1 0 5.8 1.1 8 3l5.7-5.7C34.2 6.1 29.4 4 24 4 16.3 4 9.7 8.4 6.3 14.7z"
           />
+          {/* Top-Right Red Arc */}
           <Path
-            fill="#FBBC05"
-            d="M24 44c5.2 0 10-1.9 13.5-5.2l-6.2-5.1c-2 1.4-4.5 2.3-7.3 2.3-5.2 0-9.6-3.5-11.2-8.3l-6.5 5C9.5 39.4 16.2 44 24 44z"
-          />
-          <Path
+            d="M24 4C19.6 4 16 7.6 16 12V15.5H20.5V12C20.5 10.1 22.1 8.5 24 8.5C25.9 8.5 27.5 10.1 27.5 12H32C32 7.6 28.4 4 24 4Z"
             fill="#EA4335"
-            d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.4l6.2 5.1C41.2 35.1 44 29.9 44 24c0-1.2-.1-2.4-.4-3.5z"
+          />
+          {/* Bottom-Right Yellow Arc */}
+          <Path
+            d="M24 24C28.4 24 32 20.4 32 16C32 11.6 28.4 8 24 8H20.5V12.5H24C25.9 12.5 27.5 14.1 27.5 16C27.5 17.9 25.9 19.5 24 19.5H16.5V24H24Z"
+            fill="#FBBC05"
           />
         </Svg>
       </View>
     );
   }
 
+  // 3. CARDS: Credit / Debit Cards with horizontal strip & chip
+  if (brand === 'CARDS_ADD') {
+    return (
+      <View style={[styles.badgeContainer, styles.whiteBadge, { width: size, height: size }]}>
+        <Svg width={iconSize * 1.05} height={iconSize * 0.8} viewBox="0 0 26 20">
+          <Rect x="1.5" y="2" width="23" height="16" rx="3.5" fill="none" stroke="#1E242B" strokeWidth="1.8" />
+          <Rect x="1.5" y="6" width="23" height="3.5" fill="#1E242B" />
+          <Rect x="4.5" y="12" width="4.5" height="3" rx="0.6" fill="#1E242B" />
+          <Path d="M12.5 12.5H20M12.5 14.5H17" stroke="#1E242B" strokeWidth="1.2" strokeLinecap="round" />
+        </Svg>
+      </View>
+    );
+  }
+
+  // 4. PLUXEE: Lowercase pluxee text with red/orange accent
+  if (brand === 'PLUXEE') {
+    return (
+      <View style={[styles.badgeContainer, styles.whiteBadge, { width: size, height: size }]}>
+        <View style={styles.pluxeeWrap}>
+          <Text style={styles.pluxeeText}>pluxee</Text>
+          <View style={styles.pluxeeDot} />
+        </View>
+      </View>
+    );
+  }
+
+  // 5. YONO SBI: Deep plum square with yono + SBI badge
+  if (brand === 'YONO_SBI') {
+    return (
+      <View style={[styles.badgeContainer, { width: size, height: size, backgroundColor: '#540C52' }]}>
+        <Text style={styles.yonoText}>yono</Text>
+        <View style={styles.sbiBadge}>
+          <Text style={styles.sbiText}>SBI</Text>
+        </View>
+      </View>
+    );
+  }
+
+  // 6. UPI ADD: Official UPI logo with green & orange arrows
+  if (brand === 'UPI_ADD') {
+    return (
+      <View style={[styles.badgeContainer, styles.whiteBadge, { width: size, height: size }]}>
+        <Svg width={iconSize * 1.25} height={iconSize * 0.75} viewBox="0 0 40 22">
+          {/* Green Arrow */}
+          <Polygon points="3,2 12,11 3,20" fill="#097939" />
+          {/* Orange Arrow */}
+          <Polygon points="10,2 19,11 10,20" fill="#E86C1D" />
+          {/* UPI Text */}
+          <Path d="M21 5.5H24.5V13C24.5 14.7 23.3 16 21.5 16H20.5V13.8H21.5C22.2 13.8 22.8 13.2 22.8 12.5V5.5H21V5.5Z" fill="#2E3192" />
+          <Path d="M26 5.5H30.5C32.2 5.5 33.5 6.8 33.5 8.5C33.5 10.2 32.2 11.5 30.5 11.5H27.8V16H26V5.5ZM27.8 9.7H30.5C31.2 9.7 31.7 9.2 31.7 8.5C31.7 7.8 31.2 7.3 30.5 7.3H27.8V9.7Z" fill="#2E3192" />
+          <Path d="M35 5.5H37V16H35V5.5Z" fill="#2E3192" />
+        </Svg>
+      </View>
+    );
+  }
+
+  // 7. AMAZON PAY: Dark circle with 'pay' & orange smile curve
+  if (brand === 'AMAZON_PAY') {
+    return (
+      <View style={[styles.badgeContainer, styles.whiteBadge, { width: size, height: size }]}>
+        <View style={styles.amazonDarkCircle}>
+          <Text style={styles.amazonPayText}>pay</Text>
+          <Svg width={14} height={4} viewBox="0 0 14 4" style={{ marginTop: -1 }}>
+            <Path d="M1 1C4.5 3.8 9.5 3.8 13 1" stroke="#FF9900" strokeWidth="1.2" strokeLinecap="round" fill="none" />
+          </Svg>
+        </View>
+      </View>
+    );
+  }
+
+  // 8. MOBIKWIK: Blue circle with Mobikwik 'M' logo
+  if (brand === 'MOBIKWIK') {
+    return (
+      <View style={[styles.badgeContainer, styles.whiteBadge, { width: size, height: size }]}>
+        <View style={styles.mobikwikCircle}>
+          <Svg width={15} height={15} viewBox="0 0 24 24">
+            <Path
+              d="M4 18V6L9 14L12 9L15 14L20 6V18"
+              stroke="#FFFFFF"
+              strokeWidth="3.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+            />
+          </Svg>
+        </View>
+      </View>
+    );
+  }
+
+  // 9. PHONEPE: Purple square with PhonePe Pe logo
   if (brand === 'PHONEPE') {
     return (
       <View style={[styles.badgeContainer, { width: size, height: size, backgroundColor: '#5F259F' }]}>
@@ -74,6 +189,7 @@ export const PaymentMethodIcon: React.FC<PaymentMethodIconProps> = ({ brand, siz
     );
   }
 
+  // 10. PAYTM: Blue square with Paytm logo
   if (brand === 'PAYTM') {
     return (
       <View style={[styles.badgeContainer, { width: size, height: size, backgroundColor: '#002E6E' }]}>
@@ -85,71 +201,7 @@ export const PaymentMethodIcon: React.FC<PaymentMethodIconProps> = ({ brand, siz
     );
   }
 
-  if (brand === 'YONO_SBI') {
-    return (
-      <View style={[styles.badgeContainer, { width: size, height: size, backgroundColor: '#520B50' }]}>
-        <Text style={styles.yonoText}>yono</Text>
-        <View style={styles.sbiBadge}>
-          <Text style={styles.sbiText}>SBI</Text>
-        </View>
-      </View>
-    );
-  }
-
-  if (brand === 'UPI_ADD') {
-    return (
-      <View style={[styles.badgeContainer, styles.whiteBadge, { width: size, height: size }]}>
-        <Svg width={iconSize * 1.2} height={iconSize * 0.75} viewBox="0 0 36 20">
-          <Polygon points="3,2 11,10 3,18" fill="#097939" />
-          <Polygon points="9,2 17,10 9,18" fill="#E86C1D" />
-          <Path d="M19 5h3v7a3 3 0 0 1-3 3h-1v-2h1a1 1 0 0 0 1-1V5h-1V5z" fill="#2E3192" />
-          <Path d="M24 5h4v4h-2v4h-2V5z" fill="#2E3192" />
-          <Path d="M30 5h2v8h-2V5z" fill="#2E3192" />
-        </Svg>
-      </View>
-    );
-  }
-
-  if (brand === 'CARDS_ADD') {
-    return (
-      <View style={[styles.badgeContainer, styles.whiteBadge, { width: size, height: size }]}>
-        <Svg width={iconSize * 1.05} height={iconSize * 0.75} viewBox="0 0 24 18">
-          <Rect x="1" y="1" width="22" height="16" rx="3" fill="none" stroke="#2D3748" strokeWidth="1.6" />
-          <Rect x="1" y="5" width="22" height="3" fill="#2D3748" />
-          <Rect x="3.5" y="11" width="4.5" height="2.5" rx="0.5" fill="#2D3748" />
-        </Svg>
-      </View>
-    );
-  }
-
-  if (brand === 'PLUXEE') {
-    return (
-      <View style={[styles.badgeContainer, styles.whiteBadge, { width: size, height: size }]}>
-        <Text style={styles.pluxeeText}>pluxee</Text>
-      </View>
-    );
-  }
-
-  if (brand === 'AMAZON_PAY') {
-    return (
-      <View style={[styles.badgeContainer, styles.whiteBadge, { width: size, height: size }]}>
-        <View style={styles.amazonDarkCircle}>
-          <Text style={styles.amazonPayText}>pay</Text>
-        </View>
-      </View>
-    );
-  }
-
-  if (brand === 'MOBIKWIK') {
-    return (
-      <View style={[styles.badgeContainer, styles.whiteBadge, { width: size, height: size }]}>
-        <View style={styles.mobikwikCircle}>
-          <Text style={styles.mobikwikText}>M</Text>
-        </View>
-      </View>
-    );
-  }
-
+  // 11. WALLET: Serventica Wallet
   if (brand === 'WALLET') {
     return (
       <View style={[styles.badgeContainer, { width: size, height: size, backgroundColor: '#EA580C' }]}>
@@ -162,7 +214,7 @@ export const PaymentMethodIcon: React.FC<PaymentMethodIconProps> = ({ brand, siz
     );
   }
 
-  // COD (Cash on Delivery)
+  // 12. COD: Cash on Delivery
   return (
     <View style={[styles.badgeContainer, { width: size, height: size, backgroundColor: '#059669' }]}>
       <Svg width={iconSize * 0.9} height={iconSize * 0.9} viewBox="0 0 24 24">
@@ -176,7 +228,7 @@ export const PaymentMethodIcon: React.FC<PaymentMethodIconProps> = ({ brand, siz
 
 const styles = StyleSheet.create({
   badgeContainer: {
-    borderRadius: 7,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
@@ -185,6 +237,26 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E8ECF2',
+  },
+  pluxeeWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pluxeeText: {
+    fontSize: 8.5,
+    fontFamily: ServenticaTokens.fonts.PoppinsBold,
+    fontWeight: '800',
+    color: '#0D1730',
+    letterSpacing: -0.4,
+  },
+  pluxeeDot: {
+    width: 3.5,
+    height: 3.5,
+    borderRadius: 1.75,
+    backgroundColor: '#E23744',
+    marginLeft: 1,
+    marginTop: -4,
   },
   yonoText: {
     fontSize: 7.5,
@@ -195,23 +267,16 @@ const styles = StyleSheet.create({
   },
   sbiBadge: {
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 2,
+    paddingHorizontal: 2.5,
     borderRadius: 2,
-    marginTop: 1,
+    marginTop: 1.5,
   },
   sbiText: {
     fontSize: 5.5,
-    fontFamily: ServenticaTokens.fonts.SFProBold,
+    fontFamily: ServenticaTokens.fonts.PoppinsBold,
     fontWeight: '800',
-    color: '#00A4E4',
-    lineHeight: 6,
-  },
-  pluxeeText: {
-    fontSize: 8.5,
-    fontFamily: ServenticaTokens.fonts.SFProBold,
-    fontWeight: '800',
-    color: '#0D1730',
-    letterSpacing: -0.4,
+    color: '#002D62',
+    lineHeight: 6.5,
   },
   amazonDarkCircle: {
     width: 24,
@@ -222,11 +287,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   amazonPayText: {
-    fontSize: 7.5,
-    fontFamily: ServenticaTokens.fonts.SFProBold,
+    fontSize: 8,
+    fontFamily: ServenticaTokens.fonts.PoppinsBold,
     fontWeight: '800',
-    color: '#FF9900',
+    color: '#FFFFFF',
     letterSpacing: -0.2,
+    lineHeight: 9,
   },
   mobikwikCircle: {
     width: 24,
@@ -236,11 +302,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  mobikwikText: {
-    fontSize: 11,
-    fontFamily: ServenticaTokens.fonts.PoppinsBold,
-    fontWeight: '900',
-    color: '#FFFFFF',
-  },
 });
+
 

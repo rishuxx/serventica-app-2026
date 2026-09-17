@@ -1,19 +1,18 @@
 export const Fonts = {
-  // SF Pro Display typography (body, metadata, labels, buttons)
-  Regular: 'SFPRODISPLAYREGULAR',
-  Medium: 'SFPRODISPLAYMEDIUM',
-  Light: 'SFPRODISPLAYREGULAR',
-  SemiBold: 'SFPRODISPLAYBOLD',
-  Bold: 'SFPRODISPLAYBOLD',
-  ExtraBold: 'SFPRODISPLAYBOLD',
+  // Pure Poppins font family across entire application
+  Regular: 'Poppins-Regular',
+  Medium: 'Poppins-Medium',
+  Light: 'Poppins-Light',
+  SemiBold: 'Poppins-SemiBold',
+  Bold: 'Poppins-Bold',
+  ExtraBold: 'Poppins-ExtraBold',
 
-  // SF Pro Explicit Tokens
-  SFProRegular: 'SFPRODISPLAYREGULAR',
-  SFProMedium: 'SFPRODISPLAYMEDIUM',
-  SFProBold: 'SFPRODISPLAYBOLD',
-  SFProSemiBold: 'SFPRODISPLAYBOLD',
+  // Explicit mappings for all legacy and named tokens to Poppins
+  SFProRegular: 'Poppins-Regular',
+  SFProMedium: 'Poppins-Medium',
+  SFProBold: 'Poppins-Bold',
+  SFProSemiBold: 'Poppins-SemiBold',
 
-  // Poppins Typography for headings, titles and branding
   PoppinsRegular: 'Poppins-Regular',
   PoppinsMedium: 'Poppins-Medium',
   PoppinsSemiBold: 'Poppins-SemiBold',
@@ -23,20 +22,20 @@ export const Fonts = {
   Heading: 'Poppins-Bold',
   SubHeading: 'Poppins-SemiBold',
   Title: 'Poppins-Bold',
-  Body: 'SFPRODISPLAYREGULAR',
-  BodyMedium: 'SFPRODISPLAYMEDIUM',
-  BodyBold: 'SFPRODISPLAYBOLD',
+  Body: 'Poppins-Regular',
+  BodyMedium: 'Poppins-Medium',
+  BodyBold: 'Poppins-SemiBold',
 
-  // Coolvetica Display Typography
-  Coolvetica: 'Coolvetica-Regular',
-  CoolveticaRegular: 'Coolvetica-Regular',
-  CoolveticaCondensed: 'Coolvetica-Condensed',
-  CoolveticaCompress: 'Coolvetica-Compress',
-  CoolveticaCremed: 'Coolvetica-Cremed',
+  // Display Typography
+  Coolvetica: 'Poppins-Bold',
+  CoolveticaRegular: 'Poppins-Regular',
+  CoolveticaCondensed: 'Poppins-SemiBold',
+  CoolveticaCompress: 'Poppins-Bold',
+  CoolveticaCremed: 'Poppins-Medium',
 
-  // Legacy mappings for backwards compatibility
+  // Legacy mappings
   OkraBold: 'Poppins-Bold',
-  OkraMedium: 'Poppins-SemiBold',
+  OkraMedium: 'Poppins-Medium',
 } as const;
 
 export const ServenticaTokens = {

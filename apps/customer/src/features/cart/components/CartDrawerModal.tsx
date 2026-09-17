@@ -1499,8 +1499,8 @@ const styles = StyleSheet.create({
   },
   billTotalText: {
     fontSize: 16,
-    fontFamily: ServenticaTokens.fonts.SFProBold,
-    fontWeight: '700',
+    fontFamily: ServenticaTokens.fonts.PoppinsMedium,
+    fontWeight: '600',
     color: '#1E242B',
   },
   billTotalAmount: {
@@ -1517,9 +1517,9 @@ const styles = StyleSheet.create({
     marginTop: 14,
   },
   paymentCategoryHeader: {
-    fontSize: 11.5,
-    fontFamily: ServenticaTokens.fonts.SFProBold,
-    fontWeight: '700',
+    fontSize: 11,
+    fontFamily: ServenticaTokens.fonts.PoppinsMedium,
+    fontWeight: '600',
     color: '#8E95A5',
     letterSpacing: 0.8,
     marginBottom: 8,
@@ -1548,13 +1548,13 @@ const styles = StyleSheet.create({
   },
   paymentRowTitle: {
     fontSize: 14,
-    fontFamily: ServenticaTokens.fonts.SFProBold,
-    fontWeight: '600',
+    fontFamily: ServenticaTokens.fonts.PoppinsRegular,
     color: '#1E242B',
   },
   paymentRowTitleSelected: {
+    fontFamily: ServenticaTokens.fonts.PoppinsMedium,
     color: '#1E242B',
-    fontWeight: '700',
+    fontWeight: '600',
   },
   paymentRowRight: {
     paddingLeft: 8,
