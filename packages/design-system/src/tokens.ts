@@ -1,41 +1,45 @@
 export const Fonts = {
-  // Pure Lexend font family across entire application
-  Regular: 'Lexend-VariableFont_wght',
-  Medium: 'Lexend-VariableFont_wght',
-  Light: 'Lexend-VariableFont_wght',
-  SemiBold: 'Lexend-VariableFont_wght',
-  Bold: 'Lexend-VariableFont_wght',
-  ExtraBold: 'Lexend-VariableFont_wght',
+  // Pure Lexend font family across entire application with distinct font weights
+  Thin: 'Lexend-Thin',
+  Light: 'Lexend-Light',
+  Regular: 'Lexend-Regular',
+  Medium: 'Lexend-Medium',
+  SemiBold: 'Lexend-SemiBold',
+  Bold: 'Lexend-Bold',
+  ExtraBold: 'Lexend-ExtraBold',
+  Black: 'Lexend-Black',
 
-  // Explicit mappings for all legacy and named tokens to Lexend
-  SFProRegular: 'Lexend-VariableFont_wght',
-  SFProMedium: 'Lexend-VariableFont_wght',
-  SFProBold: 'Lexend-VariableFont_wght',
-  SFProSemiBold: 'Lexend-VariableFont_wght',
+  // Explicit mappings for all legacy and named tokens to distinct Lexend weights
+  SFProRegular: 'Lexend-Regular',
+  SFProMedium: 'Lexend-Medium',
+  SFProBold: 'Lexend-Bold',
+  SFProSemiBold: 'Lexend-SemiBold',
 
-  PoppinsRegular: 'Lexend-VariableFont_wght',
-  PoppinsMedium: 'Lexend-VariableFont_wght',
-  PoppinsSemiBold: 'Lexend-VariableFont_wght',
-  PoppinsBold: 'Lexend-VariableFont_wght',
+  PoppinsRegular: 'Lexend-Regular',
+  PoppinsMedium: 'Lexend-Medium',
+  PoppinsSemiBold: 'Lexend-SemiBold',
+  PoppinsBold: 'Lexend-Bold',
 
-  // Headings & Brand
-  Heading: 'Lexend-VariableFont_wght',
-  SubHeading: 'Lexend-VariableFont_wght',
-  Title: 'Lexend-VariableFont_wght',
-  Body: 'Lexend-VariableFont_wght',
-  BodyMedium: 'Lexend-VariableFont_wght',
-  BodyBold: 'Lexend-VariableFont_wght',
+  // Headings & Titles (Bold / Heavy weights)
+  Heading: 'Lexend-Bold',
+  SubHeading: 'Lexend-SemiBold',
+  Title: 'Lexend-Bold',
+  Hero: 'Lexend-Bold',
+  Body: 'Lexend-Regular',
+  BodyMedium: 'Lexend-Medium',
+  BodyBold: 'Lexend-SemiBold',
 
   // Display Typography
-  Coolvetica: 'Lexend-VariableFont_wght',
-  CoolveticaRegular: 'Lexend-VariableFont_wght',
-  CoolveticaCondensed: 'Lexend-VariableFont_wght',
-  CoolveticaCompress: 'Lexend-VariableFont_wght',
-  CoolveticaCremed: 'Lexend-VariableFont_wght',
+  Coolvetica: 'Lexend-Bold',
+  CoolveticaRegular: 'Lexend-Regular',
+  CoolveticaCondensed: 'Lexend-SemiBold',
+  CoolveticaCompress: 'Lexend-Bold',
+  CoolveticaCremed: 'Lexend-Medium',
 
   // Legacy mappings
-  OkraBold: 'Lexend-VariableFont_wght',
-  OkraMedium: 'Lexend-VariableFont_wght',
+  OkraBold: 'Lexend-Bold',
+  OkraMedium: 'Lexend-Medium',
+  OkraRegular: 'Lexend-Regular',
 } as const;
 
 export const ServenticaTokens = {
