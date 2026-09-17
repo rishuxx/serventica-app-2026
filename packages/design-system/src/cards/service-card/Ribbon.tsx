@@ -31,13 +31,12 @@ export const Ribbon: React.FC<RibbonProps> = React.memo(({
     'Serventica';
 
   // Sizing optimized for genuine ribbon purpose (compact, non-intrusive to card imagery):
-  // Height: ~17px base, Left radius: 4.5px, Notch: 4.5px
+  // Height: ~17px base, Notch: 4.5px. Flush straight left edge (0 radius)
   const baseHeight = 17 * scale;
-  const leftRadius = 4.5 * scale;
   const notchDepth = 4.5 * scale;
 
   // Exact adaptive width based on display label character count:
-  // Poppins-SemiBold at fontSize (8.5 * scale) with letterSpacing -0.4 averages ~4.8px per char
+  // SF Pro Bold / SemiBold at fontSize (8.5 * scale) with letterSpacing -0.3 averages ~4.8px per char
   const charWidth = 4.8 * scale;
   const approxTextWidth = displayLabel.length * charWidth;
   const leftPadding = 6 * scale;
@@ -46,20 +45,17 @@ export const Ribbon: React.FC<RibbonProps> = React.memo(({
 
   const H = baseHeight;
   const W = ribbonWidth;
-  const r = leftRadius;
   const n = notchDepth;
 
   const gradId = `ribbonGrad_${resolvedVariant}_${Math.round(scale * 100)}`;
 
-  // Path with rounded left edge and flag tail on right:
+  // Path with straight/flush left edge (no rounded corner on head) and flag tail on right:
   const pathData = `
-    M 0,${r}
-    A ${r},${r} 0 0,1 ${r},0
+    M 0,0
     L ${W},0
     L ${W - n},${H / 2}
     L ${W},${H}
-    L ${r},${H}
-    A ${r},${r} 0 0,1 0,${H - r}
+    L 0,${H}
     Z
   `;
 

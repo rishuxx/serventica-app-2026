@@ -6,7 +6,7 @@ import {
   Animated,
   Platform,
 } from 'react-native';
-import { ArrowRight, ShoppingBag, Zap } from 'lucide-react-native';
+import { ArrowRight, ShoppingBag } from 'lucide-react-native';
 import { useCart } from '../context/CartContext';
 import { AnimatedTouchable } from '../../../shared/components/AnimatedTouchable';
 import { ServenticaTokens } from '../../../../../../packages/design-system/src';
@@ -16,7 +16,7 @@ interface FloatingCartBarProps {
 }
 
 export const FloatingCartBar: React.FC<FloatingCartBarProps> = ({ onPressCheckout }) => {
-  const { itemCount, fees, openCartDrawer } = useCart();
+  const { itemCount, openCartDrawer } = useCart();
   const slideAnim = useRef(new Animated.Value(100)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const bagRotateAnim = useRef(new Animated.Value(0)).current;
@@ -32,29 +32,29 @@ export const FloatingCartBar: React.FC<FloatingCartBarProps> = ({ onPressCheckou
         useNativeDriver: true,
       }).start();
 
-      // Trigger subtle tactile pulse and wiggle on item count change
+      // Tactile spring pulse & wiggle on count changes
       Animated.sequence([
         Animated.parallel([
           Animated.timing(pulseAnim, {
-            toValue: 1.14,
-            duration: 120,
+            toValue: 1.15,
+            duration: 110,
             useNativeDriver: true,
           }),
           Animated.timing(bagRotateAnim, {
             toValue: -0.15,
-            duration: 90,
+            duration: 80,
             useNativeDriver: true,
           }),
         ]),
         Animated.parallel([
           Animated.timing(pulseAnim, {
             toValue: 0.95,
-            duration: 100,
+            duration: 90,
             useNativeDriver: true,
           }),
           Animated.timing(bagRotateAnim, {
             toValue: 0.12,
-            duration: 90,
+            duration: 80,
             useNativeDriver: true,
           }),
         ]),
@@ -76,7 +76,7 @@ export const FloatingCartBar: React.FC<FloatingCartBarProps> = ({ onPressCheckou
     } else {
       Animated.timing(slideAnim, {
         toValue: 100,
-        duration: 200,
+        duration: 180,
         useNativeDriver: true,
       }).start();
     }
@@ -96,7 +96,7 @@ export const FloatingCartBar: React.FC<FloatingCartBarProps> = ({ onPressCheckou
 
   const bagRotation = bagRotateAnim.interpolate({
     inputRange: [-1, 1],
-    outputRange: ['-30deg', '30deg'],
+    outputRange: ['-25deg', '25deg'],
   });
 
   return (
@@ -110,13 +110,13 @@ export const FloatingCartBar: React.FC<FloatingCartBarProps> = ({ onPressCheckou
       pointerEvents="box-none"
     >
       <AnimatedTouchable
-        style={styles.glassCartBar}
-        activeOpacity={0.92}
+        style={styles.yellowCapsuleBar}
+        activeOpacity={0.9}
         onPress={handlePress}
         accessibilityRole="button"
         accessibilityLabel={`View Cart with ${itemCount} items`}
       >
-        {/* Left Side: Animated Professional Icon & Item Count Badge */}
+        {/* Left Side: Animated Professional Bag Icon & Count Badge */}
         <View style={styles.leftCol}>
           <Animated.View
             style={[
@@ -126,24 +126,18 @@ export const FloatingCartBar: React.FC<FloatingCartBarProps> = ({ onPressCheckou
               },
             ]}
           >
-            <ShoppingBag size={21} color="#0F766E" strokeWidth={2.3} />
+            <ShoppingBag size={18} color="#1E242B" strokeWidth={2.4} />
             <View style={styles.badgePill}>
               <Text style={styles.badgeCount}>{itemCount}</Text>
             </View>
           </Animated.View>
-
-          {/* Express Delivery Badge */}
-          <View style={styles.expressTag}>
-            <Zap size={11} color="#0D9488" fill="#0D9488" />
-            <Text style={styles.expressText}>20-Min Express</Text>
-          </View>
         </View>
 
-        {/* Right Side: Clean "View Cart" CTA with Light Sky Teal Arrow */}
+        {/* Center/Right Side: "View Cart" & Arrow Circle Icon */}
         <View style={styles.rightCol}>
           <Text style={styles.viewCartText}>View Cart</Text>
-          <View style={styles.tealArrowBtn}>
-            <ArrowRight size={13} color="#0F766E" strokeWidth={2.8} />
+          <View style={styles.arrowCircle}>
+            <ArrowRight size={12} color="#FFFFFF" strokeWidth={2.8} />
           </View>
         </View>
       </AnimatedTouchable>
@@ -154,104 +148,83 @@ export const FloatingCartBar: React.FC<FloatingCartBarProps> = ({ onPressCheckou
 const styles = StyleSheet.create({
   floatingContainer: {
     position: 'absolute',
-    bottom: 74, // Sits directly above bottom nav bar
-    left: 20,
-    right: 20,
+    bottom: 74, // Sits above the white bottom nav
+    alignSelf: 'center',
     zIndex: 999,
   },
-  glassCartBar: {
+  yellowCapsuleBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 36, // Highly rounded pill curve
-    paddingLeft: 14,
+    justifyContent: 'center',
+    backgroundColor: '#FFCC00', // Solid very bright vibrant light yellow
+    borderRadius: 30, // Small tight capsule
+    paddingLeft: 12,
     paddingRight: 10,
-    paddingVertical: 8,
+    paddingVertical: 7,
     borderWidth: 1.2,
-    borderColor: '#CCFBF1', // Light sky teal border
+    borderColor: '#F59E0B',
+    gap: 12,
     ...Platform.select({
       ios: {
-        shadowColor: '#0F766E',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.12,
-        shadowRadius: 16,
+        shadowColor: '#B45309',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.28,
+        shadowRadius: 10,
       },
       android: {
-        elevation: 10,
+        elevation: 8,
       },
     }),
   },
   leftCol: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
   },
   iconWrapper: {
-    width: 32,
-    height: 32,
+    width: 26,
+    height: 26,
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
   },
   badgePill: {
     position: 'absolute',
-    top: -3,
+    top: -4,
     right: -7,
-    backgroundColor: '#CCFBF1', // Light sky teal
-    minWidth: 16,
-    height: 16,
-    borderRadius: 8,
-    paddingHorizontal: 3.5,
+    backgroundColor: '#1E242B',
+    minWidth: 15,
+    height: 15,
+    borderRadius: 7.5,
+    paddingHorizontal: 3,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: '#0D9488',
+    borderWidth: 1.2,
+    borderColor: '#FFCC00',
   },
   badgeCount: {
-    fontSize: 9.5,
+    fontSize: 9,
     fontFamily: ServenticaTokens.fonts.SemiBold,
     fontWeight: '800',
-    color: '#0F766E',
-    lineHeight: 11,
-  },
-  expressTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F0FDFA', // Light sky teal tint
-    borderWidth: 1,
-    borderColor: '#CCFBF1',
-    paddingHorizontal: 8,
-    paddingVertical: 3.5,
-    borderRadius: 14,
-    gap: 4,
-  },
-  expressText: {
-    fontSize: 11,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
-    fontWeight: '600',
-    color: '#0F766E',
-    letterSpacing: -0.1,
+    color: '#FFFFFF',
+    lineHeight: 10,
   },
   rightCol: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 7,
+    gap: 6,
   },
   viewCartText: {
-    fontSize: 13.5,
+    fontSize: 13,
     fontFamily: ServenticaTokens.fonts.SemiBold,
     fontWeight: '700',
     color: '#1E242B',
     letterSpacing: -0.2,
   },
-  tealArrowBtn: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: '#CCFBF1', // Light sky teal blue
-    borderWidth: 1,
-    borderColor: '#5EEAD4',
+  arrowCircle: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#1E242B',
     justifyContent: 'center',
     alignItems: 'center',
   },

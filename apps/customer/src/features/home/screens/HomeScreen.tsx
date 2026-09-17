@@ -51,6 +51,7 @@ import { ServiceCardShowcaseScreen } from '../../showcase/ServiceCardShowcaseScr
 interface HomeScreenProps {
   onOpenAccount?: () => void;
   onSelectService?: (service: HomeBasicServiceItem) => void;
+  initialShowcase?: boolean;
 }
 
 export type AccountSubRoute =
@@ -68,6 +69,7 @@ export type AccountSubRoute =
 export const HomeScreen: React.FC<HomeScreenProps> = ({
   onOpenAccount,
   onSelectService,
+  initialShowcase = true,
 }) => {
   const { data, isLoading: isHomeLoading, refresh: refreshHome } = useHome();
   const location = useLocation();
@@ -98,7 +100,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   } = useHomeExperience();
 
   const [activeTab, setActiveTab] = useState<BottomNavTab>('HOME');
-  const [activeAccountRoute, setActiveAccountRoute] = useState<AccountSubRoute>(null);
+  const [activeAccountRoute, setActiveAccountRoute] = useState<AccountSubRoute>(initialShowcase ? 'SANDBOX' : null);
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
   const [supportBookingContext, setSupportBookingContext] = useState<{ id: string; serviceName: string } | undefined>(undefined);
   const [activeServiceTarget, setActiveServiceTarget] = useState<{ id: string; slug: string; fromCategory?: boolean } | null>(null);
@@ -701,11 +703,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         <SelectLocationScreen onClose={location.closeSelectLocation} />
       </Modal>
 
-      {/* 6. PERSISTENT FLOATING QUICK-COMMERCE CART BAR */}
-      {!activeAccountRoute && !isSearchActive && (
-        <FloatingCartBar />
-      )}
-
       {/* 7. CART CHECKOUT & EXPRESS SCHEDULING DRAWER */}
       <CartDrawerModal
         onProceedToBooking={(bookingData) => {
@@ -718,6 +715,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         activeTab={activeTab}
         onSelectTab={handleTabSwitch}
       />
+
+      {/* 9. PERSISTENT FLOATING QUICK-COMMERCE CART BAR (rendered on top of bottom nav for touch priority) */}
+      {!activeAccountRoute && !isSearchActive && (
+        <FloatingCartBar />
+      )}
     </View>
   );
 };

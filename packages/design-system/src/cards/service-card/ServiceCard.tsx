@@ -9,6 +9,7 @@ import { ServiceCardMedia } from './ServiceCardMedia';
 import { ServiceCardDetails } from './ServiceCardDetails';
 import { ServiceCardData, ServiceCardSize, ServiceCardVariant } from './types';
 import { ServiceCardTokens } from './tokens';
+import { resolveServiceRibbons } from './ribbonResolver';
 
 export interface ServiceCardProps {
   service: ServiceCardData;
@@ -41,6 +42,9 @@ export const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
     onToggleFavorite?.(service.id, isFavorite);
   };
 
+  // Automatically compute contextual dynamic badges if not manually fixed
+  const { ribbon, secondaryRibbon } = resolveServiceRibbons(service);
+
   return (
     <TouchableOpacity
       style={[
@@ -60,8 +64,8 @@ export const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
         image={service.image}
         width={width}
         height={mediaHeight}
-        ribbon={service.ribbon}
-        secondaryRibbon={service.secondaryRibbon}
+        ribbon={ribbon}
+        secondaryRibbon={secondaryRibbon}
         favorite={isFavorite}
         onToggleFavorite={handleFavoriteToggle}
         branding={service.branding}

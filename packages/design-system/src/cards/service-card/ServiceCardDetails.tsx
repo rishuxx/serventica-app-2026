@@ -74,14 +74,21 @@ export const ServiceCardDetails: React.FC<ServiceCardDetailsProps> = React.memo(
         </Text>
       ) : null}
 
-      {/* 3. Real Price Row */}
+      {/* 3. Real Price & Discount Row */}
       {typeof price === 'number' && price > 0 ? (
         <View style={styles.priceRow}>
           <Text style={styles.priceFromLabel}>From</Text>
           <Text style={styles.priceCurrency}>₹</Text>
           <Text style={styles.priceText}>{price}</Text>
           {typeof originalPrice === 'number' && originalPrice > price ? (
-            <Text style={styles.originalPriceText}>₹{originalPrice}</Text>
+            <>
+              <Text style={styles.originalPriceText}>₹{originalPrice}</Text>
+              <View style={styles.discountBadge}>
+                <Text style={styles.discountText}>
+                  {Math.round(((originalPrice - price) / originalPrice) * 100)}% OFF
+                </Text>
+              </View>
+            </>
           ) : null}
         </View>
       ) : null}
@@ -106,16 +113,19 @@ const styles = StyleSheet.create({
     color: ServiceCardTokens.colors.textPrimary,
     fontFamily: ServiceCardTokens.typography.fontPrimaryBold,
     fontWeight: '700',
+    letterSpacing: -0.25,
     includeFontPadding: false,
   },
   ratingBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: 2.5,
     backgroundColor: '#FFFBEB',
-    paddingHorizontal: 5,
-    paddingVertical: 1.5,
-    borderRadius: 4,
+    paddingHorizontal: 5.5,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 0.5,
+    borderColor: '#FEF3C7',
   },
   starIcon: {
     marginBottom: 0.5,
@@ -131,18 +141,20 @@ const styles = StyleSheet.create({
     color: ServiceCardTokens.colors.textSecondary,
     fontFamily: ServiceCardTokens.typography.fontPrimaryRegular,
     marginTop: 2.5,
+    letterSpacing: -0.15,
     includeFontPadding: false,
   },
   priceRow: {
     flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 4,
-    marginTop: 3.5,
+    alignItems: 'center',
+    gap: 3,
+    marginTop: 4,
   },
   priceFromLabel: {
     color: ServiceCardTokens.colors.textMuted,
     fontFamily: ServiceCardTokens.typography.fontPrimaryRegular,
     fontSize: 10,
+    marginRight: 1,
   },
   priceCurrency: {
     color: ServiceCardTokens.colors.textPrimary,
@@ -153,8 +165,9 @@ const styles = StyleSheet.create({
   priceText: {
     color: ServiceCardTokens.colors.textPrimary,
     fontFamily: ServiceCardTokens.typography.fontPrimaryBold,
-    fontSize: 13.5,
+    fontSize: 14,
     fontWeight: '800',
+    letterSpacing: -0.2,
   },
   originalPriceText: {
     color: ServiceCardTokens.colors.textMuted,
@@ -162,5 +175,19 @@ const styles = StyleSheet.create({
     fontSize: 11,
     textDecorationLine: 'line-through',
     marginLeft: 3,
+  },
+  discountBadge: {
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 4,
+    marginLeft: 4,
+  },
+  discountText: {
+    color: '#059669',
+    fontFamily: ServiceCardTokens.typography.fontPrimaryBold,
+    fontSize: 9.5,
+    fontWeight: '800',
+    letterSpacing: -0.2,
   },
 });

@@ -48,8 +48,15 @@ export interface ServiceCardData {
   price?: number;
   originalPrice?: number;
   durationMinutes?: number;
-  lastUsedDate?: string;
+  
+  // Dynamic business/user behavior context for automatic ribbon computation:
+  isMostBooked?: boolean;
+  isTrending?: boolean;
   isFeatured?: boolean;
+  bookingCount?: number;
+  lastUsedDate?: string; // e.g. '2026-09-10' or relative '2w ago'
+  isOriginal?: boolean;
+  discountPercentage?: number;
 }
 
 export type ServiceCardSize = 'small' | 'medium' | 'large';
