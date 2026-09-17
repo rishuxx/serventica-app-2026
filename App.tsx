@@ -129,17 +129,21 @@ function RootNavigator() {
   );
 }
 
+import { CartProvider } from './apps/customer/src/features/cart/context/CartContext';
+
 export default function App() {
   const [showShowcase, setShowShowcase] = useState(false);
 
   return (
     <AuthProvider>
       <LocationProvider>
-        {showShowcase ? (
-          <ServiceCardShowcaseScreen onBack={() => setShowShowcase(false)} />
-        ) : (
-          <RootNavigator />
-        )}
+        <CartProvider>
+          {showShowcase ? (
+            <ServiceCardShowcaseScreen onBack={() => setShowShowcase(false)} />
+          ) : (
+            <RootNavigator />
+          )}
+        </CartProvider>
       </LocationProvider>
     </AuthProvider>
   );

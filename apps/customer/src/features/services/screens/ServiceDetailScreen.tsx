@@ -23,8 +23,10 @@ import {
 } from 'lucide-react-native';
 import { useServiceDetail } from '../../../hooks/useServiceDetail';
 import { useLocation } from '../../../context/LocationContext';
+import { useCart } from '../../../features/cart/context/CartContext';
 import { AssetRegistry } from '../../../services/home.service';
 import { ServenticaTokens } from '../../../../../../packages/design-system/src';
+import { AnimatedTouchable } from '../../../shared/components/AnimatedTouchable';
 
 export interface ServiceDetailScreenProps {
   serviceId?: string;
@@ -45,10 +47,19 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({
 }) => {
   const { service, isLoading, hasError, refresh } = useServiceDetail(serviceId, slug);
   const { activeLocation, serviceability } = useLocation();
+  const { addItem, openCartDrawer } = useCart();
 
   // Evaluate Serviceability against the active location
   const isAvailable = serviceability ? serviceability.isServiceable : true;
   const zoneName = serviceability?.zoneName || activeLocation.city || 'your area';
+
+  const handleContinue = () => {
+    if (service) {
+      addItem(service as any);
+      openCartDrawer();
+      onBack();
+    }
+  };
 
   if (isLoading) {
     return (
@@ -112,15 +123,7 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({
   const hasRealDuration = typeof service.duration_minutes === 'number' && service.duration_minutes > 0;
   const hasRealRating = typeof service.rating === 'number' && service.rating > 0;
 
-  const handleContinue = () => {
-    if (onContinue) {
-      onContinue({
-        serviceId: service.id,
-        locationId: (activeLocation as any).id || undefined,
-        serviceAreaId: serviceability?.serviceAreaId,
-      });
-    }
-  };
+
 
   return (
     <View style={styles.rootContainer}>

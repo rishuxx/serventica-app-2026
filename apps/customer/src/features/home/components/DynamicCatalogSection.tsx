@@ -12,6 +12,8 @@ import { ServiceDetailItem } from '../../../types/category.types';
 import { ServenticaTokens } from '../../../../../../packages/design-system/src';
 import { Inbox, AlertCircle, RefreshCw } from 'lucide-react-native';
 
+import { ShimmerPlaceholder } from '../../../shared/components/ShimmerPlaceholder';
+
 interface DynamicCatalogSectionProps {
   sections: CatalogSectionData[];
   isLoading: boolean;
@@ -46,14 +48,31 @@ export const DynamicCatalogSection: React.FC<DynamicCatalogSectionProps> = React
     );
   }
 
-  // 2. Loading Skeleton state when switching with empty cache
+  // 2. Loading Shimmer Skeleton state when switching categories
   if (isLoading && sections.length === 0) {
     return (
-      <View style={styles.skeletonContainer}>
-        <View style={styles.skeletonHeader} />
-        {[1, 2, 3].map((key) => (
-          <View key={key} style={styles.skeletonCard} />
-        ))}
+      <View style={styles.container}>
+        <View style={styles.sectionHeaderRow}>
+          <ShimmerPlaceholder width={180} height={22} borderRadius={6} />
+          <View style={{ height: 6 }} />
+          <ShimmerPlaceholder width={100} height={14} borderRadius={4} />
+        </View>
+        <View style={styles.cardsList}>
+          {[1, 2, 3].map((key) => (
+            <View key={key} style={styles.shimmerCardContainer}>
+              <View style={{ flex: 1, marginRight: 14 }}>
+                <ShimmerPlaceholder width="85%" height={18} borderRadius={6} style={{ marginBottom: 8 }} />
+                <ShimmerPlaceholder width="95%" height={14} borderRadius={4} style={{ marginBottom: 6 }} />
+                <ShimmerPlaceholder width="60%" height={14} borderRadius={4} style={{ marginBottom: 12 }} />
+                <ShimmerPlaceholder width={80} height={18} borderRadius={6} />
+              </View>
+              <View style={{ alignItems: 'center' }}>
+                <ShimmerPlaceholder width={78} height={72} borderRadius={12} style={{ marginBottom: 8 }} />
+                <ShimmerPlaceholder width={78} height={28} borderRadius={14} />
+              </View>
+            </View>
+          ))}
+        </View>
       </View>
     );
   }
@@ -211,5 +230,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
     letterSpacing: -0.1,
+  },
+  shimmerCardContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E8E8E6',
+    marginBottom: 12,
+    padding: 14,
   },
 });

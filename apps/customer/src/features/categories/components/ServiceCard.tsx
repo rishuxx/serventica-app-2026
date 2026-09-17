@@ -7,10 +7,12 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
-import { Star, Clock, ChevronRight, CheckCircle2 } from 'lucide-react-native';
+import { Star, Clock, ChevronRight, CheckCircle2, Plus, Minus } from 'lucide-react-native';
 import { ServenticaTokens } from '../../../../../../packages/design-system/src';
 import { ServiceDetailItem } from '../../../types/category.types';
 import { AssetRegistry } from '../../../services/home.service';
+import { useCart } from '../../../features/cart/context/CartContext';
+import { AnimatedTouchable } from '../../../shared/components/AnimatedTouchable';
 
 interface ServiceCardProps {
   service: ServiceDetailItem;
@@ -18,13 +20,15 @@ interface ServiceCardProps {
   isServiceable?: boolean;
 }
 
-export const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
+export const ServiceCard: React.FC<ServiceCardProps> = ({
   service,
   onPress,
   isServiceable = true,
 }) => {
   const [imageError, setImageError] = useState<boolean>(false);
   const [imageLoading, setImageLoading] = useState<boolean>(false);
+  const { getItemQuantity, addItem, removeItem } = useCart();
+  const quantity = getItemQuantity(service.id);
 
   // Check if image_url is a registry key or remote URL
   const imgKey = service.image_url || '';
@@ -43,16 +47,16 @@ export const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
   const hasRealDuration = typeof service.duration_minutes === 'number' && service.duration_minutes > 0;
 
   return (
-    <TouchableOpacity
-      style={styles.cardContainer}
-      activeOpacity={0.88}
-      onPress={() => onPress(service)}
-      accessibilityRole="button"
-      accessibilityLabel={`Open ${service.name}${hasRealPrice ? `, starting from ₹${service.base_price}` : ''}`}
-    >
+    <View style={styles.cardContainer}>
       <View style={styles.cardContent}>
-        {/* Left Info Column */}
-        <View style={styles.infoCol}>
+        {/* Left Info Column & Image (Click to View Details) */}
+        <TouchableOpacity
+          style={styles.infoCol}
+          activeOpacity={0.8}
+          onPress={() => onPress(service)}
+          accessibilityRole="button"
+          accessibilityLabel={`Open ${service.name}${hasRealPrice ? `, starting from ₹${service.base_price}` : ''}`}
+        >
           {service.short_tagline ? (
             <View style={styles.taglineBadge}>
               <Text style={styles.taglineText} numberOfLines={1}>
@@ -99,11 +103,15 @@ export const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
               <Text style={styles.priceValue}>{service.base_price}</Text>
             </View>
           ) : null}
-        </View>
+        </TouchableOpacity>
 
         {/* Right Visual Image & Action Column */}
         <View style={styles.imageActionCol}>
-          <View style={styles.imageWrapper}>
+          <TouchableOpacity
+            style={styles.imageWrapper}
+            activeOpacity={0.8}
+            onPress={() => onPress(service)}
+          >
             {imageSource && !imageError ? (
               <>
                 <Image
@@ -130,17 +138,42 @@ export const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
                 <CheckCircle2 size={24} color="#888888" strokeWidth={1.5} />
               </View>
             )}
-          </View>
+          </TouchableOpacity>
 
-          <View style={styles.actionButton}>
-            <Text style={styles.actionButtonText}>View</Text>
-            <ChevronRight size={13} color="#FFFFFF" strokeWidth={2.2} />
-          </View>
+          {/* Quick-Commerce Direct Stepper / Add Button */}
+          {quantity > 0 ? (
+            <View style={styles.stepperContainer}>
+              <TouchableOpacity
+                style={styles.stepperSubBtn}
+                activeOpacity={0.7}
+                onPress={() => removeItem(service.id)}
+              >
+                <Minus size={13} color="#1E242B" strokeWidth={2.4} />
+              </TouchableOpacity>
+              <Text style={styles.stepperQtyText}>{quantity}</Text>
+              <TouchableOpacity
+                style={styles.stepperSubBtn}
+                activeOpacity={0.7}
+                onPress={() => addItem(service)}
+              >
+                <Plus size={13} color="#1E242B" strokeWidth={2.4} />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={styles.actionButton}
+              activeOpacity={0.8}
+              onPress={() => addItem(service)}
+            >
+              <Text style={styles.actionButtonText}>ADD</Text>
+              <Plus size={12} color="#FFFFFF" strokeWidth={2.5} />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
-    </TouchableOpacity>
+    </View>
   );
-});
+};
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -310,5 +343,29 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '600',
     letterSpacing: -0.1,
+  },
+  stepperContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F1F5F9',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+    minHeight: 32,
+    width: '100%',
+  },
+  stepperSubBtn: {
+    padding: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepperQtyText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#1E242B',
+    fontFamily: ServenticaTokens.fonts.Medium,
   },
 });

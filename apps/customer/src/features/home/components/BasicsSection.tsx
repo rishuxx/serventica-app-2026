@@ -11,6 +11,8 @@ import { HomeBasicServiceItem } from '../../../types/home.types';
 import { AssetRegistry } from '../../../services/home.service';
 import { ServenticaTokens } from '../../../../../../packages/design-system/src';
 
+import { AnimatedTouchable } from '../../../shared/components/AnimatedTouchable';
+
 const { width } = Dimensions.get('window');
 // 4 items per row layout exactly matching reference screenshot
 const ITEM_WIDTH = (width - 40 - 36) / 4;
@@ -30,10 +32,11 @@ export const BasicsSection: React.FC<BasicsSectionProps> = ({
         {basics.map((service) => {
           const imageSource = AssetRegistry[service.image_url] || AssetRegistry.basic_ac_repair;
           return (
-            <TouchableOpacity
+            <AnimatedTouchable
               key={service.id}
               style={styles.itemWrapper}
-              activeOpacity={0.8}
+              scaleTo={0.93}
+              activeOpacity={0.85}
               onPress={() => onSelectService && onSelectService(service)}
               accessibilityLabel={service.name}
             >
@@ -48,7 +51,7 @@ export const BasicsSection: React.FC<BasicsSectionProps> = ({
                   {service.short_tagline}
                 </Text>
               ) : null}
-            </TouchableOpacity>
+            </AnimatedTouchable>
           );
         })}
       </View>

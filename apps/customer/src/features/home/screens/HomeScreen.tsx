@@ -23,6 +23,8 @@ import { HomeBottomNav, BottomNavTab } from '../components/HomeBottomNav';
 import { CategoryRail } from '../components/CategoryRail';
 import { CategoryScreen } from '../../categories/screens/CategoryScreen';
 import { ServiceDetailScreen } from '../../services/screens/ServiceDetailScreen';
+import { FloatingCartBar } from '../../cart/components/FloatingCartBar';
+import { CartDrawerModal } from '../../cart/components/CartDrawerModal';
 import { useHome } from '../../../hooks/useHome';
 import { useLocation } from '../../../context/LocationContext';
 import { useHomeSearch } from '../../../hooks/useHomeSearch';
@@ -699,7 +701,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         <SelectLocationScreen onClose={location.closeSelectLocation} />
       </Modal>
 
-      {/* 6. BOTTOM NAVIGATION */}
+      {/* 6. PERSISTENT FLOATING QUICK-COMMERCE CART BAR */}
+      {!activeAccountRoute && !isSearchActive && (
+        <FloatingCartBar />
+      )}
+
+      {/* 7. CART CHECKOUT & EXPRESS SCHEDULING DRAWER */}
+      <CartDrawerModal
+        onProceedToBooking={(bookingData) => {
+          console.log('[Serventica Quick Booking Submitted]:', bookingData);
+        }}
+      />
+
+      {/* 8. BOTTOM NAVIGATION */}
       <HomeBottomNav
         activeTab={activeTab}
         onSelectTab={handleTabSwitch}
