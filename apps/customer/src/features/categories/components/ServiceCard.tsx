@@ -183,6 +183,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
           <TouchableOpacity
             style={styles.addButton}
             activeOpacity={0.78}
+            hitSlop={{ top: 8, bottom: 8, left: 10, right: 10 }}
             onPress={(e) => {
               e.stopPropagation();
               addItem(service as any);
@@ -330,17 +331,18 @@ const styles = StyleSheet.create({
     color: '#64748B',
   },
   actionContainer: {
-    paddingHorizontal: 9,
-    paddingTop: 6,
-    paddingBottom: 9,
+    paddingHorizontal: 8,
+    paddingTop: 4,
+    paddingBottom: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
   addButton: {
-    width: '100%',
-    height: 30,
+    minWidth: 70,
+    height: 26,
+    paddingHorizontal: 14,
     backgroundColor: '#fac420',
-    borderRadius: 8,
+    borderRadius: 7,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
@@ -348,40 +350,41 @@ const styles = StyleSheet.create({
     shadowColor: '#B45309',
     shadowOffset: { width: 0, height: 1.5 },
     shadowOpacity: 0.18,
-    shadowRadius: 3,
+    shadowRadius: 2.5,
     elevation: 2,
   },
   addButtonText: {
-    fontSize: 11.5,
+    fontSize: 10.5,
     fontFamily: ServenticaTokens.fonts.Bold,
     color: '#0F172A',
-    letterSpacing: 0.5,
+    letterSpacing: 0.4,
   },
   stepperContainer: {
-    width: '100%',
-    height: 30,
+    minWidth: 74,
+    height: 26,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: '#fac420',
-    borderRadius: 8,
-    paddingHorizontal: 8,
+    borderRadius: 7,
+    paddingHorizontal: 6,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.5)',
     shadowColor: '#B45309',
     shadowOffset: { width: 0, height: 1.5 },
     shadowOpacity: 0.18,
-    shadowRadius: 3,
+    shadowRadius: 2.5,
     elevation: 2,
   },
   stepperBtn: {
-    padding: 3,
+    padding: 2,
     justifyContent: 'center',
     alignItems: 'center',
   },
   stepperQtyText: {
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: ServenticaTokens.fonts.Bold,
     color: '#0F172A',
+    marginHorizontal: 3,
   },
 });
