@@ -392,17 +392,17 @@ export const MapLocationPickerModal: React.FC<MapLocationPickerModalProps> = ({
               </Text>
             </View>
 
-            {/* Default Solid Google Maps-style Yellow Pin */}
+            {/* Default Solid Google Maps-style Compact Yellow Pin */}
             <View style={styles.dropperContainer}>
               <View style={styles.dropperHead}>
-                <Svg width={38} height={46} viewBox="0 0 38 46" fill="none">
+                <Svg width={26} height={32} viewBox="0 0 38 46" fill="none">
                   {/* Solid Teardrop Pin */}
                   <Path
                     d="M19 0C8.50659 0 0 8.50659 0 19C0 30.5 16.5 44.5 18.2 45.85C18.67 46.23 19.33 46.23 19.8 45.85C21.5 44.5 38 30.5 38 19C38 8.50659 29.4934 0 19 0Z"
                     fill="#FAC420"
                   />
                   {/* Clean Solid Center Dot */}
-                  <Circle cx="19" cy="18" r="7" fill="#1E242B" />
+                  <Circle cx="19" cy="18" r="6.5" fill="#1E242B" />
                 </Svg>
               </View>
             </View>
@@ -578,7 +578,7 @@ const styles = StyleSheet.create({
   },
   centerPinContainer: {
     position: 'absolute',
-    top: (SCREEN_HEIGHT - 220) / 2 - 48,
+    top: (SCREEN_HEIGHT - 220) / 2 - 36,
     left: SCREEN_WIDTH / 2 - 90,
     width: 180,
     alignItems: 'center',
@@ -589,10 +589,10 @@ const styles = StyleSheet.create({
   },
   pinTooltip: {
     backgroundColor: '#1E242B',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginBottom: 6,
+    paddingHorizontal: 11,
+    paddingVertical: 5,
+    borderRadius: 14,
+    marginBottom: 5,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
@@ -601,7 +601,7 @@ const styles = StyleSheet.create({
   },
   pinTooltipText: {
     color: '#FFFFFF',
-    fontSize: 11,
+    fontSize: 10.5,
     fontFamily: ServenticaTokens.fonts.SemiBold,
     letterSpacing: 0.1,
   },
@@ -611,15 +611,15 @@ const styles = StyleSheet.create({
   },
   dropperHead: {
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 4,
   },
   pinShadow: {
-    width: 10,
-    height: 4,
-    borderRadius: 5,
+    width: 8,
+    height: 3,
+    borderRadius: 4,
     backgroundColor: 'rgba(0, 0, 0, 0.25)',
     marginTop: 1,
   },
