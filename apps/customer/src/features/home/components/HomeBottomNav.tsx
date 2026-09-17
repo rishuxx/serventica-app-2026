@@ -29,31 +29,31 @@ const TAB_CONFIGS: Record<BottomNavTab, TabThemeConfig> = {
     id: 'HOME',
     label: 'Home',
     activeStroke: '#1E242B',
-    activeFill: '#FAC420', // Serventica warm gold accent
+    activeFill: '#FAC420', // Serventica warm gold
   },
   ORDERS: {
     id: 'ORDERS',
     label: 'Orders',
     activeStroke: '#1E242B',
-    activeFill: '#38BDF8', // Cyan accent
+    activeFill: '#FAC420',
   },
   CATEGORIES: {
     id: 'CATEGORIES',
     label: 'Categories',
     activeStroke: '#1E242B',
-    activeFill: '#A855F7', // Purple accent
+    activeFill: '#FAC420',
   },
   SAVED: {
     id: 'SAVED',
     label: 'Saved',
     activeStroke: '#1E242B',
-    activeFill: '#F43F5E', // Rose accent
+    activeFill: '#FAC420',
   },
   PROFILE: {
     id: 'PROFILE',
     label: 'Profile',
     activeStroke: '#1E242B',
-    activeFill: '#10B981', // Emerald accent
+    activeFill: '#FAC420',
   },
 };
 
@@ -65,7 +65,7 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
 }) => {
   const stroke = isActive ? '#1E242B' : '#64748B';
   const strokeWidth = isActive ? 2.2 : 1.8;
-  const fill = isActive ? theme.activeFill : 'none';
+  const fill = isActive ? '#FAC420' : 'none';
 
   switch (tab) {
     case 'HOME':
@@ -74,7 +74,6 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
           <Path
             d="M3 10.5L12 3l9 7.5V20a1.5 1.5 0 0 1-1.5 1.5H4.5A1.5 1.5 0 0 1 3 20V10.5z"
             fill={fill}
-            fillOpacity={isActive ? 0.35 : 0}
             stroke={stroke}
             strokeWidth={strokeWidth}
             strokeLinecap="round"
@@ -82,7 +81,7 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
           />
           <Path
             d="M9 21.5V12h6v9.5"
-            fill={isActive ? '#FFFFFF' : 'none'}
+            fill={isActive ? '#1E242B' : 'none'}
             stroke={stroke}
             strokeWidth={strokeWidth}
             strokeLinecap="round"
@@ -101,13 +100,12 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
             height="16"
             rx="3.5"
             fill={fill}
-            fillOpacity={isActive ? 0.3 : 0}
             stroke={stroke}
             strokeWidth={strokeWidth}
           />
           <Path
             d="M9 2.5h6a1 1 0 0 1 1 1v1H8v-1a1 1 0 0 1 1-1z"
-            fill={isActive ? '#FFFFFF' : 'none'}
+            fill={isActive ? '#1E242B' : 'none'}
             stroke={stroke}
             strokeWidth={strokeWidth}
           />
@@ -131,7 +129,6 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
             height="7.5"
             rx="2.2"
             fill={fill}
-            fillOpacity={isActive ? 0.35 : 0}
             stroke={stroke}
             strokeWidth={strokeWidth}
           />
@@ -142,7 +139,6 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
             height="7.5"
             rx="2.2"
             fill={fill}
-            fillOpacity={isActive ? 0.35 : 0}
             stroke={stroke}
             strokeWidth={strokeWidth}
           />
@@ -153,7 +149,6 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
             height="7.5"
             rx="2.2"
             fill={fill}
-            fillOpacity={isActive ? 0.35 : 0}
             stroke={stroke}
             strokeWidth={strokeWidth}
           />
@@ -164,7 +159,6 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
             height="7.5"
             rx="2.2"
             fill={fill}
-            fillOpacity={isActive ? 0.35 : 0}
             stroke={stroke}
             strokeWidth={strokeWidth}
           />
@@ -177,7 +171,6 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
           <Path
             d="M19.5 13.572L12 21l-7.5-7.428A5 5 0 1 1 12 6.706a5 5 0 1 1 7.5 6.866z"
             fill={fill}
-            fillOpacity={isActive ? 0.35 : 0}
             stroke={stroke}
             strokeWidth={strokeWidth}
             strokeLinecap="round"
@@ -191,7 +184,7 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
         <Svg width={21} height={21} viewBox="0 0 24 24">
           <Path
             d="M20 21v-1.5A4.5 4.5 0 0 0 15.5 15h-7A4.5 4.5 0 0 0 4 19.5V21"
-            fill="none"
+            fill={fill}
             stroke={stroke}
             strokeWidth={strokeWidth}
             strokeLinecap="round"
@@ -200,7 +193,6 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
           <Path
             d="M12 11.5a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"
             fill={fill}
-            fillOpacity={isActive ? 0.35 : 0}
             stroke={stroke}
             strokeWidth={strokeWidth}
             strokeLinecap="round"
@@ -402,14 +394,14 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   activeGlassPill: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     borderRadius: 15,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: 'rgba(250, 196, 32, 0.14)',
     borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.06)',
-    shadowColor: '#1E242B',
+    borderColor: 'rgba(250, 196, 32, 0.28)',
+    shadowColor: '#B45309',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.12,
     shadowRadius: 6,
     elevation: 2,
   },
