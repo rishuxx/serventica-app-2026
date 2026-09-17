@@ -10,9 +10,9 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { ArrowLeft, Heart } from 'lucide-react-native';
-import { ServenticaTokens } from '../../../../../../packages/design-system/src';
 import { useSavedServices } from '../../../hooks/useSavedServices';
 import { ServiceCard } from '../../categories/components/ServiceCard';
+import { ServenticaTokens } from '../../../../../../packages/design-system/src';
 
 interface SavedServicesScreenProps {
   onBack: () => void;
@@ -25,7 +25,7 @@ export const SavedServicesScreen: React.FC<SavedServicesScreenProps> = ({
   onSelectService,
   onExploreServices,
 }) => {
-  const { savedServices, isLoading, refresh } = useSavedServices();
+  const { savedServices, isLoading, refresh, toggleSave } = useSavedServices();
 
   return (
     <View style={styles.container}>
@@ -40,15 +40,15 @@ export const SavedServicesScreen: React.FC<SavedServicesScreenProps> = ({
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
-          <ArrowLeft size={20} color='#1E242B' strokeWidth={2.2} />
+          <ArrowLeft size={20} color="#1E242B" strokeWidth={2.2} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Saved Services</Text>
         <View style={styles.headerSpacer} />
       </View>
 
-      {isLoading ? (
+      {isLoading && savedServices.length === 0 ? (
         <View style={styles.centerBox}>
-          <ActivityIndicator size="large" color='#1E242B' />
+          <ActivityIndicator size="large" color="#1E242B" />
           <Text style={styles.loadingText}>Loading saved services...</Text>
         </View>
       ) : savedServices.length === 0 ? (
@@ -72,6 +72,8 @@ export const SavedServicesScreen: React.FC<SavedServicesScreenProps> = ({
         <FlatList
           data={savedServices}
           keyExtractor={(item) => item.id}
+          numColumns={2}
+          columnWrapperStyle={styles.columnWrapper}
           renderItem={({ item }) => (
             <ServiceCard
               service={{
@@ -88,6 +90,9 @@ export const SavedServicesScreen: React.FC<SavedServicesScreenProps> = ({
                 reviews_count: item.service.reviewsCount,
                 image_url: item.service.imageUrl,
               }}
+              cardWidth="48%"
+              isSaved={true}
+              onToggleSave={toggleSave}
               onPress={() =>
                 onSelectService({
                   id: item.service.id,
@@ -110,7 +115,7 @@ export const SavedServicesScreen: React.FC<SavedServicesScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FBFBFA',
+    backgroundColor: '#F8FAFC',
   },
   headerBar: {
     flexDirection: 'row',
@@ -121,57 +126,53 @@ const styles = StyleSheet.create({
     paddingBottom: 14,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0ED',
+    borderBottomColor: 'rgba(0, 0, 0, 0.05)',
   },
   circleBackButton: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: '#F5F5F4',
-    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
     justifyContent: 'center',
+    alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 16,
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
+    fontSize: 18,
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#1E242B',
   },
   headerSpacer: {
     width: 38,
   },
-  listContent: {
-    padding: 16,
-    paddingBottom: 40,
-  },
   centerBox: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
   },
   loadingText: {
+    marginTop: 12,
     fontSize: 13,
     fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#777777',
-    marginTop: 12,
+    color: '#64748B',
   },
   emptyBox: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
-    padding: 32,
+    alignItems: 'center',
+    paddingHorizontal: 32,
   },
   emptyIconCircle: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#F5F5F3',
-    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
     justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 16,
   },
   emptyTitle: {
-    fontSize: 16,
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
+    fontSize: 17,
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#1E242B',
     marginBottom: 8,
     textAlign: 'center',
@@ -179,21 +180,27 @@ const styles = StyleSheet.create({
   emptySubtitle: {
     fontSize: 13,
     fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#777777',
+    color: '#64748B',
     textAlign: 'center',
-    lineHeight: 19,
-    marginBottom: 24,
+    lineHeight: 18,
+    marginBottom: 20,
   },
   exploreBtn: {
+    backgroundColor: '#1E242B',
     paddingHorizontal: 24,
     paddingVertical: 12,
-    borderRadius: 24,
-    backgroundColor: '#1E242B',
+    borderRadius: 10,
   },
   exploreBtnText: {
-    fontSize: 13.5,
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
     color: '#FFFFFF',
-    letterSpacing: 0.3,
+    fontSize: 14,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
+  },
+  listContent: {
+    paddingVertical: 14,
+  },
+  columnWrapper: {
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
   },
 });

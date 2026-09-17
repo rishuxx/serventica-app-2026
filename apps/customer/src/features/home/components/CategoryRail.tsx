@@ -20,10 +20,44 @@ export const CategoryRail: React.FC<CategoryRailProps> = React.memo(({
 }) => {
   const flatListRef = useRef<FlatList>(null);
 
+  // Strictly filter out any isolated appliance subcategory buttons from the rail
+  const displayCategories = React.useMemo(() => {
+    const isSeparateAppliance = (cat: CategoryItem) => {
+      const slug = (cat.slug || '').toLowerCase().trim();
+      const name = (cat.name || '').toLowerCase().trim();
+      if (slug === 'ac-appliances' || name.includes('& appliance') || name.includes('& appliances')) {
+        return false;
+      }
+      if (slug === 'ac' || slug === 'ac-repair' || slug === 'air-conditioner' || name === 'ac' || name === 'air conditioner') {
+        return true;
+      }
+      return (
+        slug.includes('refrigerator') ||
+        slug.includes('fridge') ||
+        slug.includes('washing') ||
+        slug.includes('television') ||
+        slug === 'tv' ||
+        slug.includes('microwave') ||
+        slug.includes('chimney') ||
+        slug.includes('geyser') ||
+        name.includes('refrigerator') ||
+        name.includes('fridge') ||
+        name.includes('washing') ||
+        name.includes('television') ||
+        name === 'tv' ||
+        name.includes('microwave') ||
+        name.includes('chimney') ||
+        name.includes('geyser')
+      );
+    };
+
+    return categories.filter((cat) => !isSeparateAppliance(cat));
+  }, [categories]);
+
   // Smoothly center the active category in the viewport when selectedCategoryId changes
   useEffect(() => {
-    if (!selectedCategoryId || !categories.length) return;
-    const targetIndex = categories.findIndex((c) => c.id === selectedCategoryId);
+    if (!selectedCategoryId || !displayCategories.length) return;
+    const targetIndex = displayCategories.findIndex((c) => c.id === selectedCategoryId || c.slug === selectedCategoryId);
     if (targetIndex !== -1 && flatListRef.current) {
       try {
         flatListRef.current.scrollToIndex({
@@ -35,10 +69,10 @@ export const CategoryRail: React.FC<CategoryRailProps> = React.memo(({
         // Handled by onScrollToIndexFailed
       }
     }
-  }, [selectedCategoryId, categories]);
+  }, [selectedCategoryId, displayCategories]);
 
   const handleItemPress = useCallback((category: CategoryItem) => {
-    const index = categories.findIndex((c) => c.id === category.id);
+    const index = displayCategories.findIndex((c) => c.id === category.id);
     if (index !== -1 && flatListRef.current) {
       try {
         flatListRef.current.scrollToIndex({
@@ -51,7 +85,7 @@ export const CategoryRail: React.FC<CategoryRailProps> = React.memo(({
       }
     }
     onSelectCategory(category);
-  }, [categories, onSelectCategory]);
+  }, [displayCategories, onSelectCategory]);
 
   const renderItem = useCallback(({ item }: { item: CategoryItem }) => (
     <CategoryRailItem
@@ -69,7 +103,7 @@ export const CategoryRail: React.FC<CategoryRailProps> = React.memo(({
     <View style={[styles.wrapper, variant === 'sticky' && styles.stickyWrapper]}>
       <FlatList
         ref={flatListRef}
-        data={categories}
+        data={displayCategories}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         horizontal

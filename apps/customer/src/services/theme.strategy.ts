@@ -50,6 +50,7 @@ export class CategoryAdaptiveThemeStrategy implements INavigationThemeStrategy {
     }
 
     switch (slug) {
+      case 'electrician':
       case 'electrical':
         return {
           gradientColors: ['#B45309', '#D97706', '#F59E0B', '#FBBF24'],
@@ -94,6 +95,7 @@ export class CategoryAdaptiveThemeStrategy implements INavigationThemeStrategy {
           activeStroke: '#4C1D95',
         };
 
+      case 'home-cleaning':
       case 'cleaning':
         return {
           gradientColors: ['#334155', '#475569', '#64748B', '#94A3B8'],
@@ -137,6 +139,51 @@ export class CategoryAdaptiveThemeStrategy implements INavigationThemeStrategy {
           activeBorder: 'rgba(255, 255, 255, 0.45)',
           activeFill: '#FACC15',
           activeStroke: '#0369A1',
+        };
+
+      case 'carpentry':
+        return {
+          gradientColors: ['#78350F', '#92400E', '#B45309', '#D97706'],
+          gradientStart: '#78350F',
+          gradientEnd: '#D97706',
+          isDark: true,
+          textColor: '#FFFFFF',
+          subtextColor: 'rgba(255, 255, 255, 0.92)',
+          iconColor: '#FFFFFF',
+          activePillBg: 'rgba(255, 255, 255, 0.24)',
+          activeBorder: 'rgba(255, 255, 255, 0.45)',
+          activeFill: '#FBBF24',
+          activeStroke: '#78350F',
+        };
+
+      case 'pest-control':
+        return {
+          gradientColors: ['#14532D', '#166534', '#15803D', '#22C55E'],
+          gradientStart: '#14532D',
+          gradientEnd: '#22C55E',
+          isDark: true,
+          textColor: '#FFFFFF',
+          subtextColor: 'rgba(255, 255, 255, 0.92)',
+          iconColor: '#FFFFFF',
+          activePillBg: 'rgba(255, 255, 255, 0.24)',
+          activeBorder: 'rgba(255, 255, 255, 0.45)',
+          activeFill: '#FACC15',
+          activeStroke: '#14532D',
+        };
+
+      case 'laundry':
+        return {
+          gradientColors: ['#1E3A8A', '#1E40AF', '#2563EB', '#60A5FA'],
+          gradientStart: '#1E3A8A',
+          gradientEnd: '#60A5FA',
+          isDark: true,
+          textColor: '#FFFFFF',
+          subtextColor: 'rgba(255, 255, 255, 0.92)',
+          iconColor: '#FFFFFF',
+          activePillBg: 'rgba(255, 255, 255, 0.24)',
+          activeBorder: 'rgba(255, 255, 255, 0.45)',
+          activeFill: '#FACC15',
+          activeStroke: '#1E3A8A',
         };
 
       case 'home-decor':

@@ -82,3 +82,6 @@ yarn-error.log
 /*.png
 ServenticaCards.zip
 android/app/src/main/assets/index.android.bundle
+.turbo/
+**/.turbo/
+

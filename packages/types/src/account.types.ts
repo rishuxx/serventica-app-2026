@@ -113,8 +113,11 @@ export interface ServiceReviewRecord {
   userId: string;
   bookingId: string;
   serviceId: string;
+  serviceName?: string;
   partnerId?: string | null;
   rating: number;
+  comment?: string;
   reviewText?: string;
   createdAt: string;
 }
+

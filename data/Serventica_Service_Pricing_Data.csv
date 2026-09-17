@@ -1,0 +1,73 @@
+Category,Sub-Category,Service Name,Scope / Unit,Service Description,Estimated Price (INR)
+Appliance Repair,AC,Foam-Jet Service,1 AC,Indoor & outdoor unit deep cleaning with foam and high-pressure jet spray.,₹549 - ₹699
+Appliance Repair,AC,Gas Refill & Leak Fix,1 AC,"Nitrogen leak test, brazing minor leaks, and complete refrigerant gas recharge.","₹2,500 - ₹3,500"
+Appliance Repair,AC,PCB / Motherboard Repair,1 Board,"Inverter/Non-inverter main board circuit diagnosis, repair, and testing.","₹1,500 - ₹4,500"
+Appliance Repair,AC,Installation / Uninstallation,1 AC,Standard wall mounting/dismounting of split AC units (excludes core cutting).,"₹699 - ₹1,499"
+Appliance Repair,Washing Machine,Deep Cleaning / Descaling,1 Machine,Chemical descaling and drum deep clean for Front/Top load machines.,₹499 - ₹799
+Appliance Repair,Washing Machine,Motor / Drum Repair,1 Machine,"Diagnosis and replacement of main motor, suspension rods, or drum belts.","₹1,200 - ₹4,500"
+Appliance Repair,Refrigerator,Compressor Repair,1 Fridge,"Diagnosis of cooling failures, gas check, and compressor repair/replacement.","₹1,500 - ₹6,500"
+Appliance Repair,Refrigerator,Thermostat / Relay Fix,1 Fridge,Fixing overcooling or no-cooling issues via thermostat/relay replacements.,"₹599 - ₹1,800"
+Appliance Repair,Water Purifier (RO),Standard Service,1 RO Unit,"Pre-filter replacement, internal tank cleaning, and output TDS check.",₹449 - ₹599
+Appliance Repair,Water Purifier (RO),Membrane Replacement,1 RO Unit,Replacing primary RO membrane and carbon filters for hard water issues.,"₹1,200 - ₹3,500"
+Appliance Repair,Kitchen Chimney,Deep Degreasing,1 Chimney,"Dismantling baffles, motor cover, and intense chemical degreasing of sticky oil.","₹799 - ₹1,299"
+Appliance Repair,Microwave/Oven,Heating Issue Fix,1 Unit,"Diagnosis and replacement of magnetron, high-voltage fuse, or keypad.","₹599 - ₹2,500"
+Appliance Repair,Television,Wall Mounting,1 TV,Drilling and heavy-duty mounting for LED/LCD TVs (up to 55 inches).,₹399 - ₹899
+Cleaning,Full Home,1 BHK Deep Clean (Furnished),1 BHK,"Machine floor scrubbing, dry vacuuming, complete kitchen & bath deep clean.","₹2,899 - ₹3,599"
+Cleaning,Full Home,2 BHK Deep Clean (Furnished),2 BHK,"Machine floor scrubbing, dry vacuuming, complete kitchen & bath deep clean.","₹3,899 - ₹4,899"
+Cleaning,Full Home,3 BHK Deep Clean (Furnished),3 BHK,"Machine floor scrubbing, dry vacuuming, complete kitchen & bath deep clean.","₹5,199 - ₹6,599"
+Cleaning,Bathroom,Intense Cleaning,1 Bathroom,"Machine scrubbing of floor/tiles, hard water stain & scale removal.",₹499 - ₹549
+Cleaning,Bathroom,Move-in Deep Cleaning,1 Bathroom,Extra 30 mins machine scrubbing; meant for unused or newly constructed baths.,₹629 - ₹699
+Cleaning,Kitchen,Intense Kitchen Deep Clean,1 Kitchen,"Exhaust/chimney exterior, slab, cabinet degreasing, and floor scrubbing.","₹1,399 - ₹1,999"
+Cleaning,Sofa & Carpet,Fabric Sofa Shampooing,Per Seat,"Wet vacuuming, stain treatment, and mechanical shampooing of fabric seats.",₹250 - ₹350
+Cleaning,Water Tank,Mechanized Tank Cleaning,<1000 Liters,"Dewatering, sludge removal, scrubbing, and UV/anti-bacterial spray.","₹799 - ₹1,199"
+Plumbing,Tap & Mixer,Tap Installation / Repair,1 Fixture,"Replacing internal cartridges, washers, or installing brand new taps.",₹129 - ₹249
+Plumbing,Toilets,Flush Tank Repair,1 Unit,"Fixing internal siphon mechanisms, flapper valves, or dual-push buttons.",₹199 - ₹349
+Plumbing,Toilets,Western Pot Blockage,1 Unit,Using high-pressure air or spring augers to clear heavy commode blockages.,"₹1,299 - ₹1,699"
+Plumbing,Washbasin,Basin Blockage Removal,1 Sink,"Opening the P-trap and physically clearing hair, grease, and debris blockages.",₹149 - ₹299
+Plumbing,Motor & Pump,Surface Motor Installation,1 Pump,Installing surface water pumps (0.5 to 1.5 HP) and removing air cavities.,₹449 - ₹799
+Plumbing,Connections,Inlet/Outlet Pipe Setup,1 Setup,"Connecting washing machines, dishwashers, or RO systems to main water lines.",₹149 - ₹249
+Plumbing,Leakages,Concealed Leak Tracing,Per Leak,Identifying internal wall pipe leaks using thermal/pressure checks (civil work extra).,"₹1,200 - ₹2,500"
+Electrical,Wiring & Switches,Switch/Socket Replacement,Per Point,"Changing burnt or faulty electrical switches, plug points, and regulator dials.",₹99 - ₹149
+Electrical,Fans,Ceiling Fan Repair,1 Fan,"Changing capacitors, rewinding coils, or replacing noisy ball bearings.",₹199 - ₹599
+Electrical,Panels,MCB Replacement,1 Switch,Changing faulty Miniature Circuit Breakers (MCB/RCCB) in the main distribution board.,₹199 - ₹449
+Electrical,Inverter,Inverter Installation,1 Unit,Connecting a new inverter to the battery and the home's main electrical circuit.,₹499 - ₹799
+Electrical,Lighting,Chandelier Installation,1 Unit,"Assembling, wiring, and hanging heavy decorative ceiling lighting fixtures.","₹599 - ₹1,599"
+Carpentry,Furniture,Flat-pack Assembly,1 Item,"Unboxing and assembling online-bought beds, wardrobes, or complex tables.","₹449 - ₹1,599"
+Carpentry,Hardware,Lock Installation,1 Lock,"Drilling wood and installing mortise locks, night latches, or cylindrical locks.",₹349 - ₹799
+Carpentry,Doors,Door Shaving / Alignment,1 Door,Planing swollen wooden doors or fixing hinge alignments for smooth closing.,₹399 - ₹749
+Carpentry,Custom Work,Minor Woodwork Repair,Per Hour,"Fixing broken drawer channels, replacing loose hinges, or patching damaged ply.",₹299 - ₹599
+Painting,Interior,Distemper (Economy),Per Sq.Ft.,"Surface scraping, 1 coat primer, and 2 coats distemper (highly rental friendly).",₹9 - ₹14
+Painting,Interior,Tractor Emulsion (Standard),Per Sq.Ft.,"Putty touch-ups, 1 coat primer, and 2 coats standard matte emulsion paint.",₹15 - ₹20
+Painting,Interior,Royale / Luxury Emulsion,Per Sq.Ft.,"Full wall putty application, 1 coat primer, and 2 coats washable luxury emulsion.",₹25 - ₹35
+Painting,Texture,Accent Wall Texture,Per Sq.Ft.,"Specialized metallic, stucco, ragging, or geometric textured wall designs.",₹70 - ₹150
+Painting,Exterior,Weatherproof Exterior,Per Sq.Ft.,Anti-algae exterior primer plus 2 coats of weatherproof exterior paint.,₹12 - ₹22
+Painting,Wood/Metal,Enamel Painting,Per Sq.Ft.,"Sanding, anti-rust prep, and oil-based enamel coating for doors, windows, grilles.",₹15 - ₹25
+Painting,Wood/Metal,PU Wood Polish,Per Sq.Ft.,Polyurethane high-gloss or matte polishing for premium wooden furniture and doors.,₹60 - ₹120
+Pest Control,Insects,Ant & Cockroach Control,1-2 BHK,Gel baiting in kitchen hinges/cabinets and targeted chemical spray for ants.,"₹799 - ₹1,299"
+Pest Control,Termites,Termite Treatment (Drill),1 BHK,"Drilling floor perimeters, injecting termiticide, and sealing with white cement.","₹3,500 - ₹5,500"
+Pest Control,Bed Bugs,Bed Bug Eradication,1-2 BHK,2-step chemical spray process (requires vacating the premises for 4-6 hours).,"₹1,500 - ₹2,500"
+Home Security,CCTV,Camera Installation,Per Cam,"Routing wires, mounting camera, and configuring DVR/NVR for online mobile viewing.",₹499 - ₹899
+Home Security,Smart Locks,Smart Lock Setup,1 Lock,"Core mortise wood cutting, installing biometric/RFID lock, and mobile app setup.","₹999 - ₹1,899"
+Carpentry (Custom),Doors,Custom Flush Door Making,1 Door (Labor Only),"Measuring, cutting, and assembling a standard flush door (material extra).","₹1,500 - ₹2,500"
+Carpentry (Custom),Doors,Premium Teak Door Making,1 Door (Labor Only),Specialized carving and framing for solid teak wood main doors.,"₹4,500 - ₹8,500"
+Carpentry (Custom),Wardrobes,Custom Wardrobe (Ply + Laminate),Per Sq.Ft. (Labor+Material),"Building full-height wardrobes using commercial ply, standard laminate, and basic hardware.","₹1,200 - ₹1,800"
+Carpentry (Custom),Kitchens,Modular Kitchen Cabinetry,Per Sq.Ft. (Labor+Material),"Construction of base and wall cabinets, including BWR ply and acrylic/laminate finish.","₹1,600 - ₹2,800"
+Carpentry (Custom),Beds,Custom Queen/King Bed,1 Unit (Labor Only),Structuring a custom wooden bed with box storage (plywood/wood provided by client).,"₹4,000 - ₹7,500"
+Carpentry (Custom),Windows,Wooden Window Framing,1 Window (Labor Only),Making and fitting wooden window frames and shutter panels.,"₹1,200 - ₹2,200"
+Home Decor,False Ceiling,Gypsum False Ceiling,Per Sq.Ft. (Labor+Material),Standard GI framing and Gypsum board installation with joint finishing (excluding lights).,₹80 - ₹130
+Home Decor,False Ceiling,POP Punched Ceiling,Per Sq.Ft. (Labor+Material),Plaster of Paris ceiling with custom cornices or multi-level hidden cove lighting designs.,₹95 - ₹160
+Home Decor,Wall Treatments,Wallpaper Installation,Per Roll (Labor Only),Applying adhesive and aligning patterns for standard 57 sq.ft. wallpaper rolls.,₹350 - ₹600
+Home Decor,Wall Treatments,PVC / Louver Paneling,Per Sq.Ft. (Labor+Material),Supplying and installing fluted wooden/PVC louvers for TV units or accent walls.,₹150 - ₹350
+Home Decor,Furnishings,Curtain Rod / Blinds Setup,1 Window (Labor Only),"Drilling and mounting curtain tracks, poles, or roller/zebra blinds.",₹250 - ₹450
+Home Decor,Furnishings,Custom Curtain Stitching,Per Panel (Labor Only),"Tailoring raw fabric into pleated, eyelet, or Roman blind curtains.",₹300 - ₹800
+Home Decor,Design,Interior Consult (Basic),1 Room,2D layout planning and basic color/furniture consultation with a designer.,"₹2,500 - ₹5,000"
+Home Decor,Design,3D Interior Rendering,Per Room,High-quality 3D visual mockups of proposed interior layouts and lighting.,"₹4,000 - ₹10,000"
+Laundry & Dry Clean,Daily Wear,Wash & Fold,Per Kg,"Standard machine wash, tumble dry, and folding (min order usually 3-5 kg).",₹80 - ₹110
+Laundry & Dry Clean,Daily Wear,Wash & Iron,Per Kg,"Standard machine wash, tumble dry, and steam pressing.",₹120 - ₹160
+Laundry & Dry Clean,Premium,2-Piece Suit Dry Clean,1 Suit,"Chemical dry cleaning, stain removal, and steam pressing for men's suits.",₹350 - ₹550
+Laundry & Dry Clean,Premium,Saree Dry Clean (Normal),1 Saree,"Dry cleaning for silk, chiffon, or cotton sarees without heavy embroidery.",₹250 - ₹400
+Laundry & Dry Clean,Premium,Bridal Wear Dry Clean,1 Lehenga/Gown,"Specialized gentle cleaning for heavy zari, mirror work, or bridal outfits.","₹900 - ₹2,500"
+Laundry & Dry Clean,Home Linen,Blanket / Quilt Dry Clean,1 Unit,Deep extraction cleaning for heavy single/double winter blankets.,₹350 - ₹600
+Laundry & Dry Clean,Home Linen,Curtain Dry Cleaning,Per Panel,"Removing dust, washing/dry-cleaning, and pressing heavy drapes.",₹150 - ₹300
+Laundry & Dry Clean,Shoes/Bags,Sneaker / Canvas Wash,1 Pair,"Deep cleaning of soles, upper fabric, and laces using sneaker-safe chemicals.",₹300 - ₹500
+Laundry & Dry Clean,Shoes/Bags,Suede / Leather Care,1 Pair/Item,"Specialized dry brushing, conditioning, and polishing for premium leather/suede.","₹600 - ₹1,200"

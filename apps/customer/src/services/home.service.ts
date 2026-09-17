@@ -33,8 +33,10 @@ export const AssetRegistry: Record<string, any> = {
   // Basics
   basic_ac_repair: require('../assets/category/Basic1.png'),
   basic_fan_cooler: require('../assets/category/Basic2.png'),
+  basic_tv_mount: require('../assets/category/Basic2.png'),
   basic_ro_filter: require('../assets/category/Basic3.png'),
   basic_invertor: require('../assets/category/Basic4.png'),
+  basic_microwave: require('../assets/category/Basic4.png'),
   basic_electric: require('../assets/category/Basic5.png'),
   basic_cleaning: require('../assets/category/Basic6.png'),
   basic_plumbing: require('../assets/category/Basic7.png'),

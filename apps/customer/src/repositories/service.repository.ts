@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase/client';
+import { catalogRepository } from './catalog.repository';
 import { ServiceDetailItem } from '../types/category.types';
 import { categoryService } from '../services/category.service';
 
@@ -19,26 +19,38 @@ class ServiceRepository {
   async getServiceByIdOrSlug(idOrSlug: string): Promise<ServiceDetailFull | null> {
     if (!idOrSlug) return null;
 
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
-
     try {
-      // 1. Fetch service record from Supabase
-      const query = supabase
-        .from('services')
-        .select('*, categories(id, name, slug)');
-
-      const { data, error } = isUuid
-        ? await query.eq('id', idOrSlug).maybeSingle()
-        : await query.eq('slug', idOrSlug).maybeSingle();
-
-      if (!error && data) {
-        return this.mapDbServiceToModel(data);
+      const details = await catalogRepository.getServiceDetails(idOrSlug);
+      if (details) {
+        return {
+          id: details.service.id,
+          category_id: details.service.category_id,
+          subcategory_id: details.service.subcategory_id || undefined,
+          name: details.service.name,
+          slug: details.service.slug,
+          description: details.service.description,
+          short_tagline: details.service.short_description || undefined,
+          base_price: details.service.base_price,
+          duration_minutes: details.service.duration_minutes,
+          pricing_type: details.service.pricing_type,
+          rating: details.ratingSummary.averageRating,
+          reviews_count: details.ratingSummary.reviewsCount,
+          image_url: details.service.thumbnail_url || details.service.hero_image_url || undefined,
+          is_active: details.service.is_active,
+          category_name: details.category.name,
+          category_slug: details.category.slug,
+          subcategory_name: details.subcategory?.name,
+          included_items: details.inclusions.map((i) => i.title),
+          excluded_items: details.exclusions.map((e) => e.title),
+          overview: details.service.description,
+          faq: details.faqs.map((f) => ({ question: f.question, answer: f.answer })),
+        };
       }
     } catch (err) {
-      console.warn('Supabase service query failed, checking catalog repository:', err);
+      console.warn('[ServiceRepository.getServiceByIdOrSlug] Repository error:', err);
     }
 
-    // 2. Resilient fallback lookup from existing indexed catalog
+    // Fallback lookup from offline catalog if database isn't connected
     const allServices = await this.getAllFallbackCatalogServices();
     const matched = allServices.find((s) => {
       const target = idOrSlug.toLowerCase().trim();
@@ -62,32 +74,6 @@ class ServiceRepository {
     }
 
     return null;
-  }
-
-  private mapDbServiceToModel(data: any): ServiceDetailFull {
-    const defaultInclusions = this.generateDefaultInclusions(data.slug || data.name);
-
-    return {
-      id: data.id,
-      category_id: data.category_id,
-      subcategory_id: data.subcategory_id || undefined,
-      name: data.name,
-      slug: data.slug,
-      description: data.description,
-      short_tagline: data.short_tagline || undefined,
-      base_price: Number(data.base_price) || 0,
-      duration_minutes: Number(data.duration_minutes) || 0,
-      pricing_type: data.pricing_type || 'FIXED',
-      rating: Number(data.rating) || 0,
-      reviews_count: Number(data.reviews_count) || 0,
-      image_url: data.image_url || undefined,
-      is_active: Boolean(data.is_active),
-      category_name: data.categories?.name,
-      category_slug: data.categories?.slug,
-      included_items: data.included_items || defaultInclusions.included,
-      excluded_items: data.excluded_items || defaultInclusions.excluded,
-      overview: data.description,
-    };
   }
 
   private async getAllFallbackCatalogServices(): Promise<ServiceDetailItem[]> {

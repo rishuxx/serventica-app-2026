@@ -38,6 +38,9 @@ import { ServenticaTokens } from '../../../../../../packages/design-system/src';
 import { AssetRegistry } from '../../../services/home.service';
 import { PaymentMethodIcon, PaymentBrandType } from './PaymentMethodIcon';
 import { paymentService, PaymentTransactionResult } from '../../../services/payment.service';
+import { DateSelector } from '../../booking/components/DateSelector';
+import { TimeSlotPicker } from '../../booking/components/TimeSlotPicker';
+import { useServiceAvailability } from '../../../hooks/useServiceAvailability';
 
 interface CartDrawerModalProps {
   onProceedToBooking?: (bookingData: any) => void;
@@ -179,19 +182,36 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
   const { activeLocation, openSelectLocation } = useLocation();
   const { user, profile } = useAuth();
 
+  const itemList = Object.values(items);
+  const primaryItem = itemList[0];
+
+  const {
+    serviceability,
+    isCheckingServiceability,
+    isServiceable,
+    dates,
+    selectedDate,
+    setSelectedDate,
+    isLoadingDates,
+    slots,
+    groupedSlots,
+    selectedSlot,
+    setSelectedSlot,
+    isLoadingSlots,
+  } = useServiceAvailability({
+    serviceId: primaryItem?.serviceId,
+    latitude: activeLocation?.latitude,
+    longitude: activeLocation?.longitude,
+    enabled: isCartDrawerOpen && Boolean(primaryItem?.serviceId),
+  });
+
   const [bookingMode, setBookingMode] = useState<'EXPRESS' | 'SCHEDULED'>('EXPRESS');
   const [selectedDurationId, setSelectedDurationId] = useState<string>('1hr');
-  const availableDays = useMemo(() => getAvailableBookingDays(), []);
-  const [selectedDayKey, setSelectedDayKey] = useState<string>(availableDays[0].key);
-  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('MORNING');
-  const [selectedSlotTime, setSelectedSlotTime] = useState<string>('09:00 AM');
   const [selectedPaymentKey, setSelectedPaymentKey] = useState<PaymentMethodKey>('GOOGLE_PAY');
   const [isPaymentPickerOpen, setIsPaymentPickerOpen] = useState<boolean>(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState<boolean>(false);
   const [transactionResult, setTransactionResult] = useState<PaymentTransactionResult | null>(null);
   const [walletBalance, setWalletBalance] = useState<number>(0);
-
-  const itemList = Object.values(items);
 
   useEffect(() => {
     paymentService.getWalletBalance().then((bal) => setWalletBalance(bal));
@@ -206,7 +226,6 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
     : 'Verified Customer';
   const customerPhone = user?.phone || '+91 98765 43210';
 
-  const selectedDayObj = availableDays.find((d) => d.key === selectedDayKey) || availableDays[0];
   const activePaymentOption = ALL_PAYMENT_ITEMS.find((p) => p.id === selectedPaymentKey) || ALL_PAYMENT_ITEMS[0];
 
   const handleCheckout = async () => {
@@ -241,8 +260,11 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
         bookingMode,
         paymentMethod: mappedMethod,
         paymentBrand: activePaymentOption.title,
-        scheduleDate: bookingMode === 'SCHEDULED' ? selectedDayObj.dayLabel : 'Today',
-        scheduleSlot: bookingMode === 'SCHEDULED' ? `${selectedPeriod} (${selectedSlotTime})` : 'Express 20m Dispatch',
+        scheduleDate: bookingMode === 'SCHEDULED' ? selectedDate || 'Today' : 'Today',
+        scheduleSlot:
+          bookingMode === 'SCHEDULED'
+            ? selectedSlot?.displayTime || 'Scheduled Slot'
+            : 'Express 20m Dispatch',
         location: {
           shortAddress: activeLocation.shortAddress,
           formattedAddress: activeLocation.formattedAddress,
@@ -309,7 +331,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
               <Text style={styles.successDesc}>
                 {bookingMode === 'EXPRESS'
                   ? 'Your verified pro is dispatched and arriving in ~20 minutes.'
-                  : `Your appointment is confirmed for ${selectedDayObj.dayLabel} at ${selectedSlotTime}.`}
+                  : `Your appointment is confirmed for ${selectedDate || 'the selected date'} (${selectedSlot?.displayTime || 'Scheduled slot'}).`}
               </Text>
 
               <View style={styles.successReceiptCard}>
@@ -547,122 +569,26 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
 
                       {/* Select Date Row */}
                       <Text style={[styles.subSectionTitle, hasHourlyService && { marginTop: 16 }]}>Select date</Text>
-                      <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={styles.horizontalOptionsRow}
-                      >
-                        {availableDays.map((d) => {
-                          const isSelected = selectedDayKey === d.key;
-                          return (
-                            <TouchableOpacity
-                              key={d.key}
-                              style={[
-                                styles.dateCard,
-                                isSelected && styles.dateCardActive,
-                              ]}
-                              onPress={() => setSelectedDayKey(d.key)}
-                              activeOpacity={0.75}
-                            >
-                              <Text style={[styles.dateCardDay, isSelected && styles.dateCardDayActive]}>
-                                {d.dayLabel}
-                              </Text>
-                              <Text style={[styles.dateCardSub, isSelected && styles.dateCardSubActive]}>
-                                {d.subLabel}
-                              </Text>
-                            </TouchableOpacity>
-                          );
-                        })}
-                      </ScrollView>
+                      <DateSelector
+                        dates={dates}
+                        selectedDate={selectedDate}
+                        onSelectDate={(d) => setSelectedDate(d)}
+                        isLoading={isLoadingDates}
+                      />
 
                       {/* Select Time */}
                       <Text style={[styles.subSectionTitle, { marginTop: 16 }]}>Select time</Text>
-                      <View style={styles.periodPillBar}>
-                        <TouchableOpacity
-                          style={[
-                            styles.periodSegment,
-                            selectedPeriod === 'MORNING' && styles.periodSegmentActive,
-                          ]}
-                          onPress={() => {
-                            setSelectedPeriod('MORNING');
-                            setSelectedSlotTime(PERIOD_SLOTS.MORNING[0]);
-                          }}
-                          activeOpacity={0.8}
-                        >
-                          <Sun size={13} color={selectedPeriod === 'MORNING' ? '#FFFFFF' : '#475569'} />
-                          <Text style={[styles.periodText, selectedPeriod === 'MORNING' && styles.periodTextActive]}>
-                            Morning
-                          </Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                          style={[
-                            styles.periodSegment,
-                            selectedPeriod === 'AFTERNOON' && styles.periodSegmentActive,
-                          ]}
-                          onPress={() => {
-                            setSelectedPeriod('AFTERNOON');
-                            setSelectedSlotTime(PERIOD_SLOTS.AFTERNOON[0]);
-                          }}
-                          activeOpacity={0.8}
-                        >
-                          <Sunset size={13} color={selectedPeriod === 'AFTERNOON' ? '#FFFFFF' : '#475569'} />
-                          <Text style={[styles.periodText, selectedPeriod === 'AFTERNOON' && styles.periodTextActive]}>
-                            Afternoon
-                          </Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                          style={[
-                            styles.periodSegment,
-                            selectedPeriod === 'EVENING' && styles.periodSegmentActive,
-                          ]}
-                          onPress={() => {
-                            setSelectedPeriod('EVENING');
-                            setSelectedSlotTime(PERIOD_SLOTS.EVENING[0]);
-                          }}
-                          activeOpacity={0.8}
-                        >
-                          <Moon size={13} color={selectedPeriod === 'EVENING' ? '#FFFFFF' : '#475569'} />
-                          <Text style={[styles.periodText, selectedPeriod === 'EVENING' && styles.periodTextActive]}>
-                            Evening
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-
-                      {/* Standard Slots */}
-                      <View style={styles.slotsCardBox}>
-                        <Text style={styles.slotsBoxHeading}>Standard slots</Text>
-                        <View style={styles.slotsGridContainer}>
-                          {PERIOD_SLOTS[selectedPeriod].map((slot) => {
-                            const isSelected = selectedSlotTime === slot;
-                            return (
-                              <TouchableOpacity
-                                key={slot}
-                                style={[
-                                  styles.slotChipItem,
-                                  isSelected && styles.slotChipItemActive,
-                                ]}
-                                onPress={() => setSelectedSlotTime(slot)}
-                                activeOpacity={0.75}
-                              >
-                                <Text
-                                  style={[
-                                    styles.slotChipLabel,
-                                    isSelected && styles.slotChipLabelActive,
-                                  ]}
-                                >
-                                  {slot}
-                                </Text>
-                              </TouchableOpacity>
-                            );
-                          })}
-                        </View>
-                      </View>
+                      <TimeSlotPicker
+                        slots={slots}
+                        groupedSlots={groupedSlots}
+                        selectedSlot={selectedSlot}
+                        onSelectSlot={(s) => setSelectedSlot(s)}
+                        isLoading={isLoadingSlots}
+                      />
 
                       <Text style={styles.schedulerNote}>
                         <Text style={styles.schedulerNoteBold}>NOTE: </Text>
-                        Professionals arrive within 30 minutes of the selected slot.
+                        Slots reflect real-time partner capacity in your area. Arrival within window.
                       </Text>
                     </View>
                   )}

@@ -74,36 +74,31 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
 
-  const themeFallback = categoryExperience?.category.slug
-    ? getFallbackCategoryTheme(categoryExperience.category.slug)
+  const currentCategorySlug = (categoryExperience?.category?.slug || '').toLowerCase().trim();
+  const themeFallback = currentCategorySlug
+    ? getFallbackCategoryTheme(currentCategorySlug)
     : null;
 
   const activeHero = categoryExperience?.hero;
-  const gradientStart = activeHero ? activeHero.palette.gradientStart : (heroAsset?.gradient_start || '#0284C7');
-  const gradientEnd = activeHero ? activeHero.palette.gradientEnd : (heroAsset?.gradient_end || '#38BDF8');
+  const activeTheme = categoryExperience?.theme || themeFallback;
 
-  const currentCategorySlug = categoryExperience?.category?.slug;
   const isAcAppliances = !currentCategorySlug || currentCategorySlug === 'ac-appliances';
 
   const isDark =
-    isAcAppliances
-      ? true
-      : categoryExperience?.theme?.isDark !== undefined
-      ? categoryExperience.theme.isDark
+    activeTheme?.isDark !== undefined
+      ? activeTheme.isDark
       : themeFallback?.isDark !== undefined
       ? themeFallback.isDark
-      : activeHero
-      ? activeHero.palette.isDark
-      : (heroAsset?.is_dark ?? true);
+      : true;
 
   const gradientColors: string[] =
-    activeHero?.palette.gradientColors && activeHero.palette.gradientColors.length >= 2
+    activeHero?.palette?.gradientColors && activeHero.palette.gradientColors.length >= 2
       ? activeHero.palette.gradientColors
-      : categoryExperience?.theme?.gradientColors && categoryExperience.theme.gradientColors.length >= 2
-      ? categoryExperience.theme.gradientColors
+      : activeTheme?.gradientColors && activeTheme.gradientColors.length >= 2
+      ? activeTheme.gradientColors
       : themeFallback?.gradientColors && themeFallback.gradientColors.length >= 2
       ? themeFallback.gradientColors
-      : [gradientStart, gradientEnd];
+      : ['#0284C7', '#38BDF8'];
 
   const textColor = isDark ? '#FFFFFF' : '#1E242B';
   const textSubColor = isDark ? 'rgba(255, 255, 255, 0.90)' : '#222222';
@@ -112,22 +107,27 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
   const profileBg = isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.08)';
   const profileBorder = isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.12)';
 
-  // Resolve hero image asset
+  // Resolve hero image asset with strict category mapping
   const fallbackHero = categoryExperience?.category ? getFallbackCategoryHero(categoryExperience.category) : null;
-  const currentSlug = categoryExperience?.category?.slug;
   const categorySpecificKey =
-    currentSlug === 'electrical'
+    currentCategorySlug === 'electrical' || currentCategorySlug === 'electrician'
       ? 'hero_electrical'
-      : currentSlug === 'painting'
+      : currentCategorySlug === 'painting'
       ? 'hero_painting'
-      : currentSlug === 'cleaning'
+      : currentCategorySlug === 'cleaning' || currentCategorySlug === 'home-cleaning'
       ? 'hero_cleaning'
-      : currentSlug === 'plumbing'
+      : currentCategorySlug === 'plumbing'
       ? 'hero_plumbing'
-      : currentSlug === 'ac-appliances'
+      : currentCategorySlug === 'ac-appliances' || currentCategorySlug === 'ac' || currentCategorySlug === 'appliances' || currentCategorySlug === 'appliance-repair'
       ? 'hero_background'
-      : currentSlug === 'home-decor'
+      : currentCategorySlug === 'home-decor' || currentCategorySlug === 'decor'
       ? 'hero_homedecors'
+      : currentCategorySlug === 'carpentry'
+      ? 'hero_services_general'
+      : currentCategorySlug === 'pest-control' || currentCategorySlug === 'pest'
+      ? 'hero_gardener'
+      : currentCategorySlug === 'laundry'
+      ? 'hero_background'
       : null;
 
   const heroImageKey = categorySpecificKey || activeHero?.imageUrl || fallbackHero?.imageUrl || heroAsset?.image_url;
@@ -136,7 +136,7 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
       ? AssetRegistry[heroImageKey]
       : fallbackHero?.imageUrl && AssetRegistry[fallbackHero.imageUrl]
       ? AssetRegistry[fallbackHero.imageUrl]
-      : AssetRegistry.hero_gardener;
+      : AssetRegistry.hero_background;
 
   // Animate content smoothly whenever category context updates
   useEffect(() => {
@@ -157,8 +157,8 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
   }, [categoryExperience?.category.id]);
 
   const activeTitle = activeHero?.title || heroAsset?.headline || 'Hire us';
-  const activeSubtitle = activeHero?.subtitle || heroAsset?.subheadline || 'let your garden bloom with us hire your personal Gardener for monthly';
-  const activeCTA = activeHero?.ctaLabel || heroAsset?.cta_label || 'Shop Now';
+  const activeSubtitle = activeHero?.subtitle || heroAsset?.subheadline || 'Professional verified services at your doorstep';
+  const activeCTA = activeHero?.ctaLabel || heroAsset?.cta_label || 'Book Service';
 
   return (
     <View style={styles.heroContainer}>
@@ -175,7 +175,7 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
           }
         }}
       >
-        {/* Full-bleed SVG Background Layer (Supports 90deg Linear or Ultra-smooth Radial Diffusion) */}
+        {/* Full-bleed SVG Background Layer */}
         {upperLayout.width > 0 && upperLayout.height > 0 ? (
           <Svg
             pointerEvents="none"
@@ -184,37 +184,26 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
             height={upperLayout.height}
           >
             <Defs>
-              {currentSlug === 'plumbing' ? (
-                <SvgLinearGradient
-                  id={`upperHeroGrad_${categoryExperience?.category.id || 'default'}`}
-                  x1="0%"
-                  y1="0%"
-                  x2="0%"
-                  y2="100%"
-                >
-                  {gradientColors.map((color, index) => {
-                    const offsetPercent = `${Math.round((index / (gradientColors.length - 1)) * 100)}%`;
-                    return <Stop key={index} offset={offsetPercent} stopColor={color} stopOpacity="1" />;
-                  })}
-                </SvgLinearGradient>
-              ) : (
-                <SvgRadialGradient
-                  id={`upperHeroGrad_${categoryExperience?.category.id || 'default'}`}
-                  cx="50%"
-                  cy="0%"
-                  rx="110%"
-                  ry="130%"
-                  fx="50%"
-                  fy="0%"
-                >
-                  {gradientColors.map((color, index) => {
-                    const offsetPercent = `${Math.round((index / (gradientColors.length - 1)) * 100)}%`;
-                    return <Stop key={index} offset={offsetPercent} stopColor={color} stopOpacity="1" />;
-                  })}
-                </SvgRadialGradient>
-              )}
+              <SvgLinearGradient
+                id={`upperHeroGrad_${categoryExperience?.category?.id || currentCategorySlug || 'default'}`}
+                x1="0%"
+                y1="0%"
+                x2="0%"
+                y2="100%"
+              >
+                {gradientColors.map((color, index) => {
+                  const offsetPercent = `${Math.round((index / (gradientColors.length - 1)) * 100)}%`;
+                  return <Stop key={index} offset={offsetPercent} stopColor={color} stopOpacity="1" />;
+                })}
+              </SvgLinearGradient>
             </Defs>
-            <Rect x="0" y="0" width={upperLayout.width} height={upperLayout.height} fill={`url(#upperHeroGrad_${categoryExperience?.category.id || 'default'})`} />
+            <Rect
+              x="0"
+              y="0"
+              width={upperLayout.width}
+              height={upperLayout.height}
+              fill={`url(#upperHeroGrad_${categoryExperience?.category?.id || currentCategorySlug || 'default'})`}
+            />
           </Svg>
         ) : null}
 

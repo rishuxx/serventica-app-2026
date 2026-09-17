@@ -110,6 +110,7 @@ class PaymentService {
       bookingNumber,
       customerId: payload.customerId || 'cust_verified_user',
       partnerId: null,
+      addressId: (payload.location as any)?.id || 'addr_default',
       status: 'CONFIRMED' as BookingStatus,
       scheduledDate: payload.scheduleDate || 'Today',
       scheduledStartTime: payload.scheduleSlot || 'Express 20m',

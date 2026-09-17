@@ -280,7 +280,6 @@ const styles = StyleSheet.create({
   badgeCount: {
     fontSize: 9,
     fontFamily: ServenticaTokens.fonts.Bold,
-    fontWeight: '800',
     color: '#FFFFFF',
     lineHeight: 10,
     letterSpacing: 0,
@@ -293,7 +292,6 @@ const styles = StyleSheet.create({
   viewCartText: {
     fontSize: 13.5,
     fontFamily: ServenticaTokens.fonts.Bold,
-    fontWeight: '700',
     color: '#1E242B',
     letterSpacing: 0,
   },

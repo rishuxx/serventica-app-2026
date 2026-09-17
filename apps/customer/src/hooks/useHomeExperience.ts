@@ -50,19 +50,57 @@ export function useHomeExperience(): UseHomeExperienceResult {
   // 1. Fetch categories from Supabase on mount
   useEffect(() => {
     let isMounted = true;
+    const isSeparateAppliance = (cat: CategoryItem) => {
+      const slug = (cat.slug || '').toLowerCase().trim();
+      const name = (cat.name || '').toLowerCase().trim();
+      if (slug === 'ac-appliances' || slug === 'ac-and-appliances' || name.includes('& appliance') || name.includes('& appliances')) {
+        return false;
+      }
+      return (
+        slug === 'appliance-repair' ||
+        slug === 'appliances' ||
+        slug === 'appliance' ||
+        slug === 'ac' ||
+        slug === 'ac-repair' ||
+        slug === 'air-conditioner' ||
+        slug.includes('refrigerator') ||
+        slug.includes('fridge') ||
+        slug.includes('washing') ||
+        slug.includes('television') ||
+        slug === 'tv' ||
+        slug.includes('microwave') ||
+        slug.includes('chimney') ||
+        slug.includes('geyser') ||
+        name === 'appliance repair' ||
+        name === 'appliances' ||
+        name === 'appliance' ||
+        name === 'ac' ||
+        name === 'air conditioner' ||
+        name.includes('refrigerator') ||
+        name.includes('fridge') ||
+        name.includes('washing') ||
+        name.includes('television') ||
+        name === 'tv' ||
+        name.includes('microwave') ||
+        name.includes('chimney') ||
+        name.includes('geyser')
+      );
+    };
+
     categoryService
       .getHomeCategories()
       .then((items) => {
         if (!isMounted || !items || items.length === 0) return;
-        setCategories(items);
+        const filtered = items.filter((cat) => !isSeparateAppliance(cat));
+        setCategories(filtered);
         setSelectedCategoryId((prevId) => {
-          const matched = items.find(
+          const matched = filtered.find(
             (it) => it.id === prevId || it.slug === prevId || it.slug === 'ac-appliances'
           );
-          return matched ? matched.id : items[0].id;
+          return matched ? matched.id : filtered[0].id;
         });
         // Trigger background prefetching for first visible items
-        experienceRepository.prefetchInitialCategories(items);
+        experienceRepository.prefetchInitialCategories(filtered);
       })
       .catch(() => {
         // Fallback already set

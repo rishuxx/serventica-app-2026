@@ -370,10 +370,7 @@ export const MapLocationPickerModal: React.FC<MapLocationPickerModalProps> = ({
           ))}
         </Animated.View>
 
-        {/* Center Target Reticle Ring (Yellow Glow) */}
-        <View style={styles.reticleRing} pointerEvents="none" />
-
-        {/* 2. YELLOW THEMED CENTER POINTER / PIN */}
+        {/* 2. SIMPLE YELLOW DROPPER / PIN */}
         <View style={styles.centerPinContainer} pointerEvents="none">
           <Animated.View
             style={[
@@ -383,22 +380,18 @@ export const MapLocationPickerModal: React.FC<MapLocationPickerModalProps> = ({
               },
             ]}
           >
-            {/* Tooltip Badge */}
+            {/* Minimal Dropper Tooltip */}
             <View style={styles.pinTooltip}>
               <Text style={styles.pinTooltipText}>
-                {isPanning ? 'Move pin to location' : 'Order will be delivered here'}
+                {isPanning ? 'Placing pin...' : 'Move to adjust your location'}
               </Text>
             </View>
 
-            {/* Yellow Pointer Graphic with Shadow and Core */}
-            <View style={styles.pointerHead}>
-              <View style={styles.pointerOuterCircle}>
-                <View style={styles.pointerInnerCore}>
-                  <MapPin size={22} color="#1E242B" fill="#fac420" strokeWidth={2.4} />
-                </View>
+            {/* Clean Yellow Map Dropper */}
+            <View style={styles.dropperContainer}>
+              <View style={styles.dropperHead}>
+                <MapPin size={34} color="#1E242B" fill="#fac420" strokeWidth={2} />
               </View>
-              {/* Pointer Tip */}
-              <View style={styles.pointerNeedle} />
             </View>
           </Animated.View>
           <View style={styles.pinShadow} />
@@ -570,22 +563,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     backgroundColor: '#F1F5F9',
   },
-  reticleRing: {
-    position: 'absolute',
-    top: (SCREEN_HEIGHT - 220) / 2 - 32,
-    left: SCREEN_WIDTH / 2 - 32,
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    borderWidth: 2,
-    borderColor: 'rgba(250, 196, 32, 0.45)',
-    backgroundColor: 'rgba(250, 196, 32, 0.08)',
-  },
   centerPinContainer: {
     position: 'absolute',
-    top: (SCREEN_HEIGHT - 220) / 2 - 58,
-    left: SCREEN_WIDTH / 2 - 80,
-    width: 160,
+    top: (SCREEN_HEIGHT - 220) / 2 - 48,
+    left: SCREEN_WIDTH / 2 - 90,
+    width: 180,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -594,67 +576,39 @@ const styles = StyleSheet.create({
   },
   pinTooltip: {
     backgroundColor: '#1E242B',
-    paddingHorizontal: 11,
-    paddingVertical: 5,
-    borderRadius: 14,
-    marginBottom: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(250, 196, 32, 0.4)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginBottom: 6,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.2,
     shadowRadius: 3,
     elevation: 4,
   },
   pinTooltipText: {
-    color: '#fac420',
-    fontSize: 10.5,
-    fontFamily: ServenticaTokens.fonts.Bold,
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
+    letterSpacing: 0.1,
   },
-  pointerHead: {
+  dropperContainer: {
     alignItems: 'center',
     justifyContent: 'center',
   },
-  pointerOuterCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#fac420',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2.5,
-    borderColor: '#FFFFFF',
-    shadowColor: '#B45309',
+  dropperHead: {
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.35,
+    shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
   },
-  pointerInnerCore: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  pointerNeedle: {
-    width: 0,
-    height: 0,
-    borderLeftWidth: 6,
-    borderRightWidth: 6,
-    borderTopWidth: 8,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderTopColor: '#fac420',
-    marginTop: -2,
-  },
   pinShadow: {
-    width: 12,
-    height: 5,
-    borderRadius: 6,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    marginTop: -2,
+    width: 10,
+    height: 4,
+    borderRadius: 5,
+    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+    marginTop: 1,
   },
   topOverlay: {
     position: 'absolute',
@@ -685,22 +639,22 @@ const styles = StyleSheet.create({
   },
   searchBox: {
     flex: 1,
-    height: 42,
+    height: 44,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 21,
-    paddingHorizontal: 12,
-    borderWidth: 1.5,
-    borderColor: '#fac420',
+    borderRadius: 22,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.08)',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowRadius: 4,
     elevation: 3,
   },
   searchIcon: {
-    marginRight: 6,
+    marginRight: 8,
   },
   searchInput: {
     flex: 1,
@@ -775,23 +729,23 @@ const styles = StyleSheet.create({
   floatingControls: {
     position: 'absolute',
     right: 16,
-    bottom: 240,
+    bottom: 230,
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
     zIndex: 15,
   },
   fabButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#fac420',
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: '#FFFFFF',
-    shadowColor: '#B45309',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.08)',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.12,
     shadowRadius: 4,
     elevation: 4,
   },
@@ -800,10 +754,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(226, 232, 240, 0.8)',
+    borderColor: 'rgba(0, 0, 0, 0.08)',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.12,
     shadowRadius: 4,
     elevation: 3,
   },

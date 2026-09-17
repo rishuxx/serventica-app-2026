@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { ServiceCard } from '../../categories/components/ServiceCard';
+import { BreakerText } from './BreakerText';
 import { CatalogSectionData } from '../../../types/experience.types';
 import { ServiceDetailItem } from '../../../types/category.types';
 import { ServenticaTokens } from '../../../../../../packages/design-system/src';
@@ -92,9 +93,7 @@ export const DynamicCatalogSection: React.FC<DynamicCatalogSectionProps> = React
       {/* Top Breaker Divider & Label right below Hero Banner */}
       {sections.length > 0 && (
         <View style={styles.topBreakerContainer}>
-          <View style={styles.breakerLine} />
-          <Text style={styles.breakerText}>MOST ORDERED & RECOMMENDED</Text>
-          <View style={styles.breakerLine} />
+          <BreakerText text="EXPLORE SERVICES" />
         </View>
       )}
 
@@ -140,28 +139,11 @@ export const DynamicCatalogSection: React.FC<DynamicCatalogSectionProps> = React
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    paddingTop: 12,
+    paddingTop: 8,
     paddingBottom: 24,
   },
   topBreakerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 16,
-    marginTop: 2,
-  },
-  breakerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.08)',
-  },
-  breakerText: {
-    marginHorizontal: 12,
-    fontSize: 10.5,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
-    color: '#94A3B8',
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    marginBottom: 4,
   },
   sectionBlock: {
     marginBottom: 20,
@@ -172,7 +154,7 @@ const styles = StyleSheet.create({
   },
   slimDivider: {
     height: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.07)',
+    backgroundColor: 'rgba(0, 0, 0, 0.06)',
     width: '100%',
   },
   sectionHeaderRow: {

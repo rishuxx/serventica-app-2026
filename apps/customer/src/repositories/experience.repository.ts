@@ -40,8 +40,12 @@ export const experienceCache = new ExperienceCache();
 
 // Fallback Theme Builder
 export function getFallbackCategoryTheme(categorySlug: string): CategoryThemeData {
-  switch (categorySlug) {
+  const slug = (categorySlug || '').toLowerCase().trim();
+  switch (slug) {
     case 'ac-appliances':
+    case 'ac':
+    case 'appliances':
+    case 'appliance-repair':
       return {
         primaryColor: '#0284C7',
         secondaryColor: '#E0F2FE',
@@ -53,18 +57,7 @@ export function getFallbackCategoryTheme(categorySlug: string): CategoryThemeDat
         gradientColors: ['#0369A1', '#0284C7', '#0EA5E9', '#38BDF8'],
         isDark: true,
       };
-    case 'cleaning':
-      return {
-        primaryColor: '#475569',
-        secondaryColor: '#F1F5F9',
-        buttonColor: '#475569',
-        buttonTextColor: '#FFFFFF',
-        textColor: '#FFFFFF',
-        gradientStart: '#475569',
-        gradientEnd: '#94A3B8',
-        gradientColors: ['#334155', '#475569', '#64748B', '#94A3B8'],
-        isDark: true,
-      };
+    case 'electrician':
     case 'electrical':
       return {
         primaryColor: '#D97706',
@@ -74,7 +67,7 @@ export function getFallbackCategoryTheme(categorySlug: string): CategoryThemeDat
         textColor: '#FFFFFF',
         gradientStart: '#D97706',
         gradientEnd: '#FBBF24',
-        gradientColors: ['#B45309', '#D97706', '#F59E0B', '#FBBF24'],
+        gradientColors: ['#92400E', '#B45309', '#D97706', '#F59E0B', '#FBBF24'],
         isDark: true,
       };
     case 'plumbing':
@@ -84,23 +77,29 @@ export function getFallbackCategoryTheme(categorySlug: string): CategoryThemeDat
         buttonColor: '#5D2BAE',
         buttonTextColor: '#FFFFFF',
         textColor: '#FFFFFF',
-        gradientStart: '#D9B3E2',
+        gradientStart: '#692EB7',
         gradientEnd: '#522CA4',
         gradientColors: [
-          '#D9B3E2',
-          '#D2A4E3',
-          '#CA94E2',
-          '#C183E1',
-          '#B673DE',
-          '#AA63DA',
-          '#9D54D5',
-          '#9047CE',
-          '#833CC7',
-          '#7533BF',
-          '#692EB7',
-          '#5D2BAE',
+          '#3B0764',
           '#522CA4',
+          '#692EB7',
+          '#7C3AED',
+          '#8B5CF6',
+          '#D9B3E2',
         ],
+        isDark: true,
+      };
+    case 'home-cleaning':
+    case 'cleaning':
+      return {
+        primaryColor: '#475569',
+        secondaryColor: '#F1F5F9',
+        buttonColor: '#475569',
+        buttonTextColor: '#FFFFFF',
+        textColor: '#FFFFFF',
+        gradientStart: '#475569',
+        gradientEnd: '#94A3B8',
+        gradientColors: ['#1E293B', '#334155', '#475569', '#64748B', '#94A3B8'],
         isDark: true,
       };
     case 'painting':
@@ -116,6 +115,7 @@ export function getFallbackCategoryTheme(categorySlug: string): CategoryThemeDat
         isDark: true,
       };
     case 'ro-water':
+    case 'ro':
       return {
         primaryColor: '#0284C7',
         secondaryColor: '#E0F2FE',
@@ -128,8 +128,9 @@ export function getFallbackCategoryTheme(categorySlug: string): CategoryThemeDat
         isDark: true,
       };
     case 'home-decor':
+    case 'decor':
       return {
-        primaryColor: '#D97706',
+        primaryColor: '#DB2777',
         secondaryColor: '#FFF1F2',
         buttonColor: '#DB2777',
         buttonTextColor: '#FFFFFF',
@@ -152,6 +153,7 @@ export function getFallbackCategoryTheme(categorySlug: string): CategoryThemeDat
         isDark: true,
       };
     case 'pest-control':
+    case 'pest':
       return {
         primaryColor: '#1E293B',
         secondaryColor: '#F8FAFC',
@@ -160,7 +162,7 @@ export function getFallbackCategoryTheme(categorySlug: string): CategoryThemeDat
         textColor: '#FFFFFF',
         gradientStart: '#1E293B',
         gradientEnd: '#475569',
-        gradientColors: ['#1E242B', '#1E293B', '#334155', '#475569'],
+        gradientColors: ['#0F172A', '#1E293B', '#334155', '#475569'],
         isDark: true,
       };
     case 'laundry':
@@ -176,6 +178,7 @@ export function getFallbackCategoryTheme(categorySlug: string): CategoryThemeDat
         isDark: true,
       };
     case 'home-moving':
+    case 'moving-shifting':
       return {
         primaryColor: '#365314',
         secondaryColor: '#ECFCCB',
@@ -201,14 +204,14 @@ export function getFallbackCategoryTheme(categorySlug: string): CategoryThemeDat
       };
     default:
       return {
-        primaryColor: '#23532F',
-        secondaryColor: '#EAF5EC',
-        buttonColor: '#1E4B29',
+        primaryColor: '#0284C7',
+        secondaryColor: '#E0F2FE',
+        buttonColor: '#0284C7',
         buttonTextColor: '#FFFFFF',
         textColor: '#FFFFFF',
-        gradientStart: '#1E4B29',
-        gradientEnd: '#2F663C',
-        gradientColors: ['#14351D', '#1E4B29', '#2F663C', '#488057'],
+        gradientStart: '#0284C7',
+        gradientEnd: '#38BDF8',
+        gradientColors: ['#0369A1', '#0284C7', '#0EA5E9', '#38BDF8'],
         isDark: true,
       };
   }
@@ -220,11 +223,11 @@ export function getFallbackCategoryHero(category: CategoryItem): CategoryHeroDat
   const defaultImage =
     category.slug === 'home-decor'
       ? 'hero_homedecors'
-      : category.slug === 'cleaning'
+      : category.slug === 'cleaning' || category.slug === 'home-cleaning'
       ? 'hero_cleaning'
       : category.slug === 'ac-appliances'
       ? 'hero_background'
-      : category.slug === 'electrical'
+      : category.slug === 'electrical' || category.slug === 'electrician'
       ? 'hero_electrical'
       : category.slug === 'painting'
       ? 'hero_painting'
@@ -238,10 +241,10 @@ export function getFallbackCategoryHero(category: CategoryItem): CategoryHeroDat
       subtitle: 'Certified technicians for AC, fridge, and appliances in 20 mins',
       cta: 'Book AC Service',
     },
-    'cleaning': {
-      title: 'Keep your home spotless & fresh',
-      subtitle: 'Professional deep cleaning and sofa sanitization at your door',
-      cta: 'Book Cleaning',
+    'electrician': {
+      title: 'Power your home safely',
+      subtitle: 'Verified electricians for wiring, MCB faults, and fans in 20 mins',
+      cta: 'Book Electrician',
     },
     'electrical': {
       title: 'Power your home safely',
@@ -252,6 +255,16 @@ export function getFallbackCategoryHero(category: CategoryItem): CategoryHeroDat
       title: 'Reliable plumbing in 20 minutes',
       subtitle: 'Expert fix for pipe leaks, taps, sanitary fittings, and blockages',
       cta: 'Book Plumber',
+    },
+    'home-cleaning': {
+      title: 'Keep your home spotless & fresh',
+      subtitle: 'Professional deep cleaning and sofa sanitization at your door',
+      cta: 'Book Cleaning',
+    },
+    'cleaning': {
+      title: 'Keep your home spotless & fresh',
+      subtitle: 'Professional deep cleaning and sofa sanitization at your door',
+      cta: 'Book Cleaning',
     },
     'painting': {
       title: 'Bring your walls to life',
@@ -323,44 +336,58 @@ class ExperienceRepository {
   private activeToken: number = 0;
 
   async getCategoryExperience(categoryIdOrSlug: string): Promise<CategoryExperience> {
+    const APPLIANCE_ALIASES = new Set([
+      'ac',
+      'refrigerator',
+      'washing-machine',
+      'television',
+      'tv',
+      'fridge',
+      'appliances',
+      'appliance',
+      'microwave',
+      'chimney',
+      'geyser',
+    ]);
+    const normalizedTarget = APPLIANCE_ALIASES.has(categoryIdOrSlug?.toLowerCase())
+      ? 'ac-appliances'
+      : categoryIdOrSlug;
+
     // 1. Check in-memory cache first
-    const cached = experienceCache.get(categoryIdOrSlug);
+    const cached = experienceCache.get(normalizedTarget);
     if (cached) return cached;
 
-    // 2. Identify Category
+    // 2. Identify Category from defaults first
     let category: CategoryItem | undefined = INITIAL_DISCOVERY_CATEGORIES.find(
-      (c) => c.id === categoryIdOrSlug || c.slug === categoryIdOrSlug
+      (c) => c.id === normalizedTarget || c.slug === normalizedTarget
     );
 
-    // If not found in defaults, query Supabase
-    if (!category) {
-      try {
-        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(categoryIdOrSlug);
-        const { data: catData } = await supabase
-          .from('categories')
-          .select('*')
-          .eq(isUuid ? 'id' : 'slug', categoryIdOrSlug)
-          .single();
+    // If not found in defaults or to fetch fresh category record, query Supabase service_categories
+    try {
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(normalizedTarget);
+      const query = supabase
+        .from('service_categories')
+        .select('*');
 
-        if (catData) {
-          category = {
-            id: catData.id,
-            name: catData.name,
-            short_name: catData.short_name,
-            slug: catData.slug,
-            description: catData.description,
-            icon: catData.icon,
-            image_url: catData.image_url,
-            sort_order: catData.sort_order || 0,
-            is_active: catData.is_active,
-            is_featured: catData.is_featured,
-            show_on_home: catData.show_on_home,
-            tier: catData.tier,
-          };
-        }
-      } catch {
-        // Continue with fallback
+      const { data: catData } = isUuid
+        ? await query.eq('id', normalizedTarget).maybeSingle()
+        : await query.eq('slug', normalizedTarget).maybeSingle();
+
+      if (catData) {
+        category = {
+          id: catData.id,
+          name: catData.name,
+          short_name: catData.short_description || catData.name,
+          slug: catData.slug,
+          description: catData.description,
+          icon: catData.icon_name || 'AirVent',
+          image_url: catData.image_url,
+          sort_order: catData.sort_order || 0,
+          is_active: catData.is_active,
+        };
       }
+    } catch {
+      // Continue with fallback
     }
 
     if (!category) {
@@ -394,55 +421,74 @@ class ExperienceRepository {
       ]);
 
       if (heroRes.data) {
-        const resolvedImageUrl =
-          category.slug === 'home-decor'
-            ? 'hero_homedecors'
-            : category.slug === 'cleaning'
-            ? 'hero_cleaning'
-            : category.slug === 'ac-appliances'
-            ? 'hero_background'
-            : category.slug === 'electrical'
-            ? 'hero_electrical'
-            : category.slug === 'painting'
-            ? 'hero_painting'
-            : category.slug === 'plumbing'
-            ? 'hero_plumbing'
-            : heroRes.data.image_url;
+        const heroSlug = (heroRes.data.slug || '').toLowerCase();
+        const catSlug = (category.slug || '').toLowerCase();
+        const isMatch =
+          heroSlug.includes(catSlug) ||
+          (catSlug === 'electrician' && heroSlug.includes('electr')) ||
+          (catSlug === 'home-cleaning' && heroSlug.includes('clean')) ||
+          (catSlug === 'ac-appliances' && (heroSlug.includes('ac') || heroSlug.includes('appliance'))) ||
+          (catSlug === 'ro-water' && heroSlug.includes('ro')) ||
+          (catSlug === 'pest-control' && heroSlug.includes('pest')) ||
+          (catSlug === 'home-decor' && heroSlug.includes('decor')) ||
+          (catSlug === 'carpentry' && heroSlug.includes('carpent')) ||
+          (catSlug === 'laundry' && heroSlug.includes('laundry')) ||
+          (catSlug === 'painting' && heroSlug.includes('paint'));
 
-        hero = {
-          id: heroRes.data.id,
-          title: heroRes.data.title,
-          subtitle: heroRes.data.subtitle,
-          ctaLabel: heroRes.data.cta_label,
-          imageUrl: resolvedImageUrl,
-          mobileImageUrl: resolvedImageUrl,
-          palette: {
-            primary: heroRes.data.primary_color,
-            secondary: heroRes.data.secondary_color,
-            gradientStart: heroRes.data.gradient_start,
-            gradientEnd: heroRes.data.gradient_end,
-            gradientColors: theme.gradientColors || [heroRes.data.gradient_start, heroRes.data.gradient_end],
-            textColor: heroRes.data.text_color || '#FFFFFF',
-            isDark: heroRes.data.is_dark ?? true,
-          },
-        };
+        if (isMatch) {
+          const resolvedImageUrl =
+            category.slug === 'home-decor'
+              ? 'hero_homedecors'
+              : category.slug === 'cleaning' || category.slug === 'home-cleaning'
+              ? 'hero_cleaning'
+              : category.slug === 'ac-appliances'
+              ? 'hero_background'
+              : category.slug === 'electrical' || category.slug === 'electrician'
+              ? 'hero_electrical'
+              : category.slug === 'painting'
+              ? 'hero_painting'
+              : category.slug === 'plumbing'
+              ? 'hero_plumbing'
+              : heroRes.data.image_url;
+
+          hero = {
+            id: heroRes.data.id,
+            title: heroRes.data.title,
+            subtitle: heroRes.data.subtitle,
+            ctaLabel: heroRes.data.cta_label,
+            imageUrl: resolvedImageUrl,
+            mobileImageUrl: resolvedImageUrl,
+            palette: {
+              primary: heroRes.data.primary_color,
+              secondary: heroRes.data.secondary_color,
+              gradientStart: heroRes.data.gradient_start,
+              gradientEnd: heroRes.data.gradient_end,
+              gradientColors: theme.gradientColors || [heroRes.data.gradient_start, heroRes.data.gradient_end],
+              textColor: heroRes.data.text_color || '#FFFFFF',
+              isDark: heroRes.data.is_dark ?? true,
+            },
+          };
+        }
       }
 
       if (themeRes.data) {
+        const catSlug = (category.slug || '').toLowerCase();
+        // Fallback theme colors are calibrated to the brand design system
+        const fallbackTheme = getFallbackCategoryTheme(category.slug);
         const isAcCategory = category.slug === 'ac-appliances';
-        const isDarkTheme = isAcCategory ? true : (themeRes.data.is_dark ?? false);
+        const isDarkTheme = isAcCategory ? true : (themeRes.data.is_dark ?? fallbackTheme.isDark);
         theme = {
-          primaryColor: themeRes.data.primary_color,
-          secondaryColor: themeRes.data.secondary_color,
+          primaryColor: fallbackTheme.primaryColor || themeRes.data.primary_color,
+          secondaryColor: fallbackTheme.secondaryColor || themeRes.data.secondary_color,
           surfaceColor: themeRes.data.surface_color || '#FFFFFF',
-          accentColor: themeRes.data.accent_color,
-          textColor: isAcCategory ? '#FFFFFF' : (themeRes.data.text_color || (isDarkTheme ? '#FFFFFF' : '#1E242B')),
-          mutedTextColor: themeRes.data.muted_text_color || (isDarkTheme ? 'rgba(255, 255, 255, 0.75)' : '#666666'),
-          buttonColor: themeRes.data.button_color,
-          buttonTextColor: themeRes.data.button_text_color || '#FFFFFF',
-          gradientStart: themeRes.data.gradient_start,
-          gradientEnd: themeRes.data.gradient_end,
-          gradientColors: theme.gradientColors || [themeRes.data.gradient_start, themeRes.data.gradient_end],
+          accentColor: fallbackTheme.accentColor || themeRes.data.accent_color,
+          textColor: fallbackTheme.textColor,
+          mutedTextColor: fallbackTheme.mutedTextColor || (isDarkTheme ? 'rgba(255, 255, 255, 0.75)' : '#666666'),
+          buttonColor: fallbackTheme.buttonColor || themeRes.data.button_color,
+          buttonTextColor: fallbackTheme.buttonTextColor || '#FFFFFF',
+          gradientStart: fallbackTheme.gradientStart || themeRes.data.gradient_start,
+          gradientEnd: fallbackTheme.gradientEnd || themeRes.data.gradient_end,
+          gradientColors: fallbackTheme.gradientColors || [themeRes.data.gradient_start, themeRes.data.gradient_end],
           isDark: isDarkTheme,
         };
       }
@@ -469,22 +515,194 @@ class ExperienceRepository {
       // Fallback already assigned
     }
 
-    // 4. Organize services into structured catalog sections
+    // 4. Organize services into structured domain-specific catalog sections
     const sections: CatalogSectionData[] = [];
-    if (services.length > 0) {
-      sections.push({
-        id: `popular_${category.id}`,
-        title: `Popular in ${category.short_name || category.name}`,
-        services: services.slice(0, 4),
+    if (category.slug === 'ac-appliances') {
+      const acServices = services.filter((s) => {
+        const slug = s.slug.toLowerCase();
+        return (
+          slug.startsWith('ac-') ||
+          slug.includes('-ac-') ||
+          slug.endsWith('-ac') ||
+          slug.includes('foam-jet') ||
+          slug.includes('gas-refill') ||
+          slug.includes('pcb') ||
+          slug.includes('jet-service')
+        );
       });
 
-      if (services.length > 4) {
+      const fridgeServices = services.filter((s) => {
+        const slug = s.slug.toLowerCase();
+        return slug.includes('refrigerator') || slug.includes('fridge') || slug.includes('thermostat') || slug.includes('compressor');
+      });
+
+      const washerServices = services.filter((s) => {
+        const slug = s.slug.toLowerCase();
+        return slug.includes('washing') || slug.includes('descaling') || slug.includes('drum-repair');
+      });
+
+      const microChimneyServices = services.filter((s) => {
+        const slug = s.slug.toLowerCase();
+        return slug.includes('microwave') || slug.includes('chimney') || slug.includes('oven') || slug.includes('degreasing') || slug.includes('heating-issue');
+      });
+
+      const tvRoServices = services.filter((s) => {
+        const slug = s.slug.toLowerCase();
+        return (
+          slug.includes('purifier') ||
+          slug.includes('ro-') ||
+          slug.includes('membrane') ||
+          slug.includes('television') ||
+          slug.includes('wall-mounting') ||
+          slug.includes('tv')
+        );
+      });
+
+      const matchedSlugs = new Set([
+        ...acServices.map((s) => s.slug),
+        ...fridgeServices.map((s) => s.slug),
+        ...washerServices.map((s) => s.slug),
+        ...microChimneyServices.map((s) => s.slug),
+        ...tvRoServices.map((s) => s.slug),
+      ]);
+      const otherApplianceServices = services.filter((s) => !matchedSlugs.has(s.slug));
+
+      if (acServices.length > 0) {
         sections.push({
-          id: `all_${category.id}`,
-          title: `All ${category.name} Services`,
-          services: services.slice(4),
+          id: `ac_section_${category.id}`,
+          title: 'AC Repair & Servicing',
+          services: acServices,
         });
       }
+      if (fridgeServices.length > 0) {
+        sections.push({
+          id: `fridge_section_${category.id}`,
+          title: 'Refrigerator Services',
+          services: fridgeServices,
+        });
+      }
+      if (washerServices.length > 0) {
+        sections.push({
+          id: `washer_section_${category.id}`,
+          title: 'Washing Machine Repair',
+          services: washerServices,
+        });
+      }
+      if (microChimneyServices.length > 0) {
+        sections.push({
+          id: `micro_chimney_${category.id}`,
+          title: 'Microwave & Chimney Care',
+          services: microChimneyServices,
+        });
+      }
+      if (tvRoServices.length > 0) {
+        sections.push({
+          id: `tv_ro_${category.id}`,
+          title: 'RO Purifier & TV Mounting',
+          services: tvRoServices,
+        });
+      }
+      if (otherApplianceServices.length > 0) {
+        sections.push({
+          id: `other_appliance_${category.id}`,
+          title: 'Other Appliance Services',
+          services: otherApplianceServices,
+        });
+      }
+    } else if (category.slug === 'home-cleaning' || category.slug === 'cleaning') {
+      const homeCleaning = services.filter((s) => !s.slug.includes('sofa') && !s.slug.includes('carpet') && !s.slug.includes('tank'));
+      const upholstery = services.filter((s) => s.slug.includes('sofa') || s.slug.includes('carpet') || s.slug.includes('curtain'));
+      const waterTank = services.filter((s) => s.slug.includes('tank'));
+
+      if (homeCleaning.length > 0) {
+        sections.push({
+          id: `home_clean_${category.id}`,
+          title: 'Deep House Cleaning',
+          services: homeCleaning,
+        });
+      }
+      if (upholstery.length > 0) {
+        sections.push({
+          id: `upholstery_${category.id}`,
+          title: 'Sofa & Upholstery Care',
+          services: upholstery,
+        });
+      }
+      if (waterTank.length > 0) {
+        sections.push({
+          id: `water_tank_${category.id}`,
+          title: 'Water Tank Sanitization',
+          services: waterTank,
+        });
+      }
+    } else if (category.slug === 'electrician' || category.slug === 'electrical') {
+      const quickFixes = services.filter((s) => !s.slug.includes('fan') && !s.slug.includes('light') && !s.slug.includes('chandelier'));
+      const fixtures = services.filter((s) => s.slug.includes('fan') || s.slug.includes('light') || s.slug.includes('chandelier') || s.slug.includes('wiring'));
+
+      if (fixtures.length > 0) {
+        sections.push({
+          id: `elec_fixtures_${category.id}`,
+          title: 'Fans & Fixtures',
+          services: fixtures,
+        });
+      }
+      if (quickFixes.length > 0) {
+        sections.push({
+          id: `elec_quick_${category.id}`,
+          title: 'Repairs & Switchboards',
+          services: quickFixes,
+        });
+      }
+    } else if (category.slug === 'painting') {
+      const interior = services.filter((s) => s.slug.includes('distemper') || s.slug.includes('emulsion') || s.slug.includes('interior') || s.slug.includes('royale'));
+      const exteriorTexture = services.filter((s) => s.slug.includes('texture') || s.slug.includes('exterior') || s.slug.includes('weatherproof'));
+      const woodMetal = services.filter((s) => s.slug.includes('enamel') || s.slug.includes('polish') || s.slug.includes('wood') || s.slug.includes('metal'));
+
+      if (interior.length > 0) {
+        sections.push({
+          id: `paint_interior_${category.id}`,
+          title: 'Interior Wall Painting',
+          services: interior,
+        });
+      }
+      if (exteriorTexture.length > 0) {
+        sections.push({
+          id: `paint_texture_${category.id}`,
+          title: 'Texture & Exterior Painting',
+          services: exteriorTexture,
+        });
+      }
+      if (woodMetal.length > 0) {
+        sections.push({
+          id: `paint_wood_metal_${category.id}`,
+          title: 'Wood & Metal Finishes',
+          services: woodMetal,
+        });
+      }
+    } else if (category.slug === 'carpentry') {
+      const basicCarpentry = services.filter((s) => !s.slug.includes('custom') && !s.slug.includes('modular') && !s.slug.includes('wardrobe') && !s.slug.includes('bed'));
+      const customCarpentry = services.filter((s) => s.slug.includes('custom') || s.slug.includes('modular') || s.slug.includes('wardrobe') || s.slug.includes('bed') || s.slug.includes('window'));
+
+      if (basicCarpentry.length > 0) {
+        sections.push({
+          id: `carpentry_repair_${category.id}`,
+          title: 'Assembly & Hardware Repairs',
+          services: basicCarpentry,
+        });
+      }
+      if (customCarpentry.length > 0) {
+        sections.push({
+          id: `carpentry_custom_${category.id}`,
+          title: 'Custom Woodwork & Furniture',
+          services: customCarpentry,
+        });
+      }
+    } else if (services.length > 0) {
+      sections.push({
+        id: `primary_${category.id}`,
+        title: `${category.name} Services`,
+        services: services,
+      });
     }
 
     const experience: CategoryExperience = {
@@ -500,6 +718,7 @@ class ExperienceRepository {
     // Cache both by id and slug
     experienceCache.set(category.id, experience);
     experienceCache.set(category.slug, experience);
+    experienceCache.set(normalizedTarget, experience);
 
     return experience;
   }
