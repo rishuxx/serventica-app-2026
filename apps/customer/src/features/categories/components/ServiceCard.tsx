@@ -92,11 +92,6 @@ export const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
           </View>
         )}
 
-        {/* Top-Left Frosted Glass Unit Badge */}
-        <View style={styles.unitBadge}>
-          <Text style={styles.unitText}>1 unit</Text>
-        </View>
-
         {/* Top-Right Heart Wishlist Button */}
         {onToggleSave ? (
           <TouchableOpacity
@@ -117,9 +112,62 @@ export const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
             />
           </TouchableOpacity>
         ) : null}
+
+        {/* Bottom Bar on Image: Unit Tag (Left) & ADD / Stepper Button (Right) */}
+        <View style={styles.imageBottomRow}>
+          <View style={styles.unitBadge}>
+            <Text style={styles.unitText}>1 unit</Text>
+          </View>
+
+          {quantity > 0 ? (
+            <View style={styles.stepperContainer}>
+              <TouchableOpacity
+                style={styles.stepperBtn}
+                activeOpacity={0.7}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  removeItem(service.id);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="Decrease quantity"
+              >
+                <Minus size={11} color="#1E242B" strokeWidth={2.6} />
+              </TouchableOpacity>
+              <Text style={styles.stepperQtyText}>{quantity}</Text>
+              <TouchableOpacity
+                style={styles.stepperBtn}
+                activeOpacity={0.7}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  addItem(service as any);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="Increase quantity"
+              >
+                <Plus size={11} color="#1E242B" strokeWidth={2.6} />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={styles.addButton}
+              activeOpacity={0.75}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              onPress={(e) => {
+                e.stopPropagation();
+                addItem(service as any);
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={`Add ${service.name} to cart`}
+            >
+              <Text style={styles.addButtonText}>ADD</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
-      {/* 2. CARD DETAILS (Clean, Elegant Lexend Typography) */}
+      {/* 2. CARD DETAILS (Clean, Smooth Lexend Typography) */}
       <View style={styles.detailsContainer}>
         {/* Price & Original Price */}
         <View style={styles.priceRow}>
@@ -146,55 +194,6 @@ export const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
           </View>
         </View>
       </View>
-
-      {/* 3. CENTER BOTTOM ACTION (Smooth Yellow ADD / Stepper Button) */}
-      <View style={styles.actionContainer}>
-        {quantity > 0 ? (
-          <View style={styles.stepperContainer}>
-            <TouchableOpacity
-              style={styles.stepperBtn}
-              activeOpacity={0.7}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              onPress={(e) => {
-                e.stopPropagation();
-                removeItem(service.id);
-              }}
-              accessibilityRole="button"
-              accessibilityLabel="Decrease quantity"
-            >
-              <Minus size={12} color="#0F172A" strokeWidth={2.6} />
-            </TouchableOpacity>
-            <Text style={styles.stepperQtyText}>{quantity}</Text>
-            <TouchableOpacity
-              style={styles.stepperBtn}
-              activeOpacity={0.7}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              onPress={(e) => {
-                e.stopPropagation();
-                addItem(service as any);
-              }}
-              accessibilityRole="button"
-              accessibilityLabel="Increase quantity"
-            >
-              <Plus size={12} color="#0F172A" strokeWidth={2.6} />
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <TouchableOpacity
-            style={styles.addButton}
-            activeOpacity={0.78}
-            hitSlop={{ top: 8, bottom: 8, left: 10, right: 10 }}
-            onPress={(e) => {
-              e.stopPropagation();
-              addItem(service as any);
-            }}
-            accessibilityRole="button"
-            accessibilityLabel={`Add ${service.name} to cart`}
-          >
-            <Text style={styles.addButtonText}>ADD</Text>
-          </TouchableOpacity>
-        )}
-      </View>
     </TouchableOpacity>
   );
 });
@@ -216,7 +215,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: '100%',
-    height: 120,
+    height: 126,
     backgroundColor: '#F8FAFC',
     overflow: 'hidden',
     position: 'relative',
@@ -237,22 +236,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  unitBadge: {
-    position: 'absolute',
-    bottom: 6,
-    left: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.88)',
-    paddingHorizontal: 6,
-    paddingVertical: 2.5,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.7)',
-  },
-  unitText: {
-    fontSize: 9.5,
-    fontFamily: ServenticaTokens.fonts.Medium,
-    color: '#64748B',
-  },
   saveHeartOverlay: {
     position: 'absolute',
     top: 6,
@@ -269,21 +252,88 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
+  imageBottomRow: {
+    position: 'absolute',
+    bottom: 6,
+    left: 6,
+    right: 6,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+  },
+  unitBadge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    paddingHorizontal: 6,
+    paddingVertical: 2.5,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.7)',
+  },
+  unitText: {
+    fontSize: 9.5,
+    fontFamily: ServenticaTokens.fonts.Medium,
+    color: '#64748B',
+  },
+  addButton: {
+    backgroundColor: '#fac420',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
+    shadowColor: '#B45309',
+    shadowOffset: { width: 0, height: 1.5 },
+    shadowOpacity: 0.18,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  addButtonText: {
+    fontSize: 11,
+    fontFamily: ServenticaTokens.fonts.Bold,
+    color: '#1E242B',
+    letterSpacing: 0.3,
+  },
+  stepperContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fac420',
+    borderRadius: 8,
+    paddingHorizontal: 5,
+    paddingVertical: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
+    shadowColor: '#B45309',
+    shadowOffset: { width: 0, height: 1.5 },
+    shadowOpacity: 0.18,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  stepperBtn: {
+    padding: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  stepperQtyText: {
+    fontSize: 11,
+    fontFamily: ServenticaTokens.fonts.Bold,
+    color: '#1E242B',
+    marginHorizontal: 4,
+  },
   detailsContainer: {
-    paddingHorizontal: 9,
+    paddingHorizontal: 8,
     paddingTop: 8,
-    paddingBottom: 4,
+    paddingBottom: 10,
   },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
     gap: 5,
-    marginBottom: 2,
+    marginBottom: 3,
   },
   priceText: {
     fontSize: 14.5,
-    fontFamily: ServenticaTokens.fonts.Bold,
-    color: '#0F172A',
+    fontFamily: ServenticaTokens.fonts.SemiBold,
+    color: '#1E242B',
   },
   originalPriceText: {
     fontSize: 11,
@@ -294,16 +344,16 @@ const styles = StyleSheet.create({
   serviceTitle: {
     fontSize: 12.5,
     fontFamily: ServenticaTokens.fonts.Medium,
-    color: '#1E293B',
+    color: '#1E242B',
     lineHeight: 16.5,
-    marginBottom: 4,
+    marginBottom: 6,
     minHeight: 33,
   },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 1,
+    paddingTop: 2,
   },
   ratingBox: {
     flexDirection: 'row',
@@ -329,62 +379,5 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontFamily: ServenticaTokens.fonts.Regular,
     color: '#64748B',
-  },
-  actionContainer: {
-    paddingHorizontal: 8,
-    paddingTop: 4,
-    paddingBottom: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  addButton: {
-    minWidth: 70,
-    height: 26,
-    paddingHorizontal: 14,
-    backgroundColor: '#fac420',
-    borderRadius: 7,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-    shadowColor: '#B45309',
-    shadowOffset: { width: 0, height: 1.5 },
-    shadowOpacity: 0.18,
-    shadowRadius: 2.5,
-    elevation: 2,
-  },
-  addButtonText: {
-    fontSize: 10.5,
-    fontFamily: ServenticaTokens.fonts.Bold,
-    color: '#0F172A',
-    letterSpacing: 0.4,
-  },
-  stepperContainer: {
-    minWidth: 74,
-    height: 26,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#fac420',
-    borderRadius: 7,
-    paddingHorizontal: 6,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-    shadowColor: '#B45309',
-    shadowOffset: { width: 0, height: 1.5 },
-    shadowOpacity: 0.18,
-    shadowRadius: 2.5,
-    elevation: 2,
-  },
-  stepperBtn: {
-    padding: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  stepperQtyText: {
-    fontSize: 11,
-    fontFamily: ServenticaTokens.fonts.Bold,
-    color: '#0F172A',
-    marginHorizontal: 3,
   },
 });
