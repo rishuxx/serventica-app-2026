@@ -1,5 +1,8 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase/client';
 import { BookingRecord, BookingStatus } from '../../../../packages/types/src';
+
+const LOCAL_BOOKINGS_STORAGE_KEY = '@serventica_customer_bookings_v1';
 
 class BookingRepository {
   /**
@@ -9,6 +12,25 @@ class BookingRepository {
     userId: string,
     filter: 'UPCOMING' | 'COMPLETED' | 'CANCELLED' = 'UPCOMING'
   ): Promise<BookingRecord[]> {
+    let localList: BookingRecord[] = [];
+    try {
+      const raw = await AsyncStorage.getItem(LOCAL_BOOKINGS_STORAGE_KEY);
+      if (raw) {
+        const parsed: BookingRecord[] = JSON.parse(raw);
+        if (filter === 'UPCOMING') {
+          localList = parsed.filter(
+            (b) => !b.status.includes('CANCEL') && b.status !== 'SERVICE_COMPLETED' && b.status !== 'CLOSED'
+          );
+        } else if (filter === 'COMPLETED') {
+          localList = parsed.filter((b) => b.status === 'SERVICE_COMPLETED' || b.status === 'CLOSED');
+        } else if (filter === 'CANCELLED') {
+          localList = parsed.filter((b) => b.status.includes('CANCEL') || b.status === 'PAYMENT_FAILED');
+        }
+      }
+    } catch (e) {
+      console.warn('[BookingRepository] Local read failed:', e);
+    }
+
     try {
       let query = supabase
         .from('bookings')
@@ -43,19 +65,31 @@ class BookingRepository {
       }
 
       const { data, error } = await query;
-      if (!error && data) {
-        return data.map((b: any) => this.mapDbBookingToModel(b));
+      if (!error && data && data.length > 0) {
+        const remoteList = data.map((b: any) => this.mapDbBookingToModel(b));
+        return [...localList, ...remoteList];
       }
     } catch (err) {
-      console.warn('[BookingRepository.getBookings] Error:', err);
+      console.warn('[BookingRepository.getBookings] Supabase error:', err);
     }
-    return [];
+    return localList;
   }
 
   /**
    * Fetch single detailed booking by ID
    */
   async getBookingDetail(bookingId: string): Promise<BookingRecord | null> {
+    try {
+      const raw = await AsyncStorage.getItem(LOCAL_BOOKINGS_STORAGE_KEY);
+      if (raw) {
+        const parsed: BookingRecord[] = JSON.parse(raw);
+        const match = parsed.find((b) => b.id === bookingId || b.bookingNumber === bookingId);
+        if (match) return match;
+      }
+    } catch (e) {
+      console.warn('[BookingRepository] Local detail read failed:', e);
+    }
+
     try {
       const { data, error } = await supabase
         .from('bookings')

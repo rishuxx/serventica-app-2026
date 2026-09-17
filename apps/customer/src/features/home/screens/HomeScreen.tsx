@@ -69,7 +69,7 @@ export type AccountSubRoute =
 export const HomeScreen: React.FC<HomeScreenProps> = ({
   onOpenAccount,
   onSelectService,
-  initialShowcase = true,
+  initialShowcase = false,
 }) => {
   const { data, isLoading: isHomeLoading, refresh: refreshHome } = useHome();
   const location = useLocation();
@@ -100,7 +100,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   } = useHomeExperience();
 
   const [activeTab, setActiveTab] = useState<BottomNavTab>('HOME');
-  const [activeAccountRoute, setActiveAccountRoute] = useState<AccountSubRoute>(initialShowcase ? 'SANDBOX' : null);
+  const [activeAccountRoute, setActiveAccountRoute] = useState<AccountSubRoute>(null);
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
   const [supportBookingContext, setSupportBookingContext] = useState<{ id: string; serviceName: string } | undefined>(undefined);
   const [activeServiceTarget, setActiveServiceTarget] = useState<{ id: string; slug: string; fromCategory?: boolean } | null>(null);

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Platform,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import {
   X,
@@ -16,8 +17,6 @@ import {
   ShieldCheck,
   Zap,
   Calendar,
-  Clock,
-  ChevronRight,
   ChevronUp,
   CheckCircle2,
   MapPin,
@@ -26,37 +25,39 @@ import {
   Sun,
   Sunset,
   Moon,
-  CreditCard,
-  Wallet,
-  Banknote,
   Check,
   Play,
+  ArrowRight,
 } from 'lucide-react-native';
 import { useCart } from '../context/CartContext';
 import { useLocation } from '../../../context/LocationContext';
 import { useAuth } from '../../../context/AuthContext';
 import { ServenticaTokens } from '../../../../../../packages/design-system/src';
 import { AssetRegistry } from '../../../services/home.service';
+import { PaymentMethodIcon, PaymentBrandType } from './PaymentMethodIcon';
+import { paymentService, PaymentTransactionResult } from '../../../services/payment.service';
 
 interface CartDrawerModalProps {
   onProceedToBooking?: (bookingData: any) => void;
 }
 
-// Payment Methods list
-export type PaymentMethodType = 'UPI' | 'CARDS' | 'COD' | 'WALLET';
+export type PaymentMethodKey = 'GOOGLE_PAY' | 'PHONEPE' | 'PAYTM' | 'CARDS' | 'WALLET' | 'COD';
 
 interface PaymentOption {
-  id: PaymentMethodType;
+  id: PaymentMethodKey;
+  brand: PaymentBrandType;
   title: string;
   subtitle: string;
   badge?: string;
 }
 
 const PAYMENT_OPTIONS: PaymentOption[] = [
-  { id: 'UPI', title: 'Google Pay UPI', subtitle: 'Fastest 1-step verification', badge: 'FAST' },
-  { id: 'CARDS', title: 'Credit / Debit Card', subtitle: 'Visa, MasterCard, RuPay' },
-  { id: 'WALLET', title: 'Serventica Wallet', subtitle: 'Paytm, Amazon Pay' },
-  { id: 'COD', title: 'Pay After Service (Cash/UPI)', subtitle: 'Pay directly to pro when job done' },
+  { id: 'GOOGLE_PAY', brand: 'GOOGLE_PAY', title: 'Google Pay UPI', subtitle: 'Fastest 1-step verification', badge: 'FAST' },
+  { id: 'PHONEPE', brand: 'PHONEPE', title: 'PhonePe UPI', subtitle: 'Instant UPI payments', badge: 'POPULAR' },
+  { id: 'PAYTM', brand: 'PAYTM', title: 'Paytm UPI & Wallet', subtitle: 'Fast checkout with Paytm' },
+  { id: 'CARDS', brand: 'CARDS', title: 'Credit / Debit Card', subtitle: 'Visa, MasterCard, RuPay' },
+  { id: 'WALLET', brand: 'WALLET', title: 'Serventica Wallet', subtitle: 'Instant 1-click payment' },
+  { id: 'COD', brand: 'COD', title: 'Pay After Service', subtitle: 'Cash or QR when pro arrives' },
 ];
 
 // Hourly duration options ONLY for ondemand / househelp / massage / gardening
@@ -67,7 +68,6 @@ const HOURLY_SERVICE_DURATIONS = [
   { id: '2hr', durationLabel: '2 hr', priceMultiplier: 3.2 },
 ];
 
-// Check if a category/service is hourly (ondemand, house help, massage/spa, gardening)
 const isHourlyOnDemandService = (categorySlug?: string, serviceName?: string) => {
   const checkStr = `${categorySlug || ''} ${serviceName || ''}`.toLowerCase();
   return (
@@ -83,7 +83,6 @@ const isHourlyOnDemandService = (categorySlug?: string, serviceName?: string) =>
   );
 };
 
-// Generate next 6 days dynamically from today
 const getAvailableBookingDays = () => {
   const days: { key: string; dayLabel: string; subLabel: string; dateNumber: number; monthName: string }[] = [];
   const today = new Date();
@@ -109,7 +108,6 @@ const getAvailableBookingDays = () => {
   return days;
 };
 
-// Available time periods
 type TimePeriod = 'MORNING' | 'AFTERNOON' | 'EVENING';
 
 const PERIOD_SLOTS: Record<TimePeriod, string[]> = {
@@ -138,44 +136,92 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
   const [selectedDayKey, setSelectedDayKey] = useState<string>(availableDays[0].key);
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('MORNING');
   const [selectedSlotTime, setSelectedSlotTime] = useState<string>('09:00 AM');
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethodType>('UPI');
+  const [selectedPaymentKey, setSelectedPaymentKey] = useState<PaymentMethodKey>('GOOGLE_PAY');
   const [isPaymentPickerOpen, setIsPaymentPickerOpen] = useState<boolean>(false);
-  const [isSuccessBooked, setIsSuccessBooked] = useState<boolean>(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState<boolean>(false);
+  const [transactionResult, setTransactionResult] = useState<PaymentTransactionResult | null>(null);
+  const [walletBalance, setWalletBalance] = useState<number>(0);
 
   const itemList = Object.values(items);
 
-  // Determine if ANY item in cart requires hourly duration selection
+  useEffect(() => {
+    paymentService.getWalletBalance().then((bal) => setWalletBalance(bal));
+  }, [isCartDrawerOpen]);
+
   const hasHourlyService = useMemo(() => {
     return itemList.some((it) => isHourlyOnDemandService(it.categoryId || it.categoryName, it.name));
   }, [itemList]);
 
-  // Customer Contact Info
   const customerName = profile
     ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Verified Customer'
     : 'Verified Customer';
   const customerPhone = user?.phone || '+91 98765 43210';
 
   const selectedDayObj = availableDays.find((d) => d.key === selectedDayKey) || availableDays[0];
-  const activePaymentOption = PAYMENT_OPTIONS.find((p) => p.id === selectedPaymentMethod) || PAYMENT_OPTIONS[0];
+  const activePaymentOption = PAYMENT_OPTIONS.find((p) => p.id === selectedPaymentKey) || PAYMENT_OPTIONS[0];
 
-  const handleCheckout = () => {
-    setIsSuccessBooked(true);
-    setTimeout(() => {
-      setIsSuccessBooked(false);
-      clearCart();
-      closeCartDrawer();
-      onProceedToBooking?.({
-        items: itemList,
+  const handleCheckout = async () => {
+    if (itemList.length === 0 || isProcessingPayment) return;
+
+    setIsProcessingPayment(true);
+
+    try {
+      const mappedMethod =
+        selectedPaymentKey === 'CARDS'
+          ? 'CARDS'
+          : selectedPaymentKey === 'WALLET'
+          ? 'WALLET'
+          : selectedPaymentKey === 'COD'
+          ? 'COD'
+          : 'UPI';
+
+      const res = await paymentService.processCheckout({
+        customerId: user?.id,
+        customerName,
+        customerPhone,
+        items: itemList.map((i) => ({
+          serviceId: i.serviceId,
+          name: i.name,
+          slug: i.slug,
+          basePrice: i.basePrice,
+          quantity: i.quantity,
+          durationMinutes: i.durationMinutes,
+          imageUrl: i.imageUrl,
+        })),
         fees,
         bookingMode,
-        paymentMethod: selectedPaymentMethod,
-        duration: hasHourlyService ? selectedDurationId : undefined,
-        scheduleDate: bookingMode === 'SCHEDULED' ? selectedDayObj.dayLabel : 'Instant Dispatch',
-        scheduleSlot: bookingMode === 'SCHEDULED' ? `${selectedPeriod} (${selectedSlotTime})` : 'Express 20-Min Slot',
-        location: activeLocation,
-        customer: { name: customerName, phone: customerPhone },
+        paymentMethod: mappedMethod,
+        paymentBrand: activePaymentOption.title,
+        scheduleDate: bookingMode === 'SCHEDULED' ? selectedDayObj.dayLabel : 'Today',
+        scheduleSlot: bookingMode === 'SCHEDULED' ? `${selectedPeriod} (${selectedSlotTime})` : 'Express 20m Dispatch',
+        location: {
+          shortAddress: activeLocation.shortAddress,
+          formattedAddress: activeLocation.formattedAddress,
+          city: activeLocation.city,
+        },
       });
-    }, 1800);
+
+      setTransactionResult(res);
+      clearCart();
+
+      // Notify parent app flow
+      onProceedToBooking?.({
+        bookingId: res.bookingId,
+        bookingNumber: res.bookingNumber,
+        transactionId: res.transactionId,
+        paymentMethod: res.paymentMethod,
+        amount: res.amount,
+      });
+    } catch (err) {
+      console.warn('[CartDrawerModal] Checkout error:', err);
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
+
+  const handleDismissSuccess = () => {
+    setTransactionResult(null);
+    closeCartDrawer();
   };
 
   return (
@@ -202,20 +248,44 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
             </TouchableOpacity>
           </View>
 
-          {isSuccessBooked ? (
+          {transactionResult ? (
             <View style={styles.successState}>
               <View style={styles.successIconCircle}>
-                <CheckCircle2 size={44} color="#10B981" strokeWidth={2.2} />
+                <CheckCircle2 size={44} color="#059669" strokeWidth={2.2} />
               </View>
               <Text style={styles.successTitle}>Booking Confirmed!</Text>
+              <Text style={styles.bookingNumberBadge}>
+                Booking ID: {transactionResult.bookingNumber}
+              </Text>
               <Text style={styles.successDesc}>
                 {bookingMode === 'EXPRESS'
-                  ? 'Your verified professional is dispatched and arriving in ~20 mins.'
-                  : `Your appointment is scheduled for ${selectedDayObj.dayLabel} at ${selectedSlotTime}.`}
+                  ? 'Your verified pro is dispatched and arriving in ~20 minutes.'
+                  : `Your appointment is confirmed for ${selectedDayObj.dayLabel} at ${selectedSlotTime}.`}
               </Text>
-              <Text style={styles.successPaymentMeta}>
-                Payment Mode: {activePaymentOption.title}
-              </Text>
+
+              <View style={styles.successReceiptCard}>
+                <View style={styles.receiptRow}>
+                  <Text style={styles.receiptLabel}>Payment Mode</Text>
+                  <Text style={styles.receiptValue}>{transactionResult.paymentMethod}</Text>
+                </View>
+                <View style={styles.receiptRow}>
+                  <Text style={styles.receiptLabel}>Amount Paid</Text>
+                  <Text style={styles.receiptValueBold}>₹{transactionResult.amount}</Text>
+                </View>
+                <View style={styles.receiptRow}>
+                  <Text style={styles.receiptLabel}>Transaction Ref</Text>
+                  <Text style={styles.receiptValue}>{transactionResult.transactionId}</Text>
+                </View>
+              </View>
+
+              <TouchableOpacity
+                style={styles.viewOrdersBtn}
+                onPress={handleDismissSuccess}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.viewOrdersText}>Done • Return to Home</Text>
+                <ArrowRight size={14} color="#FFFFFF" strokeWidth={2.6} />
+              </TouchableOpacity>
             </View>
           ) : (
             <>
@@ -365,7 +435,6 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                   {/* Dynamic Scheduler Options */}
                   {bookingMode === 'SCHEDULED' && (
                     <View style={styles.schedulerContainer}>
-                      {/* Service Duration Row ONLY for ondemand/hourly tasks */}
                       {hasHourlyService && (
                         <>
                           <Text style={styles.subSectionTitle}>Service duration</Text>
@@ -434,7 +503,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                         })}
                       </ScrollView>
 
-                      {/* Select Time of Day (Morning / Afternoon / Evening) */}
+                      {/* Select Time */}
                       <Text style={[styles.subSectionTitle, { marginTop: 16 }]}>Select time</Text>
                       <View style={styles.periodPillBar}>
                         <TouchableOpacity
@@ -519,7 +588,6 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                         </View>
                       </View>
 
-                      {/* Note */}
                       <Text style={styles.schedulerNote}>
                         <Text style={styles.schedulerNoteBold}>NOTE: </Text>
                         Professionals arrive within 30 minutes of the selected slot.
@@ -585,25 +653,28 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                 {/* Top Balance strip */}
                 <View style={styles.balanceStrip}>
                   <Text style={styles.balanceStripText}>
-                    Serventica Wallet Balance: <Text style={styles.balanceStripBold}>₹0</Text> • <Text style={styles.addMoneyText}>Add money</Text>
+                    Serventica Wallet Balance: <Text style={styles.balanceStripBold}>₹{walletBalance}</Text> •{' '}
+                    <TouchableOpacity
+                      onPress={async () => {
+                        const newBal = await paymentService.addWalletBalance(500);
+                        setWalletBalance(newBal);
+                      }}
+                    >
+                      <Text style={styles.addMoneyText}>+ Add ₹500</Text>
+                    </TouchableOpacity>
                   </Text>
                 </View>
 
                 {/* Main Action Bar */}
                 <View style={styles.footerMainRow}>
-                  {/* Left Side: PAY USING ▲ & Selected Payment Method */}
+                  {/* Left Side: Authentic Branded Icon + PAY USING ▲ & Selected Payment Method */}
                   <TouchableOpacity
                     style={styles.payUsingTouchable}
                     activeOpacity={0.75}
                     onPress={() => setIsPaymentPickerOpen(true)}
                   >
                     <View style={styles.payUsingHeaderRow}>
-                      <View style={styles.payUsingMiniIcon}>
-                        {selectedPaymentMethod === 'UPI' && <Zap size={11} color="#0284C7" />}
-                        {selectedPaymentMethod === 'CARDS' && <CreditCard size={11} color="#0284C7" />}
-                        {selectedPaymentMethod === 'WALLET' && <Wallet size={11} color="#0284C7" />}
-                        {selectedPaymentMethod === 'COD' && <Banknote size={11} color="#0284C7" />}
-                      </View>
+                      <PaymentMethodIcon brand={activePaymentOption.brand} size={15} />
                       <Text style={styles.payUsingLabel}>PAY USING</Text>
                       <ChevronUp size={12} color="#64748B" strokeWidth={2.6} />
                     </View>
@@ -614,18 +685,28 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
 
                   {/* Right Side: Exact Reference Place Order Button (Red/Coral Rounded Pill with Price on Left & Place Order on Right) */}
                   <TouchableOpacity
-                    style={styles.placeOrderButton}
+                    style={[styles.placeOrderButton, isProcessingPayment && { opacity: 0.75 }]}
                     onPress={handleCheckout}
+                    disabled={isProcessingPayment}
                     activeOpacity={0.88}
                   >
-                    <View style={styles.buttonPriceCol}>
-                      <Text style={styles.buttonPriceText}>₹{fees.finalPayable}</Text>
-                      <Text style={styles.buttonTotalLabel}>TOTAL</Text>
-                    </View>
-                    <View style={styles.buttonActionRow}>
-                      <Text style={styles.placeOrderText}>Place Order</Text>
-                      <Play size={10} color="#FFFFFF" fill="#FFFFFF" style={{ marginLeft: 2 }} />
-                    </View>
+                    {isProcessingPayment ? (
+                      <View style={styles.processingRow}>
+                        <ActivityIndicator size="small" color="#FFFFFF" />
+                        <Text style={styles.processingText}>Processing...</Text>
+                      </View>
+                    ) : (
+                      <>
+                        <View style={styles.buttonPriceCol}>
+                          <Text style={styles.buttonPriceText}>₹{fees.finalPayable}</Text>
+                          <Text style={styles.buttonTotalLabel}>TOTAL</Text>
+                        </View>
+                        <View style={styles.buttonActionRow}>
+                          <Text style={styles.placeOrderText}>Place Order</Text>
+                          <Play size={10} color="#FFFFFF" fill="#FFFFFF" style={{ marginLeft: 2 }} />
+                        </View>
+                      </>
+                    )}
                   </TouchableOpacity>
                 </View>
               </View>
@@ -656,7 +737,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
 
                     <View style={styles.paymentOptionsList}>
                       {PAYMENT_OPTIONS.map((opt) => {
-                        const isSelected = selectedPaymentMethod === opt.id;
+                        const isSelected = selectedPaymentKey === opt.id;
                         return (
                           <TouchableOpacity
                             key={opt.id}
@@ -665,7 +746,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                               isSelected && styles.paymentOptionItemActive,
                             ]}
                             onPress={() => {
-                              setSelectedPaymentMethod(opt.id);
+                              setSelectedPaymentKey(opt.id);
                               setIsPaymentPickerOpen(false);
                             }}
                             activeOpacity={0.75}
@@ -674,7 +755,8 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                               <View style={[styles.paymentRadio, isSelected && styles.paymentRadioActive]}>
                                 {isSelected && <View style={styles.paymentRadioInner} />}
                               </View>
-                              <View>
+                              <PaymentMethodIcon brand={opt.brand} size={28} />
+                              <View style={{ flex: 1 }}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                                   <Text style={[styles.paymentOptionName, isSelected && styles.paymentOptionNameActive]}>
                                     {opt.title}
@@ -756,7 +838,7 @@ const styles = StyleSheet.create({
     paddingTop: 14,
   },
   contactBar: {
-    backgroundColor: '#F8FAFC', // Minimalist clean neutral
+    backgroundColor: '#F8FAFC',
     borderRadius: 18,
     paddingHorizontal: 16,
     paddingVertical: 14,
@@ -871,7 +953,7 @@ const styles = StyleSheet.create({
   stepperPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F1F5F9', // Clean neutral pill
+    backgroundColor: '#F1F5F9',
     borderRadius: 18,
     paddingHorizontal: 9,
     paddingVertical: 5,
@@ -1228,15 +1310,7 @@ const styles = StyleSheet.create({
   payUsingHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-  },
-  payUsingMiniIcon: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#E0F2FE',
-    justifyContent: 'center',
-    alignItems: 'center',
+    gap: 6,
   },
   payUsingLabel: {
     fontSize: 9.5,
@@ -1253,12 +1327,11 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
-  // Exact Zomato reference button
   placeOrderButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#E23744', // Zomato reference coral red
+    backgroundColor: '#E23744',
     borderRadius: 14,
     paddingHorizontal: 18,
     paddingVertical: 10,
@@ -1274,6 +1347,19 @@ const styles = StyleSheet.create({
         elevation: 4,
       },
     }),
+  },
+  processingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    gap: 8,
+  },
+  processingText: {
+    fontSize: 13,
+    fontFamily: ServenticaTokens.fonts.PoppinsSemiBold,
+    color: '#FFFFFF',
+    fontWeight: '600',
   },
   buttonPriceCol: {
     marginRight: 14,
@@ -1414,37 +1500,90 @@ const styles = StyleSheet.create({
   },
   successState: {
     alignItems: 'center',
-    paddingVertical: 44,
+    paddingVertical: 28,
     paddingHorizontal: 24,
   },
   successIconCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 68,
+    height: 68,
+    borderRadius: 34,
     backgroundColor: '#ECFDF5',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 14,
+    marginBottom: 12,
   },
   successTitle: {
     fontSize: 20,
     fontFamily: ServenticaTokens.fonts.PoppinsBold,
     fontWeight: '800',
     color: '#1E242B',
-    marginBottom: 6,
+    marginBottom: 4,
+  },
+  bookingNumberBadge: {
+    fontSize: 12,
+    fontFamily: ServenticaTokens.fonts.SFProBold,
+    color: '#059669',
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 10,
+    marginBottom: 8,
+    fontWeight: '700',
   },
   successDesc: {
-    fontSize: 13,
+    fontSize: 12.5,
     fontFamily: ServenticaTokens.fonts.SFProRegular,
     color: '#475569',
     textAlign: 'center',
     lineHeight: 18,
+    marginBottom: 16,
   },
-  successPaymentMeta: {
-    fontSize: 12,
+  successReceiptCard: {
+    width: '100%',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    gap: 8,
+  },
+  receiptRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  receiptLabel: {
+    fontSize: 11.5,
+    fontFamily: ServenticaTokens.fonts.SFProRegular,
+    color: '#64748B',
+  },
+  receiptValue: {
+    fontSize: 11.5,
+    fontFamily: ServenticaTokens.fonts.SFProMedium,
+    color: '#1E242B',
+  },
+  receiptValueBold: {
+    fontSize: 13,
     fontFamily: ServenticaTokens.fonts.SFProBold,
-    color: '#059669',
-    marginTop: 10,
     fontWeight: '700',
+    color: '#1E242B',
+  },
+  viewOrdersBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#1E242B',
+    borderRadius: 18,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    gap: 8,
+    width: '100%',
+  },
+  viewOrdersText: {
+    fontSize: 13,
+    fontFamily: ServenticaTokens.fonts.PoppinsSemiBold,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });
