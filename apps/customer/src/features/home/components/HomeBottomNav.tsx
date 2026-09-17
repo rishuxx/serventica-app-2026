@@ -203,68 +203,16 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
   }
 };
 
-// Fast, fluid animated Tab Button with light glass shadow and rapid spring response
 const FluidNavTabButton: React.FC<{
   tabConfig: TabThemeConfig;
   isActive: boolean;
   onPress: () => void;
 }> = ({ tabConfig, isActive, onPress }) => {
-  const scaleAnim = useRef(new Animated.Value(isActive ? 1 : 0.95)).current;
-  const glassOpacity = useRef(new Animated.Value(isActive ? 1 : 0)).current;
-  const iconTranslateY = useRef(new Animated.Value(isActive ? -1.5 : 0)).current;
-
-  useEffect(() => {
-    if (isActive) {
-      Animated.parallel([
-        Animated.spring(scaleAnim, {
-          toValue: 1.05,
-          friction: 6,
-          tension: 280,
-          useNativeDriver: true,
-        }),
-        Animated.timing(glassOpacity, {
-          toValue: 1,
-          duration: 150,
-          useNativeDriver: true,
-        }),
-        Animated.spring(iconTranslateY, {
-          toValue: -1.5,
-          friction: 6,
-          tension: 280,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        Animated.spring(scaleAnim, {
-          toValue: 1,
-          friction: 7,
-          tension: 220,
-          useNativeDriver: true,
-        }).start();
-      });
-    } else {
-      Animated.parallel([
-        Animated.spring(scaleAnim, {
-          toValue: 1,
-          friction: 7,
-          useNativeDriver: true,
-        }),
-        Animated.timing(glassOpacity, {
-          toValue: 0,
-          duration: 120,
-          useNativeDriver: true,
-        }),
-        Animated.spring(iconTranslateY, {
-          toValue: 0,
-          friction: 7,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }
-  }, [isActive, glassOpacity, iconTranslateY, scaleAnim]);
+  const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
-      toValue: 0.90,
+      toValue: 0.92,
       friction: 6,
       tension: 300,
       useNativeDriver: true,
@@ -295,22 +243,10 @@ const FluidNavTabButton: React.FC<{
         style={[
           styles.iconContainer,
           {
-            transform: [
-              { scale: scaleAnim },
-              { translateY: iconTranslateY },
-            ],
+            transform: [{ scale: scaleAnim }],
           },
         ]}
       >
-        {/* Very light glass effect background with soft ambient shadow */}
-        <Animated.View
-          style={[
-            styles.activeGlassPill,
-            {
-              opacity: glassOpacity,
-            },
-          ]}
-        />
         <TabSvgIcon tab={tabConfig.id} isActive={isActive} theme={tabConfig} />
       </Animated.View>
 
@@ -391,19 +327,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 3,
-    position: 'relative',
-  },
-  activeGlassPill: {
-    ...StyleSheet.absoluteFill,
-    borderRadius: 15,
-    backgroundColor: 'rgba(250, 196, 32, 0.14)',
-    borderWidth: 1,
-    borderColor: 'rgba(250, 196, 32, 0.28)',
-    shadowColor: '#B45309',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 2,
   },
   tabLabel: {
     fontSize: 11,
