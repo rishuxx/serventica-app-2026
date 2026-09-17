@@ -5,6 +5,7 @@ import {
   Text,
   Animated,
   Platform,
+  TouchableOpacity,
 } from 'react-native';
 import { ArrowRight, ShoppingBag } from 'lucide-react-native';
 import { useCart } from '../context/CartContext';
@@ -107,12 +108,12 @@ export const FloatingCartBar: React.FC<FloatingCartBarProps> = ({ onPressCheckou
           transform: [{ translateY: slideAnim }],
         },
       ]}
-      pointerEvents="box-none"
     >
-      <AnimatedTouchable
+      <TouchableOpacity
         style={styles.yellowCapsuleBar}
-        activeOpacity={0.9}
+        activeOpacity={0.85}
         onPress={handlePress}
+        hitSlop={{ top: 12, bottom: 12, left: 16, right: 16 }}
         accessibilityRole="button"
         accessibilityLabel={`View Cart with ${itemCount} items`}
       >
@@ -140,7 +141,7 @@ export const FloatingCartBar: React.FC<FloatingCartBarProps> = ({ onPressCheckou
             <ArrowRight size={12} color="#FFFFFF" strokeWidth={2.8} />
           </View>
         </View>
-      </AnimatedTouchable>
+      </TouchableOpacity>
     </Animated.View>
   );
 };
@@ -156,23 +157,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFCC00', // Solid very bright vibrant light yellow
-    borderRadius: 30, // Small tight capsule
+    backgroundColor: '#FFCC00', // Solid bright vibrant light yellow
+    borderRadius: 30, // Clean rounded capsule
     paddingLeft: 12,
     paddingRight: 10,
     paddingVertical: 7,
-    borderWidth: 1.2,
-    borderColor: '#F59E0B',
     gap: 12,
     ...Platform.select({
       ios: {
         shadowColor: '#B45309',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.28,
-        shadowRadius: 10,
+        shadowOpacity: 0.22,
+        shadowRadius: 8,
       },
       android: {
-        elevation: 8,
+        elevation: 6,
       },
     }),
   },
@@ -198,8 +197,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 3,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1.2,
-    borderColor: '#FFCC00',
   },
   badgeCount: {
     fontSize: 9,

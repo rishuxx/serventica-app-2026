@@ -25,6 +25,11 @@ import {
   Sun,
   Sunset,
   Moon,
+  CreditCard,
+  Wallet,
+  Banknote,
+  ChevronRight,
+  Check,
 } from 'lucide-react-native';
 import { useCart } from '../context/CartContext';
 import { useLocation } from '../../../context/LocationContext';
@@ -36,6 +41,23 @@ import { AssetRegistry } from '../../../services/home.service';
 interface CartDrawerModalProps {
   onProceedToBooking?: (bookingData: any) => void;
 }
+
+// Payment Methods list
+export type PaymentMethodType = 'UPI' | 'CARDS' | 'COD' | 'WALLET';
+
+interface PaymentOption {
+  id: PaymentMethodType;
+  title: string;
+  subtitle: string;
+  badge?: string;
+}
+
+const PAYMENT_OPTIONS: PaymentOption[] = [
+  { id: 'UPI', title: 'UPI / Google Pay / PhonePe', subtitle: 'Fastest 1-step verification', badge: 'FAST' },
+  { id: 'CARDS', title: 'Credit / Debit Card', subtitle: 'Visa, MasterCard, RuPay' },
+  { id: 'WALLET', title: 'Serventica Balance & Wallets', subtitle: 'Paytm, Amazon Pay' },
+  { id: 'COD', title: 'Pay After Service (Cash / Online)', subtitle: 'Pay directly to pro when job done' },
+];
 
 // Hourly duration options ONLY for ondemand / househelp / massage / gardening
 const HOURLY_SERVICE_DURATIONS = [
@@ -116,6 +138,8 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
   const [selectedDayKey, setSelectedDayKey] = useState<string>(availableDays[0].key);
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('MORNING');
   const [selectedSlotTime, setSelectedSlotTime] = useState<string>('09:00 AM');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethodType>('UPI');
+  const [isPaymentPickerOpen, setIsPaymentPickerOpen] = useState<boolean>(false);
   const [isSuccessBooked, setIsSuccessBooked] = useState<boolean>(false);
 
   const itemList = Object.values(items);
@@ -132,6 +156,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
   const customerPhone = user?.phone || '+91 98765 43210';
 
   const selectedDayObj = availableDays.find((d) => d.key === selectedDayKey) || availableDays[0];
+  const activePaymentOption = PAYMENT_OPTIONS.find((p) => p.id === selectedPaymentMethod) || PAYMENT_OPTIONS[0];
 
   const handleCheckout = () => {
     setIsSuccessBooked(true);
@@ -143,6 +168,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
         items: itemList,
         fees,
         bookingMode,
+        paymentMethod: selectedPaymentMethod,
         duration: hasHourlyService ? selectedDurationId : undefined,
         scheduleDate: bookingMode === 'SCHEDULED' ? selectedDayObj.dayLabel : 'Instant Dispatch',
         scheduleSlot: bookingMode === 'SCHEDULED' ? `${selectedPeriod} (${selectedSlotTime})` : 'Express 20-Min Slot',
@@ -187,11 +213,14 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                   ? 'Your verified professional is dispatched and arriving in ~20 mins.'
                   : `Your appointment is scheduled for ${selectedDayObj.dayLabel} at ${selectedSlotTime}.`}
               </Text>
+              <Text style={styles.successPaymentMeta}>
+                Payment Mode: {activePaymentOption.title}
+              </Text>
             </View>
           ) : (
             <>
               <ScrollView style={styles.scrollList} showsVerticalScrollIndicator={false}>
-                {/* 1. Address & Contact Pill Bar */}
+                {/* 1. Address & Contact Pill Bar (Glass-like Soft Light Yellow) */}
                 <View style={styles.contactBar}>
                   <View style={styles.contactItem}>
                     <MapPin size={14} color="#1E242B" strokeWidth={2.2} />
@@ -259,14 +288,14 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                             </Text>
                           </View>
 
-                          {/* Stepper Buttons in Light Yellow */}
+                          {/* Stepper Buttons in Light Yellow Pill (No shadows/outlines) */}
                           <View style={styles.stepperPill}>
                             <TouchableOpacity
                               style={styles.stepperActionBtn}
                               onPress={() => removeItem(item.serviceId)}
                               activeOpacity={0.7}
                             >
-                              <Minus size={12} color="#1E242B" strokeWidth={2.8} />
+                              <Minus size={13} color="#1E242B" strokeWidth={2.8} />
                             </TouchableOpacity>
                             <Text style={styles.stepperValue}>{item.quantity}</Text>
                             <TouchableOpacity
@@ -274,7 +303,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                               onPress={() => addItem(item as any)}
                               activeOpacity={0.7}
                             >
-                              <Plus size={12} color="#1E242B" strokeWidth={2.8} />
+                              <Plus size={13} color="#1E242B" strokeWidth={2.8} />
                             </TouchableOpacity>
                           </View>
                         </View>
@@ -500,7 +529,72 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                   )}
                 </View>
 
-                {/* 4. Dotted Rate List & Bill Summary */}
+                {/* 4. Payment Method Selector Glass Card */}
+                <View style={styles.sectionBlock}>
+                  <Text style={styles.sectionLabel}>PAYMENT METHOD</Text>
+                  <TouchableOpacity
+                    style={styles.paymentMethodCard}
+                    activeOpacity={0.85}
+                    onPress={() => setIsPaymentPickerOpen(!isPaymentPickerOpen)}
+                  >
+                    <View style={styles.paymentMethodIconWrap}>
+                      {selectedPaymentMethod === 'UPI' && <Zap size={16} color="#1E242B" fill="#FFCC00" />}
+                      {selectedPaymentMethod === 'CARDS' && <CreditCard size={16} color="#1E242B" />}
+                      {selectedPaymentMethod === 'WALLET' && <Wallet size={16} color="#1E242B" />}
+                      {selectedPaymentMethod === 'COD' && <Banknote size={16} color="#1E242B" />}
+                    </View>
+                    <View style={styles.paymentMethodTextCol}>
+                      <View style={styles.paymentMethodTitleRow}>
+                        <Text style={styles.paymentMethodTitle}>{activePaymentOption.title}</Text>
+                        {activePaymentOption.badge && (
+                          <View style={styles.paymentBadge}>
+                            <Text style={styles.paymentBadgeText}>{activePaymentOption.badge}</Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text style={styles.paymentMethodSubtitle}>{activePaymentOption.subtitle}</Text>
+                    </View>
+                    <Text style={styles.changeLink}>Change</Text>
+                  </TouchableOpacity>
+
+                  {/* Expandable Payment Methods Picker */}
+                  {isPaymentPickerOpen && (
+                    <View style={styles.paymentOptionsList}>
+                      {PAYMENT_OPTIONS.map((opt) => {
+                        const isSelected = selectedPaymentMethod === opt.id;
+                        return (
+                          <TouchableOpacity
+                            key={opt.id}
+                            style={[
+                              styles.paymentOptionItem,
+                              isSelected && styles.paymentOptionItemActive,
+                            ]}
+                            onPress={() => {
+                              setSelectedPaymentMethod(opt.id);
+                              setIsPaymentPickerOpen(false);
+                            }}
+                            activeOpacity={0.75}
+                          >
+                            <View style={styles.paymentOptionLeft}>
+                              <View style={[styles.paymentRadio, isSelected && styles.paymentRadioActive]}>
+                                {isSelected && <View style={styles.paymentRadioInner} />}
+                              </View>
+                              <View>
+                                <Text style={[styles.paymentOptionName, isSelected && styles.paymentOptionNameActive]}>
+                                  {opt.title}
+                                </Text>
+                                <Text style={styles.paymentOptionDesc}>{opt.subtitle}</Text>
+                              </View>
+                            </View>
+                            {isSelected && <Check size={16} color="#1E242B" strokeWidth={2.8} />}
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  )}
+                </View>
+
+                {/* 5. Dotted Rate List & Bill Summary */}
                 <View style={styles.billContainer}>
                   <Text style={styles.billHeading}>Bill Summary</Text>
 
@@ -552,7 +646,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                 </View>
               </ScrollView>
 
-              {/* Bottom Sticky Checkout Action (Pay CTA in Vibrant Light Yellow) */}
+              {/* Bottom Sticky Checkout Action (Solid Vibrant Yellow with Soft Shadow matching reference) */}
               <View style={styles.footerRow}>
                 <View style={styles.footerPayCol}>
                   <Text style={styles.footerAmountLabel}>TOTAL PAYABLE</Text>
@@ -564,7 +658,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                   onPress={handleCheckout}
                 >
                   <Text style={styles.payButtonText}>
-                    {bookingMode === 'EXPRESS' ? `Pay ₹${fees.finalPayable}` : `Schedule & Pay ₹${fees.finalPayable}`}
+                    {bookingMode === 'EXPRESS' ? `Pay ₹${fees.finalPayable}` : `Pay ₹${fees.finalPayable}`}
                   </Text>
                   <ArrowRight size={15} color="#1E242B" strokeWidth={2.8} />
                 </AnimatedTouchable>
@@ -621,8 +715,6 @@ const styles = StyleSheet.create({
     height: 32,
     borderRadius: 16,
     backgroundColor: '#F8FAFC',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -631,12 +723,10 @@ const styles = StyleSheet.create({
     paddingTop: 14,
   },
   contactBar: {
-    backgroundColor: '#FFFDF0', // Warm light yellow tint
+    backgroundColor: '#FFFDF0', // Clean soft glass-like light yellow
     borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderColor: '#FDE68A',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     marginBottom: 16,
   },
   contactItem: {
@@ -670,7 +760,7 @@ const styles = StyleSheet.create({
   },
   contactDivider: {
     height: 1,
-    backgroundColor: '#FDE68A',
+    backgroundColor: 'rgba(253, 230, 138, 0.45)',
     marginVertical: 8,
   },
   sectionBlock: {
@@ -709,8 +799,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 12,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
   },
   itemThumb: {
     width: '85%',
@@ -746,13 +834,11 @@ const styles = StyleSheet.create({
   stepperPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFDF0', // Warm light yellow
+    backgroundColor: '#FFFDF0', // Clean soft light yellow pill
     borderRadius: 18,
-    paddingHorizontal: 8,
-    paddingVertical: 4.5,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
     gap: 9,
-    borderWidth: 1.2,
-    borderColor: '#FDE68A',
   },
   stepperActionBtn: {
     padding: 2,
@@ -780,14 +866,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#F8FAFC',
     borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: '#E2E8F0',
     paddingVertical: 11,
     gap: 7,
   },
   modeTabActive: {
-    backgroundColor: '#FFFDF0', // Light yellow
-    borderColor: '#FFCC00',
+    backgroundColor: '#FFFDF0', // Clean soft glass light yellow
   },
   modeTabText: {
     fontSize: 13,
@@ -814,10 +897,8 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   durationCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F8FAFC',
     borderRadius: 14,
-    borderWidth: 1.2,
-    borderColor: '#E2E8F0',
     paddingHorizontal: 14,
     paddingVertical: 9,
     minWidth: 78,
@@ -825,7 +906,6 @@ const styles = StyleSheet.create({
   },
   durationCardActive: {
     backgroundColor: '#FFFDF0',
-    borderColor: '#FFCC00',
   },
   durationTitle: {
     fontSize: 12,
@@ -858,10 +938,8 @@ const styles = StyleSheet.create({
     textDecorationLine: 'line-through',
   },
   dateCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F8FAFC',
     borderRadius: 14,
-    borderWidth: 1.2,
-    borderColor: '#E2E8F0',
     paddingHorizontal: 14,
     paddingVertical: 8,
     minWidth: 72,
@@ -869,7 +947,6 @@ const styles = StyleSheet.create({
   },
   dateCardActive: {
     backgroundColor: '#FFFDF0',
-    borderColor: '#FFCC00',
   },
   dateCardDay: {
     fontSize: 11.5,
@@ -920,10 +997,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   slotsCardBox: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F8FAFC',
     borderRadius: 18,
-    borderWidth: 1.2,
-    borderColor: '#E2E8F0',
     padding: 12,
   },
   slotsBoxHeading: {
@@ -941,8 +1016,6 @@ const styles = StyleSheet.create({
   slotChipItem: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
-    borderWidth: 1.2,
-    borderColor: '#E2E8F0',
     paddingHorizontal: 12,
     paddingVertical: 8,
     minWidth: '22%',
@@ -950,7 +1023,6 @@ const styles = StyleSheet.create({
   },
   slotChipItemActive: {
     backgroundColor: '#FFFDF0',
-    borderColor: '#FFCC00',
   },
   slotChipLabel: {
     fontSize: 11,
@@ -974,14 +1046,123 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#475569',
   },
+  paymentMethodCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFDF0', // Glass-like soft light yellow
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginTop: 6,
+    gap: 12,
+  },
+  paymentMethodIconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 204, 0, 0.35)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  paymentMethodTextCol: {
+    flex: 1,
+  },
+  paymentMethodTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  paymentMethodTitle: {
+    fontSize: 12.5,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontWeight: '700',
+    color: '#1E242B',
+  },
+  paymentBadge: {
+    backgroundColor: '#10B981',
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 6,
+  },
+  paymentBadgeText: {
+    fontSize: 8.5,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: 0.3,
+  },
+  paymentMethodSubtitle: {
+    fontSize: 11,
+    fontFamily: ServenticaTokens.fonts.Regular,
+    color: '#64748B',
+    marginTop: 1,
+  },
+  paymentOptionsList: {
+    marginTop: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 6,
+    gap: 4,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  paymentOptionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 14,
+  },
+  paymentOptionItemActive: {
+    backgroundColor: '#FFFDF0',
+  },
+  paymentOptionLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+  },
+  paymentRadio: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  paymentRadioActive: {
+    borderColor: '#FFCC00',
+  },
+  paymentRadioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#FFCC00',
+  },
+  paymentOptionName: {
+    fontSize: 12,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontWeight: '600',
+    color: '#1E242B',
+  },
+  paymentOptionNameActive: {
+    color: '#B45309',
+    fontWeight: '700',
+  },
+  paymentOptionDesc: {
+    fontSize: 10,
+    fontFamily: ServenticaTokens.fonts.Regular,
+    color: '#64748B',
+    marginTop: 1,
+  },
   billContainer: {
     backgroundColor: '#F8FAFC',
     borderRadius: 22,
     padding: 16,
     marginTop: 14,
     marginBottom: 14,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
   },
   billHeading: {
     fontSize: 13.5,
@@ -1049,8 +1230,6 @@ const styles = StyleSheet.create({
     padding: 11,
     gap: 8,
     marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#A7F3D0',
   },
   trustBannerText: {
     fontSize: 11,
@@ -1087,25 +1266,25 @@ const styles = StyleSheet.create({
   payButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFCC00', // Light yellow solid CTA
-    paddingHorizontal: 22,
+    backgroundColor: '#FFCC00', // Solid light yellow CTA matching reference
+    paddingHorizontal: 24,
     paddingVertical: 12,
-    borderRadius: 22,
-    gap: 7,
+    borderRadius: 24,
+    gap: 8,
     ...Platform.select({
       ios: {
         shadowColor: '#B45309',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.25,
-        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.28,
+        shadowRadius: 8,
       },
       android: {
-        elevation: 3,
+        elevation: 5,
       },
     }),
   },
   payButtonText: {
-    fontSize: 13.5,
+    fontSize: 14,
     fontFamily: ServenticaTokens.fonts.SemiBold,
     fontWeight: '800',
     color: '#1E242B',
@@ -1123,8 +1302,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 14,
-    borderWidth: 1,
-    borderColor: '#A7F3D0',
   },
   successTitle: {
     fontSize: 20,
@@ -1139,5 +1316,12 @@ const styles = StyleSheet.create({
     color: '#475569',
     textAlign: 'center',
     lineHeight: 18,
+  },
+  successPaymentMeta: {
+    fontSize: 12,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
+    color: '#059669',
+    marginTop: 10,
+    fontWeight: '700',
   },
 });
