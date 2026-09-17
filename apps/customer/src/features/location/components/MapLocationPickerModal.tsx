@@ -22,6 +22,7 @@ import {
   Minus,
   Navigation2,
 } from 'lucide-react-native';
+import Svg, { Path, Circle } from 'react-native-svg';
 import { LocationItem } from '../../../types/location.types';
 import { locationService } from '../../../services/location.service';
 import { ServenticaTokens } from '../../../../../../packages/design-system/src';
@@ -391,10 +392,18 @@ export const MapLocationPickerModal: React.FC<MapLocationPickerModalProps> = ({
               </Text>
             </View>
 
-            {/* Clean Yellow Map Dropper */}
+            {/* Default Solid Google Maps-style Yellow Pin */}
             <View style={styles.dropperContainer}>
               <View style={styles.dropperHead}>
-                <MapPin size={34} color="#1E242B" fill="#fac420" strokeWidth={2} />
+                <Svg width={38} height={46} viewBox="0 0 38 46" fill="none">
+                  {/* Solid Teardrop Pin */}
+                  <Path
+                    d="M19 0C8.50659 0 0 8.50659 0 19C0 30.5 16.5 44.5 18.2 45.85C18.67 46.23 19.33 46.23 19.8 45.85C21.5 44.5 38 30.5 38 19C38 8.50659 29.4934 0 19 0Z"
+                    fill="#FAC420"
+                  />
+                  {/* Clean Solid Center Dot */}
+                  <Circle cx="19" cy="18" r="7" fill="#1E242B" />
+                </Svg>
               </View>
             </View>
           </Animated.View>
