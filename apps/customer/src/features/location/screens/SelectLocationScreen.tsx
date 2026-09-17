@@ -37,6 +37,7 @@ import {
   AddressLabel,
 } from '../../../types/location.types';
 import { ServenticaTokens } from '../../../../../../packages/design-system/src';
+import { MapLocationPickerModal } from '../components/MapLocationPickerModal';
 
 interface SelectLocationScreenProps {
   onClose: () => void;
@@ -72,6 +73,38 @@ export const SelectLocationScreen: React.FC<SelectLocationScreenProps> = ({ onCl
   const [formLabel, setFormLabel] = useState<AddressLabel>('Home');
   const [isSaving, setIsSaving] = useState(false);
   const [targetCoords, setTargetCoords] = useState<{ lat: number; lon: number } | null>(null);
+
+  // Map Location Picker State
+  const [isMapModalOpen, setIsMapModalOpen] = useState<boolean>(false);
+  const [mapModalContext, setMapModalContext] = useState<'SELECT' | 'FORM'>('SELECT');
+
+  const handleOpenMap = (context: 'SELECT' | 'FORM' = 'SELECT') => {
+    setMapModalContext(context);
+    setIsMapModalOpen(true);
+  };
+
+  const handleConfirmMapLocation = async (loc: LocationItem) => {
+    setIsMapModalOpen(false);
+    if (mapModalContext === 'FORM') {
+      setFormHouse(loc.houseNumber || '');
+      setFormStreet(loc.road || loc.shortAddress || '');
+      setFormCity(loc.city || '');
+      setFormState(loc.state || '');
+      setFormPincode(loc.postalCode || '');
+      setTargetCoords(
+        loc.latitude && loc.longitude
+          ? { lat: loc.latitude, lon: loc.longitude }
+          : null
+      );
+    } else {
+      const isServiceable = await selectLocation(loc);
+      if (!isServiceable) {
+        setUnserviceableLocation(loc);
+      } else {
+        onClose();
+      }
+    }
+  };
 
   // Address Options / Overflow Action Sheet
   const [selectedAddressForOptions, setSelectedAddressForOptions] = useState<SavedAddressItem | null>(null);
@@ -316,7 +349,29 @@ export const SelectLocationScreen: React.FC<SelectLocationScreenProps> = ({ onCl
               )}
             </TouchableOpacity>
 
-            {/* Action 2: Add New Address Header Button */}
+            {/* Action 2: Choose on Map */}
+            <TouchableOpacity
+              style={styles.actionCard}
+              activeOpacity={0.7}
+              onPress={() => handleOpenMap('SELECT')}
+              accessibilityRole="button"
+              accessibilityLabel="Choose location on interactive map"
+            >
+              <View style={styles.actionCardLeft}>
+                <View style={[styles.locateIconBox, { backgroundColor: '#FEF3C7' }]}>
+                  <MapPin size={20} color="#D97706" strokeWidth={2.4} />
+                </View>
+                <View style={styles.actionTextBox}>
+                  <Text style={styles.actionPrimaryText}>Choose on Map</Text>
+                  <Text style={styles.actionSecondaryText} numberOfLines={1}>
+                    Pin exact address on real interactive map
+                  </Text>
+                </View>
+              </View>
+              <ChevronRight size={18} color="#999999" strokeWidth={2.0} />
+            </TouchableOpacity>
+
+            {/* Action 3: Add New Address Header Button */}
             <View style={styles.savedSectionHeaderRow}>
               <Text style={styles.savedSectionTitle}>Saved addresses</Text>
               <TouchableOpacity
@@ -422,6 +477,18 @@ export const SelectLocationScreen: React.FC<SelectLocationScreenProps> = ({ onCl
             </View>
 
             <ScrollView style={styles.modalFormScroll} showsVerticalScrollIndicator={false}>
+              {/* Pick on Map Fast Action Button */}
+              <TouchableOpacity
+                style={styles.pickOnMapBtn}
+                activeOpacity={0.8}
+                onPress={() => handleOpenMap('FORM')}
+              >
+                <MapPin size={16} color="#1E4B29" strokeWidth={2.2} />
+                <Text style={styles.pickOnMapText}>
+                  {targetCoords ? 'Adjust Pin on Map' : 'Select Exact Location on Map'}
+                </Text>
+              </TouchableOpacity>
+
               {/* Label Selector */}
               <Text style={styles.fieldLabel}>Save As</Text>
               <View style={styles.labelSelectorRow}>
@@ -627,6 +694,24 @@ export const SelectLocationScreen: React.FC<SelectLocationScreenProps> = ({ onCl
           </View>
         </View>
       </Modal>
+
+      {/* 8. INTERACTIVE REAL-TIME MAP PICKER MODAL */}
+      <MapLocationPickerModal
+        visible={isMapModalOpen}
+        initialLocation={
+          mapModalContext === 'FORM' && targetCoords
+            ? {
+                latitude: targetCoords.lat,
+                longitude: targetCoords.lon,
+                shortAddress: formStreet || 'Selected Location',
+                formattedAddress: `${formHouse ? formHouse + ', ' : ''}${formStreet}, ${formCity}`,
+                city: formCity,
+              }
+            : activeLocation || currentGpsLocation
+        }
+        onClose={() => setIsMapModalOpen(false)}
+        onConfirmLocation={handleConfirmMapLocation}
+      />
     </SafeAreaView>
   );
 };
@@ -1162,5 +1247,23 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     fontFamily: ServenticaTokens.fonts.Medium,
+  },
+  pickOnMapBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F0FDF4',
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+    borderRadius: 12,
+    paddingVertical: 11,
+    paddingHorizontal: 14,
+    marginBottom: 16,
+    gap: 8,
+  },
+  pickOnMapText: {
+    fontSize: 13,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
+    color: '#1E4B29',
   },
 });
