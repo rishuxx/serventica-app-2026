@@ -1,5 +1,5 @@
 /**
- * Currency and date formatting utilities for Serventica India launch.
+ * Currency, date formatting and mobile error utilities for Serventica India launch.
  */
 
 export function formatINR(amount: number): string {
@@ -9,3 +9,6 @@ export function formatINR(amount: number): string {
     maximumFractionDigits: 0,
   }).format(amount);
 }
+
+export * from './mobile-error';
+export * from './storage/safe-storage';

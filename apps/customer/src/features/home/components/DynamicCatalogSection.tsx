@@ -4,6 +4,7 @@ import {
   View,
   Text,
   ScrollView,
+  FlatList,
   TouchableOpacity,
 } from 'react-native';
 import { ServiceCard } from '../../categories/components/ServiceCard';
@@ -14,11 +15,14 @@ import { ServenticaTokens } from '../../../../../../packages/design-system/src';
 import { Inbox, AlertCircle, RefreshCw } from 'lucide-react-native';
 import { ShimmerPlaceholder } from '../../../shared/components/ShimmerPlaceholder';
 
+import { FulfillmentMode } from '../../../../../../packages/types/src';
+
 interface DynamicCatalogSectionProps {
   sections: CatalogSectionData[];
   isLoading: boolean;
   error: string | null;
   categoryName: string;
+  fulfillmentMode?: FulfillmentMode;
   onSelectService: (service: ServiceDetailItem) => void;
   onRetry: () => void;
 }
@@ -28,9 +32,12 @@ export const DynamicCatalogSection: React.FC<DynamicCatalogSectionProps> = React
   isLoading,
   error,
   categoryName,
+  fulfillmentMode = 'INSTANT',
   onSelectService,
   onRetry,
 }) => {
+  // Filter and decorate services based on fulfillment mode if capability is present
+  const isInstant = fulfillmentMode === 'INSTANT';
   // 1. Error state
   if (error && sections.length === 0) {
     return (
@@ -108,21 +115,25 @@ export const DynamicCatalogSection: React.FC<DynamicCatalogSectionProps> = React
           </View>
 
           {/* Service Cards Horizontal Carousel (Quick-Commerce Layout) */}
-          <ScrollView
+          <FlatList
+            data={section.services}
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.horizontalCardsList}
-          >
-            {section.services.map((service) => (
+            keyExtractor={(service) => service.id}
+            initialNumToRender={4}
+            maxToRenderPerBatch={4}
+            windowSize={3}
+            removeClippedSubviews={true}
+            renderItem={({ item: service }) => (
               <ServiceCard
-                key={service.id}
                 service={service}
                 cardWidth={140}
                 onPress={() => onSelectService(service)}
                 isServiceable={true}
               />
-            ))}
-          </ScrollView>
+            )}
+          />
 
           {/* Slim Thin Divider after every section (except last) */}
           {index < sections.length - 1 && (

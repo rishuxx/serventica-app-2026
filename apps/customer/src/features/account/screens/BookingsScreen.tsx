@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   StyleSheet,
   View,
@@ -68,7 +68,9 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({
     );
   };
 
-  const renderBookingItem = ({ item }: { item: BookingRecord }) => {
+  const keyExtractor = useCallback((item: BookingRecord) => item.id, []);
+
+  const renderBookingItem = useCallback(({ item }: { item: BookingRecord }) => {
     const imageSource =
       item.serviceImageUrl && AssetRegistry[item.serviceImageUrl]
         ? AssetRegistry[item.serviceImageUrl]
@@ -109,7 +111,7 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({
         </View>
       </TouchableOpacity>
     );
-  };
+  }, [onSelectBooking]);
 
   return (
     <View style={styles.container}>
@@ -190,12 +192,16 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({
       ) : (
         <FlatList
           data={bookings}
-          keyExtractor={(item) => item.id}
+          keyExtractor={keyExtractor}
           renderItem={renderBookingItem}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           onRefresh={refresh}
           refreshing={isLoading}
+          initialNumToRender={5}
+          maxToRenderPerBatch={5}
+          windowSize={5}
+          removeClippedSubviews={Platform.OS === 'android'}
         />
       )}
     </View>

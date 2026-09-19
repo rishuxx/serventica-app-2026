@@ -97,6 +97,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
           <TouchableOpacity
             style={styles.saveHeartOverlay}
             activeOpacity={0.7}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             onPress={(e) => {
               e.stopPropagation();
               onToggleSave(service.id);

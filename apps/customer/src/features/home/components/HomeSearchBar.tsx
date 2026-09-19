@@ -7,6 +7,7 @@ import {
   Platform,
   StatusBar,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Search,
   Mic,
@@ -34,9 +35,20 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
   onBack,
   isFocused,
 }) => {
+  const insets = useSafeAreaInsets();
+  const dynamicTopPadding = isFocused
+    ? Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 10) + 6
+    : 0;
+
   return (
-    <View style={[styles.container, isFocused && styles.containerFocused]}>
-      {isFocused && onBack ? (
+    <View
+      style={[
+        styles.container,
+        isFocused && styles.containerFocused,
+        isFocused && { paddingTop: dynamicTopPadding },
+      ]}
+    >
+      {onBack ? (
         <TouchableOpacity
           style={styles.backButton}
           onPress={onBack}
@@ -79,6 +91,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
               style={styles.actionButton}
               onPress={onPressVoice}
               activeOpacity={0.7}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               accessibilityLabel="Voice search"
             >
               <Mic size={18} color="#171717" strokeWidth={1.8} />

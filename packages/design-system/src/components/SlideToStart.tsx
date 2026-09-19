@@ -6,7 +6,7 @@ import {
   Animated,
   LayoutChangeEvent,
 } from 'react-native';
-import { ServenticaTokens } from '../index';
+import { ServenticaTokens } from '../tokens';
 
 interface SlideToStartProps {
   onSlideComplete: () => void;
@@ -42,8 +42,8 @@ export const SlideToStart: React.FC<SlideToStartProps> = ({
       onPanResponderRelease: (_, gestureState) => {
         if (isCompletedRef.current) return;
         const currentMax = maxSlide > 0 ? maxSlide : 260;
-        // Threshold: 70% of total travel distance
-        if (gestureState.dx >= currentMax * 0.7) {
+        // Threshold: 30% of total travel distance or simple tap with dx < 10
+        if (gestureState.dx >= currentMax * 0.3 || (Math.abs(gestureState.dx) < 10 && Math.abs(gestureState.dy) < 10)) {
           isCompletedRef.current = true;
           Animated.timing(slideAnim, {
             toValue: currentMax,

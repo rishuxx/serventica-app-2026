@@ -126,11 +126,22 @@ export class CatalogService {
   constructor(private readonly repository: IServiceRepository = catalogRepository) {}
 
   /**
-   * Retrieves active categories from database with offline resilience
+   * Retrieves active categories from database with offline resilience and guaranteed core coverage
    */
   async getCategories(): Promise<ServiceCategory[]> {
     const categories = await this.repository.getCategories();
     if (categories && categories.length > 0) {
+      // Ensure all standard initial discovery categories (e.g. Painting) are present even if omitted in DB
+      const existingSlugs = new Set(categories.map((c) => (c.slug || '').toLowerCase().trim()));
+      const missingInitial = INITIAL_DISCOVERY_CATEGORIES.filter(
+        (initCat) => !existingSlugs.has((initCat.slug || '').toLowerCase().trim())
+      );
+
+      if (missingInitial.length > 0) {
+        return [...categories, ...missingInitial].sort(
+          (a, b) => (Number(a.sort_order) || 0) - (Number(b.sort_order) || 0)
+        );
+      }
       return categories;
     }
     return INITIAL_DISCOVERY_CATEGORIES;

@@ -3,13 +3,13 @@ import {
   StyleSheet,
   View,
   Text,
-  SafeAreaView,
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { ServenticaTokens } from '../../../../packages/design-system/src';
 
 interface CustomerOtpScreenProps {

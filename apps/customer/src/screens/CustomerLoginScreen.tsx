@@ -3,18 +3,19 @@ import {
   StyleSheet,
   View,
   Text,
-  SafeAreaView,
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { ServenticaTokens } from '../../../../packages/design-system/src';
 
 interface CustomerLoginScreenProps {
   onGetOtp: (phone: string) => Promise<void>;
   onGoogleLogin?: () => Promise<void>;
+  onExploreGuest?: () => void;
   onOpenTerms?: () => void;
   onOpenPrivacy?: () => void;
   onBackToSplash?: () => void;
@@ -25,6 +26,7 @@ interface CustomerLoginScreenProps {
 export const CustomerLoginScreen: React.FC<CustomerLoginScreenProps> = ({
   onGetOtp,
   onGoogleLogin,
+  onExploreGuest,
   onOpenTerms,
   onOpenPrivacy,
   isLoading = false,
@@ -150,6 +152,22 @@ export const CustomerLoginScreen: React.FC<CustomerLoginScreenProps> = ({
                 </Text>
               </View>
             </TouchableOpacity>
+
+            {/* Explore First / Guest Access */}
+            {onExploreGuest && (
+              <TouchableOpacity
+                style={styles.guestExploreBtn}
+                activeOpacity={0.75}
+                onPress={onExploreGuest}
+                disabled={isLoading}
+                accessibilityRole="button"
+                accessibilityLabel="Explore services first"
+              >
+                <Text style={styles.guestExploreText}>
+                  Explore Services First <Text style={styles.guestExploreArrow}>→</Text>
+                </Text>
+              </TouchableOpacity>
+            )}
 
             {/* Terms and Privacy Text */}
             <View style={styles.legalBox}>
@@ -310,7 +328,26 @@ const styles = StyleSheet.create({
   },
   googleButton: {
     alignSelf: 'center',
-    marginBottom: 32,
+    marginBottom: 20,
+  },
+  guestExploreBtn: {
+    alignSelf: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    backgroundColor: 'rgba(229, 170, 30, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(229, 170, 30, 0.35)',
+    marginBottom: 26,
+  },
+  guestExploreText: {
+    color: '#b45309',
+    fontSize: 14,
+    fontFamily: ServenticaTokens.fonts.Bold,
+    fontWeight: '700',
+  },
+  guestExploreArrow: {
+    fontWeight: '900',
   },
   googleCircle: {
     width: 44,

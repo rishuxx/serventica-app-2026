@@ -32,7 +32,7 @@ export const ServenticaEnvironment: ServenticaConfig = {
     authCallbackScheme: 'serventica://auth/callback',
   },
   razorpay: {
-    keyId: 'rzp_test_1DP5mmOlF5G5ag', // Official Razorpay standard test merchant key
+    keyId: 'rzp_test_TdYpNoPP7IoSJR', // Razorpay Test Merchant Key
     merchantName: 'Serventica Home Services',
     themeColor: '#FAC420',
   },

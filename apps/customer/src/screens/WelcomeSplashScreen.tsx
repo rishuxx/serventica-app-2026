@@ -3,19 +3,22 @@ import {
   StyleSheet,
   View,
   Text,
-  SafeAreaView,
   StatusBar,
   Dimensions,
+  TouchableOpacity,
 } from 'react-native';
-import { SlideToStart, ServenticaTokens } from '../../../../packages/design-system/src';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ServenticaTokens } from '../../../../packages/design-system/src/tokens';
+import { SlideToStart } from '../../../../packages/design-system/src/components/SlideToStart';
 
 interface WelcomeSplashScreenProps {
   onStart: () => void;
+  onExplore?: () => void;
 }
 
 const { width } = Dimensions.get('window');
 
-export const WelcomeSplashScreen: React.FC<WelcomeSplashScreenProps> = ({ onStart }) => {
+export const WelcomeSplashScreen: React.FC<WelcomeSplashScreenProps> = ({ onStart, onExplore }) => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
@@ -53,6 +56,20 @@ export const WelcomeSplashScreen: React.FC<WelcomeSplashScreenProps> = ({ onStar
           <View style={styles.sliderWrapper}>
             <SlideToStart onSlideComplete={onStart} />
           </View>
+
+          {onExplore && (
+            <TouchableOpacity
+              onPress={onExplore}
+              activeOpacity={0.75}
+              style={styles.exploreBtn}
+              accessibilityRole="button"
+              accessibilityLabel="Explore services without logging in"
+            >
+              <Text style={styles.exploreText}>
+                Explore as Guest <Text style={styles.exploreArrow}>→</Text>
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </SafeAreaView>
@@ -164,5 +181,25 @@ const styles = StyleSheet.create({
   },
   sliderWrapper: {
     width: '100%',
+  },
+  exploreBtn: {
+    marginTop: 18,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+  },
+  exploreText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontFamily: ServenticaTokens.fonts.Medium,
+    fontWeight: '600',
+    letterSpacing: 0.2,
+  },
+  exploreArrow: {
+    color: '#ffc107',
+    fontWeight: '800',
   },
 });

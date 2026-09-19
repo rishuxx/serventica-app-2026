@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { ArrowLeft, Bell, Calendar, CheckCircle2, AlertCircle, Sparkles, CreditCard, ChevronRight } from 'lucide-react-native';
 import { useNotifications } from '../../../hooks/useNotifications';
@@ -31,7 +32,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
     markAllAsRead,
   } = useNotifications();
 
-  const handleNotificationPress = async (notification: NotificationRecord) => {
+  const handleNotificationPress = useCallback(async (notification: NotificationRecord) => {
     if (!notification.readAt) {
       await markAsRead(notification.id);
     }
@@ -40,9 +41,9 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
     } else if (onNavigateToServices) {
       onNavigateToServices();
     }
-  };
+  }, [markAsRead, onNavigateToBooking, onNavigateToServices]);
 
-  const renderIcon = (type: NotificationRecord['type']) => {
+  const renderIcon = useCallback((type: NotificationRecord['type']) => {
     switch (type) {
       case 'BOOKING_UPDATE':
         return <Calendar size={18} color='#1E242B' strokeWidth={1.8} />;
@@ -56,7 +57,46 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
       default:
         return <Sparkles size={18} color="#6b21a8" strokeWidth={1.8} />;
     }
-  };
+  }, []);
+
+  const keyExtractor = useCallback((item: NotificationRecord) => item.id, []);
+
+  const renderNotificationItem = useCallback(({ item }: { item: NotificationRecord }) => {
+    const isUnread = !item.readAt;
+    return (
+      <TouchableOpacity
+        style={[styles.notificationCard, isUnread && styles.unreadCard]}
+        onPress={() => handleNotificationPress(item)}
+        activeOpacity={0.75}
+      >
+        <View style={styles.cardHeader}>
+          <View style={styles.iconCircle}>
+            {renderIcon(item.type)}
+          </View>
+          <View style={styles.textContainer}>
+            <View style={styles.titleRow}>
+              <Text style={[styles.title, isUnread && styles.unreadTitle]} numberOfLines={1}>
+                {item.title}
+              </Text>
+              {isUnread && <View style={styles.unreadDot} />}
+            </View>
+            <Text style={styles.body} numberOfLines={2}>
+              {item.body}
+            </Text>
+            <Text style={styles.timestamp}>
+              {new Date(item.createdAt).toLocaleDateString('en-IN', {
+                day: 'numeric',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </Text>
+          </View>
+          <ChevronRight size={16} color="#CCCCCC" strokeWidth={1.8} />
+        </View>
+      </TouchableOpacity>
+    );
+  }, [handleNotificationPress, renderIcon]);
 
   return (
     <View style={styles.container}>
@@ -102,45 +142,14 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
       ) : (
         <FlatList
           data={notifications}
-          keyExtractor={(item) => item.id}
+          keyExtractor={keyExtractor}
+          renderItem={renderNotificationItem}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => {
-            const isUnread = !item.readAt;
-            return (
-              <TouchableOpacity
-                style={[styles.notificationCard, isUnread && styles.unreadCard]}
-                onPress={() => handleNotificationPress(item)}
-                activeOpacity={0.75}
-              >
-                <View style={styles.cardHeader}>
-                  <View style={styles.iconCircle}>
-                    {renderIcon(item.type)}
-                  </View>
-                  <View style={styles.textContainer}>
-                    <View style={styles.titleRow}>
-                      <Text style={[styles.title, isUnread && styles.unreadTitle]} numberOfLines={1}>
-                        {item.title}
-                      </Text>
-                      {isUnread && <View style={styles.unreadDot} />}
-                    </View>
-                    <Text style={styles.body} numberOfLines={2}>
-                      {item.body}
-                    </Text>
-                    <Text style={styles.timestamp}>
-                      {new Date(item.createdAt).toLocaleDateString('en-IN', {
-                        day: 'numeric',
-                        month: 'short',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </Text>
-                  </View>
-                  <ChevronRight size={16} color="#CCCCCC" strokeWidth={1.8} />
-                </View>
-              </TouchableOpacity>
-            );
-          }}
+          initialNumToRender={6}
+          maxToRenderPerBatch={6}
+          windowSize={5}
+          removeClippedSubviews={Platform.OS === 'android'}
         />
       )}
     </View>

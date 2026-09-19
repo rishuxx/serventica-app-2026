@@ -9,7 +9,8 @@ import {
   StatusBar,
   Animated,
 } from 'react-native';
-import Svg, { Defs, RadialGradient as SvgRadialGradient, LinearGradient as SvgLinearGradient, Stop, Rect } from 'react-native-svg';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Svg, { Defs, RadialGradient as SvgRadialGradient, LinearGradient as SvgLinearGradient, Stop, Rect, Path } from 'react-native-svg';
 import {
   MapPin,
   ChevronDown,
@@ -87,6 +88,7 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
   scheduledSlotText = 'Today / Tomorrow',
   onSelectFulfillmentMode = () => {},
 }) => {
+  const insets = useSafeAreaInsets();
   const [upperLayout, setUpperLayout] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
 
   // Animation drivers for buttery smooth context transition
@@ -186,7 +188,13 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
       {/* Contains: Logo, ETA, Location, Profile, Search Bar & Category Navigation  */}
       {/* ========================================================================= */}
       <View
-        style={[styles.upperAdaptiveSection, { backgroundColor: gradientColors[0] }]}
+        style={[
+          styles.upperAdaptiveSection,
+          {
+            backgroundColor: gradientColors[0],
+            paddingTop: Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 12) + 6,
+          },
+        ]}
         onLayout={(e) => {
           const { width, height } = e.nativeEvent.layout;
           if (width > 0 && height > 0) {

@@ -22,7 +22,7 @@ interface BasicsSectionProps {
   onSelectService?: (service: HomeBasicServiceItem) => void;
 }
 
-export const BasicsSection: React.FC<BasicsSectionProps> = ({
+export const BasicsSection: React.FC<BasicsSectionProps> = React.memo(({
   basics,
   onSelectService,
 }) => {
@@ -57,7 +57,7 @@ export const BasicsSection: React.FC<BasicsSectionProps> = ({
       </View>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {

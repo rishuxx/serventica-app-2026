@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   FlatList,
   ActivityIndicator,
   Alert,
+  Platform,
 } from 'react-native';
 import { ArrowLeft, Star, MessageSquare } from 'lucide-react-native';
 import { accountRepository } from '../../../repositories/account.repository';
@@ -57,6 +58,23 @@ export const ReviewsScreen: React.FC<ReviewsScreenProps> = ({
     );
   };
 
+  const keyExtractor = useCallback((item: ServiceReviewRecord) => item.id, []);
+
+  const renderReviewItem = useCallback(({ item }: { item: ServiceReviewRecord }) => (
+    <View style={styles.reviewCard}>
+      <View style={styles.cardTopRow}>
+        <Text style={styles.serviceName}>{item.serviceName}</Text>
+        {renderStars(item.rating)}
+      </View>
+      {item.comment ? (
+        <View style={styles.commentContainer}>
+          <Text style={styles.commentText}>"{item.comment}"</Text>
+        </View>
+      ) : null}
+      <Text style={styles.dateText}>{item.createdAt}</Text>
+    </View>
+  ), []);
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -89,22 +107,14 @@ export const ReviewsScreen: React.FC<ReviewsScreenProps> = ({
       ) : (
         <FlatList
           data={reviews}
-          keyExtractor={(item) => item.id}
+          keyExtractor={keyExtractor}
+          renderItem={renderReviewItem}
           contentContainerStyle={styles.listContent}
-          renderItem={({ item }) => (
-            <View style={styles.reviewCard}>
-              <View style={styles.cardTopRow}>
-                <Text style={styles.serviceName}>{item.serviceName}</Text>
-                {renderStars(item.rating)}
-              </View>
-              {item.comment ? (
-                <View style={styles.commentContainer}>
-                  <Text style={styles.commentText}>"{item.comment}"</Text>
-                </View>
-              ) : null}
-              <Text style={styles.dateText}>{item.createdAt}</Text>
-            </View>
-          )}
+          showsVerticalScrollIndicator={false}
+          initialNumToRender={6}
+          maxToRenderPerBatch={6}
+          windowSize={5}
+          removeClippedSubviews={Platform.OS === 'android'}
         />
       )}
     </View>

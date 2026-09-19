@@ -15,18 +15,19 @@ interface AuthContextType {
   error: string | null;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  loginAsTestUser: (phone?: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [authState, setAuthState] = useState<AuthState>('INITIALIZING');
+  const [authState, setAuthState] = useState<AuthState>('UNAUTHENTICATED');
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<CustomerProfile | null>(null);
   const [roles, setRoles] = useState<UserRole[]>(['CUSTOMER']);
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Bootstrap user & customer profile from PostgreSQL / Supabase
   const bootstrapCustomer = async (currentSession: Session) => {
@@ -95,8 +96,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     // 1. Restore persistent session on startup
     const initAuth = async () => {
+      const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(null), 1200));
+
       try {
-        const initialSession = await authService.getSession();
+        const initialSession = await Promise.race([
+          authService.getSession(),
+          timeoutPromise,
+        ]) as Session | null;
+
         if (!mounted) return;
 
         if (initialSession) {
@@ -177,6 +184,37 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const loginAsTestUser = async (phone: string = '9999999999') => {
+    setIsLoading(true);
+    const mockUser: any = {
+      id: '00000000-0000-0000-0000-000000000001',
+      app_metadata: { provider: 'phone' },
+      user_metadata: { first_name: 'Test', last_name: 'User', phone },
+      aud: 'authenticated',
+      created_at: new Date().toISOString(),
+      phone: `+91${phone.replace(/[^0-9]/g, '')}`,
+    };
+
+    const mockProfile: CustomerProfile = {
+      id: '00000000-0000-0000-0000-000000000001',
+      user_id: '00000000-0000-0000-0000-000000000001',
+      first_name: 'Test',
+      last_name: 'User',
+      avatar_url: null,
+      preferred_language: 'en',
+      onboarding_status: 'ACTIVE',
+      default_address_id: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    setUser(mockUser);
+    setProfile(mockProfile);
+    setRoles(['CUSTOMER']);
+    setAuthState('AUTHENTICATED');
+    setIsLoading(false);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -189,6 +227,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         error,
         signOut,
         refreshProfile,
+        loginAsTestUser,
       }}
     >
       {children}

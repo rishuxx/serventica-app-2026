@@ -1,6 +1,7 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
+apply from: new File(["node", "--print", "require.resolve('@sentry/react-native/package.json')"].execute().text.trim(), "../sentry.gradle")
 
 /**
  * This is the configuration block to customize your React Native Android app.
@@ -106,6 +107,8 @@ android {
         }
     }
 }
+
+
 
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin

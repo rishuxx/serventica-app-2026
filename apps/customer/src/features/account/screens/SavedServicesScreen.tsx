@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   StyleSheet,
   View,
@@ -13,6 +13,7 @@ import { ArrowLeft, Heart } from 'lucide-react-native';
 import { useSavedServices } from '../../../hooks/useSavedServices';
 import { ServiceCard } from '../../categories/components/ServiceCard';
 import { ServenticaTokens } from '../../../../../../packages/design-system/src';
+import { SavedServiceItem } from '../../../../../../packages/types/src';
 
 interface SavedServicesScreenProps {
   onBack: () => void;
@@ -26,6 +27,37 @@ export const SavedServicesScreen: React.FC<SavedServicesScreenProps> = ({
   onExploreServices,
 }) => {
   const { savedServices, isLoading, refresh, toggleSave } = useSavedServices();
+
+  const keyExtractor = useCallback((item: SavedServiceItem) => item.id, []);
+
+  const renderItem = useCallback(({ item }: { item: SavedServiceItem }) => (
+    <ServiceCard
+      service={{
+        id: item.service.id,
+        category_id: '',
+        name: item.service.name,
+        slug: item.service.slug,
+        description: item.service.description,
+        pricing_type: 'FIXED',
+        base_price: item.service.basePrice,
+        duration_minutes: item.service.durationMinutes,
+        is_active: true,
+        rating: item.service.rating,
+        reviews_count: item.service.reviewsCount,
+        image_url: item.service.imageUrl,
+      }}
+      cardWidth="48%"
+      isSaved={true}
+      onToggleSave={toggleSave}
+      onPress={() =>
+        onSelectService({
+          id: item.service.id,
+          slug: item.service.slug,
+          name: item.service.name,
+        })
+      }
+    />
+  ), [toggleSave, onSelectService]);
 
   return (
     <View style={styles.container}>
@@ -71,41 +103,18 @@ export const SavedServicesScreen: React.FC<SavedServicesScreenProps> = ({
       ) : (
         <FlatList
           data={savedServices}
-          keyExtractor={(item) => item.id}
+          keyExtractor={keyExtractor}
+          renderItem={renderItem}
           numColumns={2}
           columnWrapperStyle={styles.columnWrapper}
-          renderItem={({ item }) => (
-            <ServiceCard
-              service={{
-                id: item.service.id,
-                category_id: '',
-                name: item.service.name,
-                slug: item.service.slug,
-                description: item.service.description,
-                pricing_type: 'FIXED',
-                base_price: item.service.basePrice,
-                duration_minutes: item.service.durationMinutes,
-                is_active: true,
-                rating: item.service.rating,
-                reviews_count: item.service.reviewsCount,
-                image_url: item.service.imageUrl,
-              }}
-              cardWidth="48%"
-              isSaved={true}
-              onToggleSave={toggleSave}
-              onPress={() =>
-                onSelectService({
-                  id: item.service.id,
-                  slug: item.service.slug,
-                  name: item.service.name,
-                })
-              }
-            />
-          )}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           onRefresh={refresh}
           refreshing={isLoading}
+          initialNumToRender={6}
+          maxToRenderPerBatch={6}
+          windowSize={5}
+          removeClippedSubviews={Platform.OS === 'android'}
         />
       )}
     </View>

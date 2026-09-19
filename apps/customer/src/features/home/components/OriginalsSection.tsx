@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   StyleSheet,
   View,
@@ -20,10 +20,26 @@ interface OriginalsSectionProps {
   onSelectBanner?: (banner: HomeBannerItem) => void;
 }
 
-export const OriginalsSection: React.FC<OriginalsSectionProps> = ({
+export const OriginalsSection: React.FC<OriginalsSectionProps> = React.memo(({
   banners,
   onSelectBanner,
 }) => {
+  const keyExtractor = useCallback((item: HomeBannerItem) => item.id, []);
+
+  const renderItem = useCallback(({ item }: { item: HomeBannerItem }) => {
+    const imageSource = AssetRegistry[item.image_url] || AssetRegistry.banner_gardener;
+    return (
+      <TouchableOpacity
+        style={styles.card}
+        activeOpacity={0.9}
+        onPress={() => onSelectBanner && onSelectBanner(item)}
+        accessibilityLabel={item.title}
+      >
+        <Image source={imageSource} style={styles.bannerImage} resizeMode="cover" />
+      </TouchableOpacity>
+    );
+  }, [onSelectBanner]);
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -34,24 +50,15 @@ export const OriginalsSection: React.FC<OriginalsSectionProps> = ({
         snapToInterval={CARD_WIDTH + 14}
         decelerationRate="fast"
         contentContainerStyle={styles.listContent}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => {
-          const imageSource = AssetRegistry[item.image_url] || AssetRegistry.banner_gardener;
-          return (
-            <TouchableOpacity
-              style={styles.card}
-              activeOpacity={0.9}
-              onPress={() => onSelectBanner && onSelectBanner(item)}
-              accessibilityLabel={item.title}
-            >
-              <Image source={imageSource} style={styles.bannerImage} resizeMode="cover" />
-            </TouchableOpacity>
-          );
-        }}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
+        initialNumToRender={2}
+        maxToRenderPerBatch={2}
+        windowSize={3}
       />
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {

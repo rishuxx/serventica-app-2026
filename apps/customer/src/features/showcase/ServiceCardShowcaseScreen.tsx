@@ -4,11 +4,11 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  SafeAreaView,
   StatusBar,
   TouchableOpacity,
   useWindowDimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   ServiceCard,
   HorizontalOfferCard,

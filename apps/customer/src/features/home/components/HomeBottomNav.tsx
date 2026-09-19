@@ -7,6 +7,7 @@ import {
   Platform,
   Animated,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path, Rect } from 'react-native-svg';
 import { ServenticaTokens } from '../../../../../../packages/design-system/src';
 
@@ -266,6 +267,7 @@ export const HomeBottomNav: React.FC<HomeBottomNavProps> = ({
   activeTab,
   onSelectTab,
 }) => {
+  const insets = useSafeAreaInsets();
   const tabs: TabThemeConfig[] = [
     TAB_CONFIGS.HOME,
     TAB_CONFIGS.ORDERS,
@@ -275,7 +277,7 @@ export const HomeBottomNav: React.FC<HomeBottomNavProps> = ({
   ];
 
   return (
-    <View style={styles.navContainer}>
+    <View style={[styles.navContainer, { paddingBottom: Math.max(insets.bottom, Platform.OS === 'ios' ? 14 : 8) }]}>
       <View style={styles.row}>
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;

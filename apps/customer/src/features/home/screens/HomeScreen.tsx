@@ -10,6 +10,7 @@ import {
   Text,
   TouchableOpacity,
   Modal,
+  BackHandler,
 } from 'react-native';
 import { TopHeroSection } from '../components/TopHeroSection';
 import { HomeSearchBar } from '../components/HomeSearchBar';
@@ -23,6 +24,8 @@ import { HomeBottomNav, BottomNavTab } from '../components/HomeBottomNav';
 import { CategoryRail } from '../components/CategoryRail';
 import { CategoryScreen } from '../../categories/screens/CategoryScreen';
 import { ServiceDetailScreen } from '../../services/screens/ServiceDetailScreen';
+import { InstantFulfillmentScreen } from '../../services/screens/InstantFulfillmentScreen';
+import { ScheduleFulfillmentScreen } from '../../services/screens/ScheduleFulfillmentScreen';
 import { FloatingCartBar } from '../../cart/components/FloatingCartBar';
 import { CartDrawerModal } from '../../cart/components/CartDrawerModal';
 import { useHome } from '../../../hooks/useHome';
@@ -111,6 +114,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [activeServiceTarget, setActiveServiceTarget] = useState<{ id: string; slug: string; fromCategory?: boolean } | null>(null);
   const [isStickyActive, setIsStickyActive] = useState<boolean>(false);
   const [selectedFulfillmentMode, setSelectedFulfillmentMode] = useState<FulfillmentMode>('INSTANT');
+  const [activeFulfillmentScreen, setActiveFulfillmentScreen] = useState<'INSTANT' | 'SCHEDULED' | null>(null);
 
   // Native scroll tracking for triggers
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -148,6 +152,41 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     };
   }, [scrollY, stickyAnim]);
 
+  // Standard Android Hardware Back Button Handling per mobile-navigation.md
+  useEffect(() => {
+    const onBackPress = () => {
+      if (activeFulfillmentScreen) {
+        setActiveFulfillmentScreen(null);
+        return true;
+      }
+      if (activeServiceTarget) {
+        setActiveServiceTarget(null);
+        return true;
+      }
+      if (activeAccountRoute === 'BOOKING_DETAIL') {
+        setActiveAccountRoute('BOOKINGS');
+        return true;
+      }
+      if (activeAccountRoute === 'EDIT_PROFILE') {
+        setActiveAccountRoute('PROFILE');
+        return true;
+      }
+      if (activeAccountRoute) {
+        setActiveAccountRoute(null);
+        setActiveTab('HOME');
+        return true;
+      }
+      if (search.isSearchActive || search.query.length > 0) {
+        search.clearSearch();
+        return true;
+      }
+      return false; // Exit app or default behavior
+    };
+
+    const backSubscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => backSubscription.remove();
+  }, [activeFulfillmentScreen, activeServiceTarget, activeAccountRoute, search]);
+
   const isSearchActive = search.query.trim().length > 0 || search.isSearchActive;
 
   // Handle category selection — Persistent Home context switch without page navigation
@@ -171,14 +210,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
   const stickyGradientColors: string[] =
     activeExperience?.hero?.palette?.gradientColors && activeExperience.hero.palette.gradientColors.length >= 2
-      ? activeExperience.hero.palette.gradientColors
+      ? activeExperience.hero.palette.gradientColors.slice(0, Math.min(3, activeExperience.hero.palette.gradientColors.length))
       : activeExperience?.theme?.gradientColors && activeExperience.theme.gradientColors.length >= 2
-      ? activeExperience.theme.gradientColors
+      ? activeExperience.theme.gradientColors.slice(0, Math.min(3, activeExperience.theme.gradientColors.length))
       : themeFallback?.gradientColors && themeFallback.gradientColors.length >= 2
-      ? themeFallback.gradientColors
+      ? themeFallback.gradientColors.slice(0, Math.min(3, themeFallback.gradientColors.length))
       : [
           activeExperience?.theme?.gradientStart || themeFallback?.gradientStart || '#0284C7',
-          activeExperience?.theme?.gradientEnd || themeFallback?.gradientEnd || '#38BDF8',
+          activeExperience?.theme?.gradientEnd || themeFallback?.gradientEnd || '#0284C7',
         ];
 
   const stickyTextColor = isDarkSticky ? '#FFFFFF' : '#1E242B';
@@ -211,6 +250,27 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     }
   }, []);
 
+  // 1.5. If activeFulfillmentScreen is set, navigate to dedicated Instant or Schedule screen
+  if (activeFulfillmentScreen === 'INSTANT') {
+    return (
+      <InstantFulfillmentScreen
+        onBack={() => setActiveFulfillmentScreen(null)}
+        categoryName={activeCategory?.name || 'Cleaning & Househelp'}
+        categorySlug={activeCategory?.slug || 'home-cleaning'}
+      />
+    );
+  }
+
+  if (activeFulfillmentScreen === 'SCHEDULED') {
+    return (
+      <ScheduleFulfillmentScreen
+        onBack={() => setActiveFulfillmentScreen(null)}
+        categoryName={activeCategory?.name || 'House Help & Cleaning'}
+        categorySlug={activeCategory?.slug || 'home-cleaning'}
+      />
+    );
+  }
+
   // 2. If activeServiceTarget is set, render full ServiceDetailScreen
   if (activeServiceTarget) {
     return (
@@ -219,9 +279,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         slug={activeServiceTarget.slug}
         onBack={() => {
           setActiveServiceTarget(null);
-        }}
-        onContinue={(bookingPayload) => {
-          console.log('[Serventica Booking Boundary Established]:', bookingPayload);
         }}
       />
     );
@@ -491,7 +548,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             deliveryTime={formattedETA}
             isCalculatingETA={isETACalculating}
             selectedFulfillmentMode={selectedFulfillmentMode}
-            onSelectFulfillmentMode={setSelectedFulfillmentMode}
+            onSelectFulfillmentMode={(mode) => {
+              setSelectedFulfillmentMode(mode);
+              setActiveFulfillmentScreen(mode);
+            }}
           />
 
           {/* 2. DYNAMIC CATEGORY CATALOG SECTION (Replaces white CategoryScreen with seamless in-home feed) */}
@@ -500,6 +560,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             isLoading={isExpLoading}
             error={expError}
             categoryName={activeCategory.name}
+            fulfillmentMode={selectedFulfillmentMode}
             onSelectService={(service) => {
               setActiveServiceTarget({ id: service.id, slug: service.slug, fromCategory: true });
               onSelectService?.(service as any);
@@ -585,42 +646,25 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 height={stickyLayout.height}
               >
                 <Defs>
-                  {activeCategory?.slug === 'plumbing' ? (
-                    <SvgLinearGradient
-                      id={`stickyHeaderGrad_${activeExperience?.category?.id || 'default'}`}
-                      x1="0%"
-                      y1="0%"
-                      x2="0%"
-                      y2="100%"
-                    >
-                      {stickyGradientColors.map((color, index) => {
-                        const offsetPercent = `${Math.round((index / (stickyGradientColors.length - 1)) * 100)}%`;
-                        return <Stop key={index} offset={offsetPercent} stopColor={color} stopOpacity="1" />;
-                      })}
-                    </SvgLinearGradient>
-                  ) : (
-                    <SvgRadialGradient
-                      id={`stickyHeaderGrad_${activeExperience?.category?.id || 'default'}`}
-                      cx="50%"
-                      cy="0%"
-                      rx="120%"
-                      ry="150%"
-                      fx="50%"
-                      fy="0%"
-                    >
-                      {stickyGradientColors.map((color, index) => {
-                        const offsetPercent = `${Math.round((index / (stickyGradientColors.length - 1)) * 100)}%`;
-                        return <Stop key={index} offset={offsetPercent} stopColor={color} stopOpacity="1" />;
-                      })}
-                    </SvgRadialGradient>
-                  )}
+                  <SvgLinearGradient
+                    id={`stickyHeaderGrad_${activeExperience?.category?.id || activeCategory?.id || 'default'}`}
+                    x1="0%"
+                    y1="0%"
+                    x2="0%"
+                    y2="100%"
+                  >
+                    {stickyGradientColors.map((color, index) => {
+                      const offsetPercent = `${Math.round((index / (stickyGradientColors.length - 1)) * 100)}%`;
+                      return <Stop key={index} offset={offsetPercent} stopColor={color} stopOpacity="1" />;
+                    })}
+                  </SvgLinearGradient>
                 </Defs>
                 <Rect
                   x="0"
                   y="0"
                   width={stickyLayout.width}
                   height={stickyLayout.height}
-                  fill={`url(#stickyHeaderGrad_${activeExperience?.category?.id || 'default'})`}
+                  fill={`url(#stickyHeaderGrad_${activeExperience?.category?.id || activeCategory?.id || 'default'})`}
                 />
               </Svg>
             ) : null}
@@ -725,16 +769,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         }}
       />
 
-      {/* 8. BOTTOM NAVIGATION */}
+      {/* 8. PERSISTENT FLOATING QUICK-COMMERCE CART BAR (rendered with high elevation for touch priority) */}
+      {!activeAccountRoute && !isSearchActive && (
+        <FloatingCartBar />
+      )}
+
+      {/* 9. BOTTOM NAVIGATION */}
       <HomeBottomNav
         activeTab={activeTab}
         onSelectTab={handleTabSwitch}
       />
-
-      {/* 9. PERSISTENT FLOATING QUICK-COMMERCE CART BAR (rendered on top of bottom nav for touch priority) */}
-      {!activeAccountRoute && !isSearchActive && (
-        <FloatingCartBar />
-      )}
     </View>
   );
 };
@@ -772,8 +816,14 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,
-    overflow: 'hidden',
+    borderBottomWidth: 0,
+    borderWidth: 0,
+    shadowColor: 'transparent',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
     elevation: 0,
+    overflow: 'hidden',
     zIndex: 9999,
   },
   stickyTopBar: {

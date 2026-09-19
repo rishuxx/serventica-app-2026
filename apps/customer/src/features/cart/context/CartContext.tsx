@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { CartItem, CartFeeBreakdown } from '../domain/Cart';
 import { ServiceDetailItem } from '../../../types/category.types';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SafeAsyncStorage as AsyncStorage } from '@serventica/utils';
 
 const CART_STORAGE_KEY = '@serventica_customer_cart_v1';
 

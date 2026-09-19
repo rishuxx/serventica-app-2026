@@ -582,13 +582,21 @@ export type PaymentGatewayProvider = 'RAZORPAY' | 'WALLET' | 'COD';
 
 export type PaymentLifecycleStatus =
   | 'CREATED'
+  | 'CHECKOUT_INITIALIZED'
+  | 'PAYMENT_PENDING'
   | 'PENDING'
   | 'AUTHORIZED'
   | 'CAPTURED'
+  | 'SUCCESS'
   | 'FAILED'
   | 'CANCELLED'
+  | 'EXPIRED'
+  | 'REFUND_PENDING'
   | 'REFUNDED'
-  | 'PARTIALLY_REFUNDED';
+  | 'PARTIALLY_REFUNDED'
+  | 'DISPUTED'
+  | 'UNKNOWN'
+  | 'REQUIRES_RECONCILIATION';
 
 export type PaymentMethodType = 'UPI' | 'CARDS' | 'NETBANKING' | 'WALLET' | 'COD';
 
@@ -738,5 +746,138 @@ export interface BookingIntent {
   durationMinutes?: number;
   quoteVersion?: string;
   idempotencyKey: string;
+}
+
+export type PartnerPresenceStatus = 'OFFLINE' | 'AVAILABLE' | 'BUSY' | 'PAUSED' | 'SUSPENDED';
+
+export interface PartnerPresenceSession {
+  id: string;
+  partner_id: string;
+  status: PartnerPresenceStatus;
+  current_latitude?: number | null;
+  current_longitude?: number | null;
+  accuracy_meters?: number | null;
+  last_heartbeat_at: string;
+  started_at: string;
+  ended_at?: string | null;
+}
+
+export type DispatchStatus = 'PENDING' | 'OFFERED' | 'ACCEPTED' | 'EXPIRED' | 'CANCELLED' | 'UNFULFILLABLE';
+
+export interface DispatchRequest {
+  id: string;
+  booking_id: string;
+  service_id: string;
+  customer_id: string;
+  address_id: string;
+  pickup_latitude: number;
+  pickup_longitude: number;
+  status: DispatchStatus;
+  current_wave: number;
+  max_waves: number;
+  timeout_seconds: number;
+  assigned_partner_id?: string | null;
+  expires_at: string;
+  created_at: string;
+}
+
+export interface DispatchOffer {
+  id: string;
+  dispatch_request_id: string;
+  partner_id: string;
+  wave_number: number;
+  status: 'OFFERED' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED' | 'CANCELLED';
+  estimated_eta_minutes: number;
+  straight_line_distance_km: number;
+  offered_at: string;
+  expires_at: string;
+  service_name?: string;
+  customer_area?: string;
+}
+
+export interface BookingEvent {
+  id: string;
+  booking_id: string;
+  event_type: string;
+  actor_type: 'CUSTOMER' | 'PARTNER' | 'SYSTEM' | 'ADMIN' | 'OPERATIONS';
+  actor_id?: string | null;
+  from_status?: string | null;
+  to_status?: string | null;
+  payload?: Record<string, any>;
+  created_at: string;
+}
+
+// ==============================================================================
+// PHASE 6A: PRODUCTION PAYMENT ORCHESTRATION & PROVIDER-NEUTRAL ABSTRACTIONS
+// ==============================================================================
+
+export type PaymentProviderName =
+  | 'JUSPAY'
+  | 'RAZORPAY'
+  | 'CASHFREE'
+  | 'COD'
+  | 'WALLET';
+
+export interface PaymentSessionDTO {
+  success: boolean;
+  paymentId: string;
+  internalPaymentId: string;
+  bookingId: string;
+  bookingNumber: string;
+  orchestrator: PaymentProviderName;
+  processor?: PaymentProviderName;
+  amountMinor: number;
+  amountRupees: number;
+  currency: string;
+  checkoutSessionId?: string;
+  clientAuthToken?: string;
+  paymentLinks?: {
+    web?: string;
+    upiIntent?: string;
+    qrCode?: string;
+  };
+  customer: {
+    name: string;
+    email: string;
+    phone: string;
+  };
+  status: PaymentLifecycleStatus;
+  expiresAt: string;
+  error?: string;
+}
+
+export interface NormalizedPaymentEvent {
+  provider: PaymentProviderName;
+  providerEventId: string;
+  type:
+    | 'PAYMENT_AUTHORIZED'
+    | 'PAYMENT_CAPTURED'
+    | 'PAYMENT_FAILED'
+    | 'PAYMENT_CANCELLED'
+    | 'REFUND_PROCESSED'
+    | 'UNKNOWN';
+  internalPaymentId: string;
+  providerPaymentId?: string;
+  providerOrderId?: string;
+  amountRupees: number;
+  amountMinor: number;
+  currency: string;
+  rawPayload: Record<string, any>;
+  signatureValid: boolean;
+  timestamp: string;
+}
+
+export interface OutboxEvent {
+  id: string;
+  event_type: string;
+  aggregate_type: string;
+  aggregate_id: string;
+  payload: Record<string, any>;
+  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+  attempt_count: number;
+  available_at: string;
+  processed_at?: string | null;
+  last_error?: string | null;
+  created_at: string;
 }
 

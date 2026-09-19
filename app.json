@@ -1,4 +1,49 @@
 {
   "name": "ServenticaApp",
-  "displayName": "ServenticaApp"
+  "displayName": "ServenticaApp",
+  "expo": {
+    "name": "SERVEntica",
+    "slug": "serventica-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./apps/customer/src/assets/images/logo.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": false,
+    "splash": {
+      "backgroundColor": "#FCFBF7",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.serventica.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#FCFBF7"
+      },
+      "package": "com.serventicaapp"
+    },
+    "plugins": [
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./src/fonts/Lexend-Thin.ttf",
+            "./src/fonts/Lexend-Light.ttf",
+            "./src/fonts/Lexend-Regular.ttf",
+            "./src/fonts/Lexend-Medium.ttf",
+            "./src/fonts/Lexend-SemiBold.ttf",
+            "./src/fonts/Lexend-Bold.ttf",
+            "./src/fonts/Lexend-ExtraBold.ttf",
+            "./src/fonts/Lexend-Black.ttf",
+            "./src/fonts/LexendDeca-Regular.ttf",
+            "./src/fonts/LexendDeca-Medium.ttf",
+            "./src/fonts/LexendDeca-SemiBold.ttf",
+            "./src/fonts/LexendDeca-Bold.ttf"
+          ]
+        }
+      ],
+      "expo-asset"
+    ]
+  }
 }

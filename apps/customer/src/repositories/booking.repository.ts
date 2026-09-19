@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SafeAsyncStorage as AsyncStorage } from '../../../../packages/utils/src/storage/safe-storage';
 import { supabase } from '../lib/supabase/client';
 import { BookingRecord, BookingStatus } from '../../../../packages/types/src';
 

@@ -19,7 +19,7 @@ interface CategoriesSectionProps {
   onSelectCategory?: (category: HomeCategoryItem) => void;
 }
 
-export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
+export const CategoriesSection: React.FC<CategoriesSectionProps> = React.memo(({
   categories,
   onSelectCategory,
 }) => {
@@ -45,7 +45,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
       </View>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {

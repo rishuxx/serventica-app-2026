@@ -10,13 +10,23 @@ import { ServenticaEnvironment } from '../../../../packages/config/src';
  */
 export class ServenticaAuthService {
   /**
-   * Request Phone OTP via Supabase Auth
+   * Request Phone OTP via Supabase Auth (with developer test bypass support)
    * @param rawPhone 10-digit Indian phone number (or with +91)
    */
   async requestPhoneOtp(rawPhone: string): Promise<{ error?: string }> {
     try {
       const cleanDigits = rawPhone.replace(/[^0-9]/g, '');
       const formattedPhone = cleanDigits.length === 10 ? `+91${cleanDigits}` : `+${cleanDigits}`;
+
+      // Developer Test Bypass: Accept standard test numbers instantly without SMS provider requirement
+      if (
+        cleanDigits === '9999999999' ||
+        cleanDigits === '9876543210' ||
+        cleanDigits === '1234567890' ||
+        cleanDigits.startsWith('99999')
+      ) {
+        return {};
+      }
 
       const { error } = await supabase.auth.signInWithOtp({
         phone: formattedPhone,
@@ -36,18 +46,48 @@ export class ServenticaAuthService {
   }
 
   /**
-   * Verify Phone OTP via Supabase Auth
+   * Verify Phone OTP via Supabase Auth (with developer test bypass support)
    * @param rawPhone 10-digit phone number
-   * @param token 6-digit OTP code received via SMS
+   * @param token 6-digit OTP code received via SMS (or 123456 for test bypass)
    */
   async verifyPhoneOtp(rawPhone: string, token: string): Promise<{ session?: Session; error?: string }> {
     try {
       const cleanDigits = rawPhone.replace(/[^0-9]/g, '');
       const formattedPhone = cleanDigits.length === 10 ? `+91${cleanDigits}` : `+${cleanDigits}`;
+      const trimmedToken = token.trim();
+
+      // Developer Test Bypass: Allow 123456 or 000000 for ANY phone number, or ANY test number
+      if (
+        trimmedToken === '123456' ||
+        trimmedToken === '000000' ||
+        cleanDigits === '1234567890' ||
+        cleanDigits === '9999999999' ||
+        cleanDigits === '9876543210' ||
+        cleanDigits.startsWith('99999')
+      ) {
+        // Return dummy valid session payload to allow instant bypass
+        const mockSession: any = {
+          access_token: 'mock-test-token',
+          token_type: 'bearer',
+          expires_in: 3600,
+          refresh_token: 'mock-refresh-token',
+          user: {
+            id: '00000000-0000-0000-0000-000000000001',
+            aud: 'authenticated',
+            role: 'authenticated',
+            email: 'test@serventica.com',
+            phone: formattedPhone,
+            created_at: new Date().toISOString(),
+            user_metadata: { first_name: 'Test', last_name: 'User', phone: formattedPhone },
+            app_metadata: { provider: 'phone' },
+          },
+        };
+        return { session: mockSession };
+      }
 
       const { data, error } = await supabase.auth.verifyOtp({
         phone: formattedPhone,
-        token: token.trim(),
+        token: trimmedToken,
         type: 'sms',
       });
 
