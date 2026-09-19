@@ -12,3 +12,5 @@ export function formatINR(amount: number): string {
 
 export * from './mobile-error';
 export * from './storage/safe-storage';
+export * from './auth/phone-normalizer';
+export * from './auth/auth-error-mapper';

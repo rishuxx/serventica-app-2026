@@ -1,16 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   StyleSheet,
   View,
-  Text,
-  TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
+  Dimensions,
+  StatusBar,
+  Image,
+  Text,
+  FlatList,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ServenticaTokens } from '../../../../packages/design-system/src';
+import { PhoneNormalizer } from '../../../../packages/utils/src';
+import { AssetRegistry } from '../services/home.service';
+import { LoginInteractiveSheet } from '../components/LoginInteractiveSheet';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+// High-performance static references for login campaign slides
+const CAMPAIGN_SLIDES = [
+  {
+    id: 'washitup',
+    image: require('../../../../src/assets/images/LoginPageImages/washitup.webp'),
+    alt: 'Wash It Up with Instant Laundry',
+  },
+  {
+    id: 'moverPacker',
+    image: require('../../../../src/assets/images/LoginPageImages/moverPacker.webp'),
+    alt: 'Packaging or Shifting? Do with Instant',
+  },
+];
 
 interface CustomerLoginScreenProps {
   onGetOtp: (phone: string) => Promise<void>;
@@ -33,12 +56,53 @@ export const CustomerLoginScreen: React.FC<CustomerLoginScreenProps> = ({
   errorMessage = null,
 }) => {
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [isFocused, setIsFocused] = useState(false);
+  const [focusedField, setFocusedField] = useState<'phone' | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
+  const [isSheetExpanded, setIsSheetExpanded] = useState(false);
+  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
 
-  const isValidPhone = phoneNumber.trim().length === 10;
+  const flatListRef = useRef<FlatList>(null);
+  const autoScrollTimer = useRef<NodeJS.Timeout | null>(null);
 
-  const handleTextChange = (text: string) => {
-    // Only accept numeric digits
+  const cleanDigits = phoneNumber.replace(/[^0-9]/g, '');
+  const isValidPhone = cleanDigits.length === 10 && /^[6-9]\d{9}$/.test(cleanDigits);
+
+  // Auto-cycle carousel every 5.5s when sheet is not expanded
+  useEffect(() => {
+    if (isSheetExpanded) {
+      if (autoScrollTimer.current) clearInterval(autoScrollTimer.current);
+      return;
+    }
+
+    autoScrollTimer.current = setInterval(() => {
+      setActiveSlideIndex((prevIndex) => {
+        const nextIndex = (prevIndex + 1) % CAMPAIGN_SLIDES.length;
+        flatListRef.current?.scrollToIndex({
+          index: nextIndex,
+          animated: true,
+        });
+        return nextIndex;
+      });
+    }, 5500);
+
+    return () => {
+      if (autoScrollTimer.current) clearInterval(autoScrollTimer.current);
+    };
+  }, [isSheetExpanded]);
+
+  const handleScrollEnd = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const offsetX = event.nativeEvent.contentOffset.x;
+      const index = Math.round(offsetX / SCREEN_WIDTH);
+      if (index >= 0 && index < CAMPAIGN_SLIDES.length) {
+        setActiveSlideIndex(index);
+      }
+    },
+    []
+  );
+
+  const handlePhoneChange = (text: string) => {
+    setLocalError(null);
     const cleaned = text.replace(/[^0-9]/g, '');
     if (cleaned.length <= 10) {
       setPhoneNumber(cleaned);
@@ -46,342 +110,225 @@ export const CustomerLoginScreen: React.FC<CustomerLoginScreenProps> = ({
   };
 
   const handlePressOtp = () => {
-    if (isValidPhone && !isLoading) {
-      onGetOtp(phoneNumber);
+    if (isLoading) return;
+
+    const validation = PhoneNormalizer.normalize(phoneNumber);
+    if (!validation.isValid) {
+      setLocalError(validation.error || 'Please enter a valid 10-digit mobile number.');
+      return;
+    }
+
+    setLocalError(null);
+    onGetOtp(phoneNumber);
+  };
+
+  const handleBackdropTap = () => {
+    if (isSheetExpanded) {
+      setIsSheetExpanded(false);
     }
   };
 
-  const handlePressGoogle = () => {
-    if (onGoogleLogin && !isLoading) {
-      onGoogleLogin();
-    }
-  };
+  const displayedError = localError || errorMessage;
 
   return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <View style={styles.content}>
-          {/* Top Wordmark Logo */}
-          <View style={styles.logoSection}>
-            <View style={styles.logoRow}>
-              <Text style={styles.logoText}>
-                Serventica<Text style={styles.logoDot}>.</Text>
-              </Text>
-            </View>
-          </View>
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-          {/* Form Area */}
-          <View style={styles.formSection}>
-            <Text style={styles.instructionText}>
-              Get OTP on <Text style={styles.instructionBold}>Phone Number</Text>
-            </Text>
-
-            {/* Phone Input Box */}
-            <View
-              style={[
-                styles.phoneInputContainer,
-                isFocused && styles.phoneInputFocused,
-              ]}
+      {/* 1. HIGH-PERFORMANCE OPTIMIZED CAMPAIGN CAROUSEL */}
+      <View style={styles.carouselContainer}>
+        <FlatList
+          ref={flatListRef}
+          data={CAMPAIGN_SLIDES}
+          keyExtractor={(item) => item.id}
+          horizontal
+          pagingEnabled
+          snapToInterval={SCREEN_WIDTH}
+          snapToAlignment="center"
+          decelerationRate="fast"
+          showsHorizontalScrollIndicator={false}
+          bounces={false}
+          onMomentumScrollEnd={handleScrollEnd}
+          initialNumToRender={2}
+          maxToRenderPerBatch={2}
+          windowSize={2}
+          getItemLayout={(_, index) => ({
+            length: SCREEN_WIDTH,
+            offset: SCREEN_WIDTH * index,
+            index,
+          })}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={handleBackdropTap}
+              style={styles.slideTouchWrapper}
             >
-              {/* India Flag & Country Code */}
-              <View style={styles.countryCodeArea}>
-                <Text style={styles.flag}>🇮🇳</Text>
-                <Text style={styles.countryCode}>+91</Text>
-              </View>
-
-              <View style={styles.verticalDivider} />
-
-              <TextInput
-                style={styles.textInput}
-                placeholder="Enter Phone Number"
-                placeholderTextColor="#9ca3af"
-                keyboardType="numeric"
-                maxLength={10}
-                value={phoneNumber}
-                onChangeText={handleTextChange}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
-                editable={!isLoading}
-                accessibilityLabel="Phone Number Input"
+              <Image
+                source={item.image}
+                style={styles.slideImage}
+                resizeMode="cover"
               />
-            </View>
-
-            {errorMessage ? (
-              <Text style={styles.errorBanner}>{errorMessage}</Text>
-            ) : null}
-
-            {/* Get OTP Button */}
-            <TouchableOpacity
-              style={[
-                styles.getOtpButton,
-                isValidPhone && !isLoading ? styles.buttonActive : styles.buttonInactive,
-              ]}
-              activeOpacity={0.85}
-              disabled={!isValidPhone || isLoading}
-              onPress={handlePressOtp}
-              accessibilityLabel="Get OTP"
-            >
-              {isLoading ? (
-                <ActivityIndicator color="#ffffff" />
-              ) : (
-                <Text style={styles.getOtpText}>Get OTP</Text>
-              )}
             </TouchableOpacity>
+          )}
+          style={StyleSheet.absoluteFillObject}
+        />
+      </View>
 
-            {/* OR Divider */}
-            <View style={styles.orRow}>
-              <View style={styles.orLine} />
-              <Text style={styles.orText}>OR</Text>
-              <View style={styles.orLine} />
-            </View>
-
-            {/* Google Login Button */}
-            <TouchableOpacity
-              style={styles.googleButton}
-              activeOpacity={0.8}
-              onPress={handlePressGoogle}
-              disabled={isLoading}
-              accessibilityLabel="Login with Google"
-            >
-              <View style={styles.googleCircle}>
-                <Text style={styles.googleG}>
-                  <Text style={{ color: '#4285F4' }}>G</Text>
-                </Text>
-              </View>
-            </TouchableOpacity>
-
-            {/* Explore First / Guest Access */}
-            {onExploreGuest && (
-              <TouchableOpacity
-                style={styles.guestExploreBtn}
-                activeOpacity={0.75}
-                onPress={onExploreGuest}
-                disabled={isLoading}
-                accessibilityRole="button"
-                accessibilityLabel="Explore services first"
-              >
-                <Text style={styles.guestExploreText}>
-                  Explore Services First <Text style={styles.guestExploreArrow}>→</Text>
-                </Text>
-              </TouchableOpacity>
-            )}
-
-            {/* Terms and Privacy Text */}
-            <View style={styles.legalBox}>
-              <Text style={styles.legalText}>
-                By continuing, you agree to our{' '}
-                <Text style={styles.legalLink} onPress={onOpenTerms}>
-                  terms of service
-                </Text>{' '}
-                and{'\n'}
-                <Text style={styles.legalLink} onPress={onOpenPrivacy}>
-                  privacy policy
-                </Text>
-              </Text>
-            </View>
+      {/* Top Header Controls (Logo & Skip & Page Indicators) */}
+      <SafeAreaView style={styles.topSafeArea} edges={['top', 'left', 'right']} pointerEvents="box-none">
+        <View style={styles.topBar}>
+          <View style={styles.brandContainer}>
+            <Image
+              source={AssetRegistry.top_logo}
+              style={styles.brandLogoImage}
+              resizeMode="contain"
+            />
           </View>
+
+          {onExploreGuest && (
+            <TouchableOpacity
+              style={styles.glassSkipButton}
+              activeOpacity={0.75}
+              onPress={onExploreGuest}
+              disabled={isLoading}
+              accessibilityRole="button"
+              accessibilityLabel="Skip to explore services"
+            >
+              <Text style={styles.skipButtonText}>Skip</Text>
+            </TouchableOpacity>
+          )}
         </View>
+
+        {/* Carousel Indicators */}
+        <View style={styles.paginationDotsRow} pointerEvents="none">
+          {CAMPAIGN_SLIDES.map((slide, idx) => (
+            <View
+              key={slide.id}
+              style={[
+                styles.dot,
+                activeSlideIndex === idx ? styles.activeDot : styles.inactiveDot,
+              ]}
+            />
+          ))}
+        </View>
+      </SafeAreaView>
+
+      {/* 2. COMPACT INTERACTIVE TOUCH-RESPONSIVE SHEET COMPONENT */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.sheetWrapper}
+      >
+        <LoginInteractiveSheet
+          phoneNumber={phoneNumber}
+          onChangePhone={handlePhoneChange}
+          onGetOtp={handlePressOtp}
+          onGoogleLogin={onGoogleLogin}
+          onOpenTerms={onOpenTerms}
+          onOpenPrivacy={onOpenPrivacy}
+          isLoading={isLoading}
+          isValidPhone={isValidPhone}
+          errorMessage={displayedError}
+          focusedField={focusedField}
+          setFocusedField={setFocusedField}
+          isExpanded={isSheetExpanded}
+          onToggleExpand={setIsSheetExpanded}
+        />
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fcfbf7', // Warm ivory from reference
+    backgroundColor: '#6D28D9', // Deep royal purple backdrop matching campaigns
   },
-  keyboardView: {
+
+  // 1. CAROUSEL
+  carouselContainer: {
     flex: 1,
-    justifyContent: 'space-between',
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 40,
-  },
-  logoSection: {
-    marginTop: 20,
-    marginBottom: 44,
-  },
-  logoRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-  },
-  logoText: {
-    fontSize: 40,
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
-    fontWeight: '700',
-    color: '#e5aa1e',
-    letterSpacing: 0,
-  },
-  logoDot: {
-    color: '#e5aa1e',
-    fontWeight: '900',
-  },
-  formSection: {
     width: '100%',
+    height: '100%',
   },
-  instructionText: {
-    fontSize: 14,
-    color: '#374151',
-    fontFamily: ServenticaTokens.fonts.Medium,
-    marginBottom: 12,
+  slideTouchWrapper: {
+    width: SCREEN_WIDTH,
+    height: '100%',
   },
-  instructionBold: {
-    fontWeight: '700',
-    color: '#111827',
+  slideImage: {
+    width: SCREEN_WIDTH,
+    height: '100%',
   },
-  phoneInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderWidth: 1.2,
-    borderColor: '#e5e7eb',
-    borderRadius: 14,
-    height: 56,
-    paddingHorizontal: 14,
-    marginBottom: 14,
-  },
-  phoneInputFocused: {
-    borderColor: '#ffb300',
-  },
-  countryCodeArea: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  flag: {
-    fontSize: 18,
-    marginRight: 6,
-  },
-  countryCode: {
-    fontSize: 15,
-    fontFamily: ServenticaTokens.fonts.Medium,
-    fontWeight: '600',
-    color: '#1f2937',
-  },
-  verticalDivider: {
-    width: 1,
-    height: 24,
-    backgroundColor: '#d1d5db',
-    marginHorizontal: 12,
-  },
-  textInput: {
-    flex: 1,
-    fontSize: 15,
-    fontFamily: ServenticaTokens.fonts.Medium,
-    color: '#111827',
-    paddingVertical: 0,
-  },
-  errorBanner: {
-    color: '#dc2626',
-    fontSize: 13,
-    fontFamily: ServenticaTokens.fonts.Medium,
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  getOtpButton: {
-    height: 54,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 32,
-    shadowColor: '#ffb300',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  buttonActive: {
-    backgroundColor: '#ffb300',
-  },
-  buttonInactive: {
-    backgroundColor: '#ffb300',
-    opacity: 0.7,
-  },
-  getOtpText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontFamily: ServenticaTokens.fonts.Bold,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-  },
-  orRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 24,
-  },
-  orLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#e5e7eb',
-  },
-  orText: {
-    marginHorizontal: 14,
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#9ca3af',
-  },
-  googleButton: {
-    alignSelf: 'center',
-    marginBottom: 20,
-  },
-  guestExploreBtn: {
-    alignSelf: 'center',
-    paddingVertical: 10,
+
+  // Top Overlay
+  topSafeArea: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     paddingHorizontal: 20,
-    borderRadius: 20,
-    backgroundColor: 'rgba(229, 170, 30, 0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(229, 170, 30, 0.35)',
-    marginBottom: 26,
+    zIndex: 10,
   },
-  guestExploreText: {
-    color: '#b45309',
-    fontSize: 14,
-    fontFamily: ServenticaTokens.fonts.Bold,
-    fontWeight: '700',
-  },
-  guestExploreArrow: {
-    fontWeight: '900',
-  },
-  googleCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#ffffff',
+  topBar: {
+    position: 'relative',
+    flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'center',
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 6 : 8,
+    minHeight: 44,
+  },
+  brandContainer: {
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    shadowColor: '#1E242B',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
-    elevation: 2,
+    justifyContent: 'center',
   },
-  googleG: {
-    fontSize: 20,
-    fontWeight: '900',
+  brandLogoImage: {
+    width: 115,
+    height: 30,
+    tintColor: '#FFFFFF',
   },
-  legalBox: {
+
+  // Skip Button
+  glassSkipButton: {
+    position: 'absolute',
+    right: 0,
+    top: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 6 : 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  skipButtonText: {
+    fontFamily: ServenticaTokens.fonts.SemiBold,
+    fontSize: 14,
+    color: '#FFFFFF',
+    letterSpacing: 0.3,
+  },
+
+  // Pagination Indicators
+  paginationDotsRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
+    justifyContent: 'center',
+    marginTop: 8,
+    gap: 6,
   },
-  legalText: {
-    fontSize: 11,
-    lineHeight: 16,
-    textAlign: 'center',
-    color: '#6b7280',
-    fontFamily: ServenticaTokens.fonts.Regular,
+  dot: {
+    height: 4.5,
+    borderRadius: 3,
+    backgroundColor: '#FFFFFF',
   },
-  legalLink: {
-    color: '#4b5563',
-    fontWeight: '600',
-    textDecorationLine: 'underline',
+  activeDot: {
+    width: 18,
+    opacity: 0.95,
+  },
+  inactiveDot: {
+    width: 6,
+    opacity: 0.4,
+  },
+
+  // 2. BOTTOM INTERACTIVE SHEET WRAPPER
+  sheetWrapper: {
+    width: '100%',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 20,
   },
 });

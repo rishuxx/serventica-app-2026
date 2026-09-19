@@ -12,18 +12,27 @@ import { MobileErrorBoundary } from './apps/customer/src/shared/components/Mobil
 import { WelcomeSplashScreen } from './apps/customer/src/screens/WelcomeSplashScreen';
 import { CustomerLoginScreen } from './apps/customer/src/screens/CustomerLoginScreen';
 import { CustomerOtpScreen } from './apps/customer/src/screens/CustomerOtpScreen';
+import { CustomerOnboardingNameScreen } from './apps/customer/src/screens/CustomerOnboardingNameScreen';
 import { HomeScreen } from './apps/customer/src/features/home/screens/HomeScreen';
 import { ServiceCardShowcaseScreen } from './apps/customer/src/features/showcase/ServiceCardShowcaseScreen';
 import { authService } from './apps/customer/src/services/auth.service';
 
-type UnauthScreen = 'SPLASH' | 'LOGIN' | 'OTP';
+type UnauthScreen = 'SPLASH' | 'LOGIN' | 'OTP' | 'ONBOARDING_NAME';
 
 function RootNavigator() {
-  const { authState, isLoading: authLoading, loginAsTestUser } = useAuth();
+  const { authState, profile, sendOtp, verifyOtp, updateProfileNames } = useAuth();
   const [unauthScreen, setUnauthScreen] = useState<UnauthScreen>('SPLASH');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // When authState transitions to UNAUTHENTICATED (e.g. on logout), ensure screen is LOGIN rather than OTP
+  useEffect(() => {
+    if (authState === 'UNAUTHENTICATED') {
+      setUnauthScreen('LOGIN');
+      setErrorMessage(null);
+    }
+  }, [authState]);
 
   // 1. Splash slide-to-start
   const handleSlideStart = () => {
@@ -31,70 +40,57 @@ function RootNavigator() {
     setErrorMessage(null);
   };
 
-  // 2. Request OTP
+  // 2. Request OTP via Supabase Auth (authoritative phone-only input)
   const handleGetOtp = async (phone: string) => {
     setActionLoading(true);
     setErrorMessage(null);
     setPhoneNumber(phone);
 
-    const clean = phone.replace(/[^0-9]/g, '');
-    if (
-      clean === '1234567890' ||
-      clean === '9999999999' ||
-      clean === '9876543210' ||
-      clean.startsWith('99999')
-    ) {
-      setActionLoading(false);
-      setUnauthScreen('OTP');
-      return;
-    }
-
     try {
-      const res = await authService.requestPhoneOtp(phone);
-      setActionLoading(false);
-
-      if (res.error) {
-        // Automatically allow progressing to OTP screen even if SMS provider not configured
-        console.warn('Supabase SMS notice:', res.error);
+      const res = await sendOtp(phone);
+      if (!res.success && res.error) {
+        setErrorMessage(res.error.userMessage);
+      } else {
+        setUnauthScreen('OTP');
       }
-      setUnauthScreen('OTP');
-    } catch (e) {
+    } catch (e: any) {
+      setErrorMessage(e.message || 'Unable to request OTP. Please try again.');
+    } finally {
       setActionLoading(false);
-      setUnauthScreen('OTP');
     }
   };
 
-  // 3. Verify OTP
+  // 3. Verify OTP via Supabase Auth
   const handleVerifyOtp = async (otp: string) => {
     setActionLoading(true);
     setErrorMessage(null);
 
-    const clean = phoneNumber.replace(/[^0-9]/g, '');
-    const cleanOtp = otp.trim();
-
-    // Instant Bypass for any test number OR test OTP (123456 / 000000) OR any 6 digits in demo mode
-    if (
-      cleanOtp === '123456' ||
-      cleanOtp === '000000' ||
-      cleanOtp.length === 6 ||
-      clean === '1234567890' ||
-      clean === '9999999999' ||
-      clean === '9876543210' ||
-      clean.startsWith('99999')
-    ) {
-      await loginAsTestUser(phoneNumber || '1234567890');
+    try {
+      const res = await verifyOtp(phoneNumber, otp);
+      if (!res.success && res.error) {
+        setErrorMessage(res.error.userMessage);
+      }
+      // On success, AuthContext sets authState to 'AUTHENTICATED'.
+      // If the authenticated user has no first_name yet (New User), the onboarding name screen will be presented.
+    } catch (e: any) {
+      setErrorMessage(e.message || 'Verification failed. Please try again.');
+    } finally {
       setActionLoading(false);
-      return;
     }
+  };
+
+  // 4. Save New User Profile Names
+  const handleSaveProfileNames = async (firstName: string, lastName: string) => {
+    setActionLoading(true);
+    setErrorMessage(null);
 
     try {
-      const res = await authService.verifyPhoneOtp(phoneNumber, otp);
-      if (res.error) {
-        console.warn('Supabase OTP error, falling back to test user login:', res.error);
-        await loginAsTestUser(phoneNumber || '1234567890');
+      const success = await updateProfileNames(firstName, lastName);
+      if (!success) {
+        setErrorMessage('Failed to save profile. Please try again.');
       }
-    } catch (e) {
-      await loginAsTestUser(phoneNumber || '1234567890');
+    } catch (e: any) {
+      setErrorMessage(e.message || 'Failed to save profile.');
     } finally {
       setActionLoading(false);
     }
@@ -105,9 +101,12 @@ function RootNavigator() {
     setActionLoading(true);
     setErrorMessage(null);
     try {
-      await authService.requestPhoneOtp(phoneNumber);
-    } catch (e) {
-      // ignore
+      const res = await sendOtp(phoneNumber);
+      if (!res.success && res.error) {
+        setErrorMessage(res.error.userMessage);
+      }
+    } catch (e: any) {
+      setErrorMessage('Failed to resend OTP.');
     } finally {
       setActionLoading(false);
     }
@@ -119,12 +118,11 @@ function RootNavigator() {
     setErrorMessage(null);
     try {
       const res = await authService.signInWithGoogle();
-      if (res.error) {
-        // Fallback for Google sign-in if deep link/provider isn't set up yet
-        await loginAsTestUser('9999999999');
+      if (!res.success && res.error) {
+        setErrorMessage(res.error.userMessage);
       }
-    } catch (e) {
-      await loginAsTestUser('9999999999');
+    } catch (e: any) {
+      setErrorMessage('Unable to initiate Google Sign-In.');
     } finally {
       setActionLoading(false);
     }
@@ -132,7 +130,6 @@ function RootNavigator() {
 
   // 6. Explore as Guest mode
   const [isGuestMode, setIsGuestMode] = useState(false);
-  const [pendingCheckout, setPendingCheckout] = useState(false);
 
   const handleExploreGuest = () => {
     setIsGuestMode(true);
@@ -140,7 +137,7 @@ function RootNavigator() {
   };
 
   // Initializing state
-  if (authState === 'INITIALIZING' || (authLoading && authState !== 'AUTHENTICATED' && !isGuestMode)) {
+  if (authState === 'INITIALIZING') {
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color="#ffb300" />
@@ -148,15 +145,34 @@ function RootNavigator() {
     );
   }
 
-  // Authenticated state OR Guest exploration -> Show Production Home Screen
-  if (authState === 'AUTHENTICATED' || isGuestMode) {
+  // Authenticated state: If first_name is missing (New User), prompt onboarding name screen
+  if (authState === 'AUTHENTICATED') {
+    const isNewUser = !profile?.first_name || profile.first_name.trim().length === 0;
+    if (isNewUser) {
+      return (
+        <CustomerOnboardingNameScreen
+          phoneNumber={phoneNumber}
+          onSaveProfile={handleSaveProfileNames}
+          isLoading={actionLoading}
+          errorMessage={errorMessage}
+        />
+      );
+    }
+
+    return (
+      <HomeScreen
+        onOpenAccount={() => {}}
+      />
+    );
+  }
+
+  // Guest exploration mode -> Show Production Home Screen
+  if (isGuestMode) {
     return (
       <HomeScreen
         onOpenAccount={() => {
-          if (isGuestMode && authState !== 'AUTHENTICATED') {
-            setIsGuestMode(false);
-            setUnauthScreen('LOGIN');
-          }
+          setIsGuestMode(false);
+          setUnauthScreen('LOGIN');
         }}
       />
     );

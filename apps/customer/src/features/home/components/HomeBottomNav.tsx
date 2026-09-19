@@ -243,6 +243,7 @@ const FluidNavTabButton: React.FC<{
       <Animated.View
         style={[
           styles.iconContainer,
+          isActive && styles.iconContainerActive,
           {
             transform: [{ scale: scaleAnim }],
           },
@@ -277,69 +278,89 @@ export const HomeBottomNav: React.FC<HomeBottomNavProps> = ({
   ];
 
   return (
-    <View style={[styles.navContainer, { paddingBottom: Math.max(insets.bottom, Platform.OS === 'ios' ? 14 : 8) }]}>
-      <View style={styles.row}>
-        {tabs.map((tab) => {
-          const isActive = activeTab === tab.id;
-          return (
-            <FluidNavTabButton
-              key={tab.id}
-              tabConfig={tab}
-              isActive={isActive}
-              onPress={() => onSelectTab(tab.id)}
-            />
-          );
-        })}
+    <View
+      style={[
+        styles.floatingWrapper,
+        { paddingBottom: Math.max(insets.bottom, Platform.OS === 'ios' ? 14 : 10) },
+      ]}
+      pointerEvents="box-none"
+    >
+      <View style={styles.navCapsule}>
+        <View style={styles.row}>
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <FluidNavTabButton
+                key={tab.id}
+                tabConfig={tab}
+                isActive={isActive}
+                onPress={() => onSelectTab(tab.id)}
+              />
+            );
+          })}
+        </View>
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  navContainer: {
+  floatingWrapper: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    zIndex: 998,
+  },
+  navCapsule: {
     width: '100%',
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    borderTopWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.05)',
-    paddingTop: 8,
-    paddingBottom: Platform.OS === 'ios' ? 18 : 10,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
+    maxWidth: 440,
+    backgroundColor: '#FFFFFF', // Full solid clean white panel
+    borderRadius: 36,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingVertical: 9,
+    paddingHorizontal: 6,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 14,
     elevation: 8,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    paddingHorizontal: 8,
   },
   tabItem: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 2,
-    minWidth: 58,
+    paddingVertical: 3,
+    minWidth: 56,
   },
   iconContainer: {
-    width: 46,
+    width: 48,
     height: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 3,
+    marginBottom: 2,
+    borderRadius: 15,
+  },
+  iconContainerActive: {
+    backgroundColor: 'rgba(250, 196, 32, 0.18)',
   },
   tabLabel: {
     fontSize: 11,
-    letterSpacing: 0,
+    letterSpacing: 0.1,
   },
   tabLabelInactive: {
     color: '#64748B',
     fontFamily: ServenticaTokens.fonts.Medium,
   },
   tabLabelActive: {
-    color: '#1E242B',
+    color: '#0F172A',
     fontFamily: ServenticaTokens.fonts.Bold,
   },
 });

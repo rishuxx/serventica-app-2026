@@ -5,6 +5,7 @@ import {
   PanResponder,
   Animated,
   LayoutChangeEvent,
+  TouchableOpacity,
 } from 'react-native';
 import { ServenticaTokens } from '../tokens';
 
@@ -23,8 +24,20 @@ export const SlideToStart: React.FC<SlideToStartProps> = ({
 
   const thumbSize = 56;
   const padding = 5;
-  // Exact slide distance so the thumb reaches the right boundary:
   const maxSlide = Math.max(0, trackWidth - thumbSize - padding * 2);
+
+  const triggerCompletion = () => {
+    if (isCompletedRef.current) return;
+    isCompletedRef.current = true;
+    const currentMax = maxSlide > 0 ? maxSlide : 260;
+    Animated.timing(slideAnim, {
+      toValue: currentMax,
+      duration: 150,
+      useNativeDriver: true,
+    }).start(() => {
+      onSlideComplete();
+    });
+  };
 
   const panResponder = useRef(
     PanResponder.create({
@@ -42,16 +55,9 @@ export const SlideToStart: React.FC<SlideToStartProps> = ({
       onPanResponderRelease: (_, gestureState) => {
         if (isCompletedRef.current) return;
         const currentMax = maxSlide > 0 ? maxSlide : 260;
-        // Threshold: 30% of total travel distance or simple tap with dx < 10
-        if (gestureState.dx >= currentMax * 0.3 || (Math.abs(gestureState.dx) < 10 && Math.abs(gestureState.dy) < 10)) {
-          isCompletedRef.current = true;
-          Animated.timing(slideAnim, {
-            toValue: currentMax,
-            duration: 120,
-            useNativeDriver: true,
-          }).start(() => {
-            onSlideComplete();
-          });
+        // If swiped at least 35% across or tapped directly
+        if (gestureState.dx >= currentMax * 0.35 || (Math.abs(gestureState.dx) < 12 && Math.abs(gestureState.dy) < 12)) {
+          triggerCompletion();
         } else {
           Animated.spring(slideAnim, {
             toValue: 0,
@@ -71,14 +77,12 @@ export const SlideToStart: React.FC<SlideToStartProps> = ({
     }
   };
 
-  // As the thumb moves across, text opacity gradually fades to 0
   const textOpacity = slideAnim.interpolate({
     inputRange: [0, maxSlide > 0 ? maxSlide * 0.6 : 150, maxSlide > 0 ? maxSlide : 260],
     outputRange: [1, 0.2, 0],
     extrapolate: 'clamp',
   });
 
-  // Subtle shift of text as slider travels
   const textTranslateX = slideAnim.interpolate({
     inputRange: [0, maxSlide > 0 ? maxSlide : 260],
     outputRange: [0, 20],
@@ -86,37 +90,46 @@ export const SlideToStart: React.FC<SlideToStartProps> = ({
   });
 
   return (
-    <View
-      style={styles.track}
-      onLayout={onLayout}
-      {...panResponder.panHandlers}
+    <TouchableOpacity
+      activeOpacity={0.92}
+      onPress={triggerCompletion}
+      style={styles.touchableWrapper}
     >
-      <Animated.Text
-        style={[
-          styles.title,
-          {
-            opacity: textOpacity,
-            transform: [{ translateX: textTranslateX }],
-          },
-        ]}
+      <View
+        style={styles.track}
+        onLayout={onLayout}
+        {...panResponder.panHandlers}
       >
-        {title}
-      </Animated.Text>
-      <Animated.View
-        style={[
-          styles.thumb,
-          {
-            transform: [{ translateX: slideAnim }],
-          },
-        ]}
-      >
-        <Animated.Text style={styles.chevron}>»</Animated.Text>
-      </Animated.View>
-    </View>
+        <Animated.Text
+          style={[
+            styles.title,
+            {
+              opacity: textOpacity,
+              transform: [{ translateX: textTranslateX }],
+            },
+          ]}
+        >
+          {title}
+        </Animated.Text>
+        <Animated.View
+          style={[
+            styles.thumb,
+            {
+              transform: [{ translateX: slideAnim }],
+            },
+          ]}
+        >
+          <Animated.Text style={styles.chevron}>»</Animated.Text>
+        </Animated.View>
+      </View>
+    </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
+  touchableWrapper: {
+    width: '100%',
+  },
   track: {
     height: 66,
     borderRadius: 33,
@@ -143,15 +156,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#1E242B',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 3,
-    elevation: 3,
-    zIndex: 10,
+    shadowOpacity: 0.18,
+    shadowRadius: 4,
+    elevation: 4,
   },
   chevron: {
-    color: '#ff9800',
+    color: '#ffb300',
     fontSize: 24,
     fontWeight: '900',
     marginLeft: 2,

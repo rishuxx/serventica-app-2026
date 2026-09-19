@@ -1,9 +1,10 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode, useRef } from 'react';
 import { Linking, AppState, AppStateStatus } from 'react-native';
 import { Session, User } from '@supabase/supabase-js';
-import { authService } from '../services/auth.service';
+import { authService, AuthActionResult } from '../services/auth.service';
 import { AuthState, CustomerProfile, UserRole } from '../../../../packages/types/src';
 import { supabase } from '../lib/supabase/client';
+import { NormalizedAuthError } from '../../../../packages/utils/src';
 
 interface AuthContextType {
   authState: AuthState;
@@ -12,53 +13,77 @@ interface AuthContextType {
   profile: CustomerProfile | null;
   roles: UserRole[];
   isLoading: boolean;
-  error: string | null;
+  error: NormalizedAuthError | null;
+  sendOtp: (phone: string) => Promise<AuthActionResult<{ phone: string }>>;
+  verifyOtp: (
+    phone: string,
+    token: string,
+    metadata?: { firstName?: string; lastName?: string }
+  ) => Promise<AuthActionResult<{ session: Session | null; user: User | null }>>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
-  loginAsTestUser: (phone?: string) => Promise<void>;
+  updateProfileNames: (firstName: string, lastName: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [authState, setAuthState] = useState<AuthState>('UNAUTHENTICATED');
+  const [authState, setAuthState] = useState<AuthState>('INITIALIZING');
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<CustomerProfile | null>(null);
   const [roles, setRoles] = useState<UserRole[]>(['CUSTOMER']);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<NormalizedAuthError | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const isBootstrappingRef = useRef(false);
 
   // Bootstrap user & customer profile from PostgreSQL / Supabase
   const bootstrapCustomer = async (currentSession: Session) => {
+    if (isBootstrappingRef.current) return;
     try {
+      isBootstrappingRef.current = true;
       setIsLoading(true);
       const currentUser = currentSession.user;
       setUser(currentUser);
 
-      // 1. Fetch user record from public.users
-      const { data: dbUser, error: userError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', currentUser.id)
-        .single();
-
-      // 2. Fetch customer profile from public.customer_profiles
-      const { data: dbProfile, error: profileError } = await supabase
+      // 1. Fetch customer profile from public.customer_profiles with safe 3s timeout
+      const profilePromise = supabase
         .from('customer_profiles')
         .select('*')
         .eq('user_id', currentUser.id)
-        .single();
+        .maybeSingle();
+
+      const timeoutPromise = new Promise<{ data: any }>((resolve) =>
+        setTimeout(() => resolve({ data: null }), 3000)
+      );
+
+      const { data: dbProfile } = await Promise.race([profilePromise, timeoutPromise]);
+
+      const resolvedFirstName =
+        dbProfile?.first_name ||
+        currentUser.user_metadata?.first_name ||
+        currentUser.user_metadata?.full_name?.split(' ')[0] ||
+        null;
+      const resolvedLastName =
+        dbProfile?.last_name ||
+        currentUser.user_metadata?.last_name ||
+        currentUser.user_metadata?.full_name?.split(' ').slice(1).join(' ') ||
+        null;
 
       if (dbProfile) {
-        setProfile(dbProfile);
+        setProfile({
+          ...dbProfile,
+          first_name: resolvedFirstName,
+          last_name: resolvedLastName,
+        });
       } else {
         // Fallback default profile model before database creation
         setProfile({
           id: currentUser.id,
           user_id: currentUser.id,
-          first_name: currentUser.user_metadata?.first_name || currentUser.user_metadata?.full_name?.split(' ')[0] || null,
-          last_name: currentUser.user_metadata?.last_name || currentUser.user_metadata?.full_name?.split(' ').slice(1).join(' ') || null,
+          first_name: resolvedFirstName,
+          last_name: resolvedLastName,
           avatar_url: currentUser.user_metadata?.avatar_url || null,
           preferred_language: 'en',
           onboarding_status: 'NEW',
@@ -68,7 +93,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         });
       }
 
-      // 3. Fetch user roles
+      // 2. Fetch user roles
       const { data: dbRoles } = await supabase
         .from('user_roles')
         .select('role')
@@ -83,26 +108,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setAuthState('AUTHENTICATED');
       setError(null);
     } catch (err: any) {
-      console.warn('[AuthContext] Bootstrap profile notice:', err.message);
-      // Still authenticated at session level
+      console.warn('[AuthContext] Bootstrap profile notice:', err?.message);
+      // Retain authenticated session even if profile fetch has network blip
       setAuthState('AUTHENTICATED');
     } finally {
       setIsLoading(false);
+      isBootstrappingRef.current = false;
     }
   };
 
   useEffect(() => {
     let mounted = true;
 
-    // 1. Restore persistent session on startup
+    // 1. Restore persistent session on startup with max 2.5s wait to avoid getting stuck
     const initAuth = async () => {
-      const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(null), 1200));
-
       try {
-        const initialSession = await Promise.race([
-          authService.getSession(),
-          timeoutPromise,
-        ]) as Session | null;
+        const sessionPromise = authService.getSession();
+        const timeoutPromise = new Promise<null>((resolve) =>
+          setTimeout(() => resolve(null), 2500)
+        );
+
+        const initialSession = await Promise.race([sessionPromise, timeoutPromise]);
 
         if (!mounted) return;
 
@@ -111,12 +137,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           await bootstrapCustomer(initialSession);
         } else {
           setAuthState('UNAUTHENTICATED');
-          setIsLoading(false);
         }
-      } catch (err: any) {
+      } catch {
         if (mounted) {
-          setError(err.message || 'Authentication initialization error');
           setAuthState('UNAUTHENTICATED');
+        }
+      } finally {
+        if (mounted) {
           setIsLoading(false);
         }
       }
@@ -139,13 +166,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setAuthState('UNAUTHENTICATED');
       } else if (event === 'TOKEN_REFRESHED' && newSession) {
         setSession(newSession);
+      } else if (event === 'USER_UPDATED' && newSession) {
+        setSession(newSession);
+        setUser(newSession.user);
       }
     });
 
-    // 3. Handle OAuth Deep Links
+    // 3. React Native AppState listener to handle auto-refresh lifecycle safely
+    const handleAppStateChange = (state: AppStateStatus) => {
+      if (state === 'active') {
+        supabase.auth.startAutoRefresh();
+      } else {
+        supabase.auth.stopAutoRefresh();
+      }
+    };
+
+    const appStateSub = AppState.addEventListener('change', handleAppStateChange);
+
+    // 4. Handle OAuth Deep Links
     const handleDeepLink = async ({ url }: { url: string }) => {
       if (url && url.includes('access_token')) {
-        // Extract parameters and set session
         const params = new URLSearchParams(url.split('#')[1] || url.split('?')[1]);
         const accessToken = params.get('access_token');
         const refreshToken = params.get('refresh_token');
@@ -164,18 +204,77 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => {
       mounted = false;
       authListener.subscription.unsubscribe();
+      appStateSub.remove();
       urlSub.remove();
     };
   }, []);
 
+  const sendOtp = async (phone: string): Promise<AuthActionResult<{ phone: string }>> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await authService.requestPhoneOtp(phone);
+      if (!res.success && res.error) {
+        setError(res.error);
+      }
+      return res;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const verifyOtp = async (
+    phone: string,
+    token: string,
+    metadata?: { firstName?: string; lastName?: string }
+  ): Promise<AuthActionResult<{ session: Session | null; user: User | null }>> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await authService.verifyPhoneOtp(phone, token);
+      if (!res.success && res.error) {
+        setError(res.error);
+      } else if (res.data?.session) {
+        // If names were provided, update user metadata and profile table
+        if (metadata?.firstName || metadata?.lastName) {
+          try {
+            await supabase.auth.updateUser({
+              data: {
+                first_name: metadata.firstName?.trim() || '',
+                last_name: metadata.lastName?.trim() || '',
+                full_name: `${metadata.firstName?.trim() || ''} ${metadata.lastName?.trim() || ''}`.trim(),
+              },
+            });
+            await supabase.from('customer_profiles').upsert({
+              user_id: res.data.session.user.id,
+              first_name: metadata.firstName?.trim() || null,
+              last_name: metadata.lastName?.trim() || null,
+              updated_at: new Date().toISOString(),
+            });
+          } catch (e) {
+            console.warn('[AuthContext] Error updating name metadata:', e);
+          }
+        }
+        setSession(res.data.session);
+        await bootstrapCustomer(res.data.session);
+      }
+      return res;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const signOut = async () => {
     setIsLoading(true);
-    await authService.signOut();
-    setSession(null);
-    setUser(null);
-    setProfile(null);
-    setAuthState('UNAUTHENTICATED');
-    setIsLoading(false);
+    try {
+      await authService.signOut();
+    } finally {
+      setSession(null);
+      setUser(null);
+      setProfile(null);
+      setAuthState('UNAUTHENTICATED');
+      setIsLoading(false);
+    }
   };
 
   const refreshProfile = async () => {
@@ -184,35 +283,68 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const loginAsTestUser = async (phone: string = '9999999999') => {
-    setIsLoading(true);
-    const mockUser: any = {
-      id: '00000000-0000-0000-0000-000000000001',
-      app_metadata: { provider: 'phone' },
-      user_metadata: { first_name: 'Test', last_name: 'User', phone },
-      aud: 'authenticated',
-      created_at: new Date().toISOString(),
-      phone: `+91${phone.replace(/[^0-9]/g, '')}`,
-    };
+  const updateProfileNames = async (firstName: string, lastName: string): Promise<boolean> => {
+    if (!user) return false;
+    try {
+      setIsLoading(true);
+      const trimmedFirst = firstName.trim();
+      const trimmedLast = lastName.trim();
+      const fullName = `${trimmedFirst} ${trimmedLast}`.trim();
 
-    const mockProfile: CustomerProfile = {
-      id: '00000000-0000-0000-0000-000000000001',
-      user_id: '00000000-0000-0000-0000-000000000001',
-      first_name: 'Test',
-      last_name: 'User',
-      avatar_url: null,
-      preferred_language: 'en',
-      onboarding_status: 'ACTIVE',
-      default_address_id: null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
+      // 1. Update Supabase Auth user metadata
+      await supabase.auth.updateUser({
+        data: {
+          first_name: trimmedFirst,
+          last_name: trimmedLast,
+          full_name: fullName,
+        },
+      });
 
-    setUser(mockUser);
-    setProfile(mockProfile);
-    setRoles(['CUSTOMER']);
-    setAuthState('AUTHENTICATED');
-    setIsLoading(false);
+      // 2. Upsert customer_profiles row keyed to user_id
+      await supabase.from('customer_profiles').upsert({
+        user_id: user.id,
+        first_name: trimmedFirst,
+        last_name: trimmedLast || null,
+        onboarding_status: 'ACTIVE',
+        updated_at: new Date().toISOString(),
+      });
+
+      // 3. Update public.users display name
+      await supabase.from('users').update({
+        display_name: fullName || trimmedFirst,
+        updated_at: new Date().toISOString(),
+      }).eq('id', user.id);
+
+      // 4. Update local state
+      setProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              first_name: trimmedFirst,
+              last_name: trimmedLast || null,
+              onboarding_status: 'ACTIVE',
+            }
+          : {
+              id: user.id,
+              user_id: user.id,
+              first_name: trimmedFirst,
+              last_name: trimmedLast || null,
+              avatar_url: null,
+              preferred_language: 'en',
+              onboarding_status: 'ACTIVE',
+              default_address_id: null,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }
+      );
+
+      return true;
+    } catch (err) {
+      console.warn('[AuthContext] Failed to update profile names:', err);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -225,9 +357,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         roles,
         isLoading,
         error,
+        sendOtp,
+        verifyOtp,
         signOut,
         refreshProfile,
-        loginAsTestUser,
+        updateProfileNames,
       }}
     >
       {children}

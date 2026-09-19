@@ -795,7 +795,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 72, // Space for BottomNav
+    paddingBottom: 140, // Generous breathing room for bottom floating capsule & elevated cart bar
   },
   sectionBlock: {
     marginBottom: 8,

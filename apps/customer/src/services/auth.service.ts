@@ -2,109 +2,184 @@ import { Linking } from 'react-native';
 import { supabase } from '../lib/supabase/client';
 import { Session, User, AuthChangeEvent } from '@supabase/supabase-js';
 import { ServenticaEnvironment } from '../../../../packages/config/src';
+import {
+  PhoneNormalizer,
+  AuthErrorMapper,
+  NormalizedAuthError,
+} from '../../../../packages/utils/src';
+
+export interface AuthActionResult<T = any> {
+  success: boolean;
+  data?: T;
+  error?: NormalizedAuthError;
+}
 
 /**
- * SERVENTICA — Authentication Service
- * Clean domain abstraction over Supabase Auth APIs.
- * Does NOT leak Supabase implementation specifics directly to UI screens.
+ * SERVENTICA — Production Authentication Service
+ * Single Responsibility: Authoritative communication with Supabase Auth API.
+ * Enforces mutex locks, strict E.164 normalization, error mapping, and no mock bypasses.
  */
 export class ServenticaAuthService {
-  /**
-   * Request Phone OTP via Supabase Auth (with developer test bypass support)
-   * @param rawPhone 10-digit Indian phone number (or with +91)
-   */
-  async requestPhoneOtp(rawPhone: string): Promise<{ error?: string }> {
-    try {
-      const cleanDigits = rawPhone.replace(/[^0-9]/g, '');
-      const formattedPhone = cleanDigits.length === 10 ? `+91${cleanDigits}` : `+${cleanDigits}`;
+  private isSendingOtp: boolean = false;
+  private isVerifyingOtp: boolean = false;
 
-      // Developer Test Bypass: Accept standard test numbers instantly without SMS provider requirement
-      if (
-        cleanDigits === '9999999999' ||
-        cleanDigits === '9876543210' ||
-        cleanDigits === '1234567890' ||
-        cleanDigits.startsWith('99999')
-      ) {
-        return {};
-      }
+  /**
+   * Request real SMS Phone OTP via Supabase Auth
+   * @param rawPhone User input phone number
+   */
+  async requestPhoneOtp(rawPhone: string): Promise<AuthActionResult<{ phone: string }>> {
+    if (this.isSendingOtp) {
+      return {
+        success: false,
+        error: {
+          code: 'REQUEST_IN_PROGRESS',
+          userMessage: 'An OTP request is already in progress. Please wait.',
+          isRetryable: false,
+          category: 'RATE_LIMIT',
+        },
+      };
+    }
+
+    const validation = PhoneNormalizer.normalize(rawPhone);
+    if (!validation.isValid || !validation.normalized) {
+      return {
+        success: false,
+        error: {
+          code: 'INVALID_PHONE',
+          userMessage: validation.error || 'Please enter a valid 10-digit mobile number.',
+          isRetryable: true,
+          category: 'INVALID_INPUT',
+        },
+      };
+    }
+
+    try {
+      this.isSendingOtp = true;
 
       const { error } = await supabase.auth.signInWithOtp({
-        phone: formattedPhone,
+        phone: validation.normalized,
         options: {
           channel: 'sms',
         },
       });
 
       if (error) {
-        return { error: error.message };
+        return {
+          success: false,
+          error: AuthErrorMapper.map(error),
+        };
       }
 
-      return {};
+      return {
+        success: true,
+        data: { phone: validation.normalized },
+      };
     } catch (err: any) {
-      return { error: err.message || 'An unexpected error occurred requesting OTP.' };
+      return {
+        success: false,
+        error: AuthErrorMapper.map(err),
+      };
+    } finally {
+      this.isSendingOtp = false;
     }
   }
 
   /**
-   * Verify Phone OTP via Supabase Auth (with developer test bypass support)
-   * @param rawPhone 10-digit phone number
-   * @param token 6-digit OTP code received via SMS (or 123456 for test bypass)
+   * Verify real SMS OTP code via Supabase Auth
+   * @param rawPhone Normalized or raw phone number
+   * @param token 6-digit OTP code received via SMS
    */
-  async verifyPhoneOtp(rawPhone: string, token: string): Promise<{ session?: Session; error?: string }> {
-    try {
-      const cleanDigits = rawPhone.replace(/[^0-9]/g, '');
-      const formattedPhone = cleanDigits.length === 10 ? `+91${cleanDigits}` : `+${cleanDigits}`;
-      const trimmedToken = token.trim();
+  async verifyPhoneOtp(
+    rawPhone: string,
+    token: string
+  ): Promise<AuthActionResult<{ session: Session | null; user: User | null }>> {
+    if (this.isVerifyingOtp) {
+      return {
+        success: false,
+        error: {
+          code: 'VERIFICATION_IN_PROGRESS',
+          userMessage: 'Verification is currently in progress. Please wait.',
+          isRetryable: false,
+          category: 'RATE_LIMIT',
+        },
+      };
+    }
 
-      // Developer Test Bypass: Allow 123456 or 000000 for ANY phone number, or ANY test number
-      if (
-        trimmedToken === '123456' ||
-        trimmedToken === '000000' ||
-        cleanDigits === '1234567890' ||
-        cleanDigits === '9999999999' ||
-        cleanDigits === '9876543210' ||
-        cleanDigits.startsWith('99999')
-      ) {
-        // Return dummy valid session payload to allow instant bypass
-        const mockSession: any = {
-          access_token: 'mock-test-token',
-          token_type: 'bearer',
-          expires_in: 3600,
-          refresh_token: 'mock-refresh-token',
-          user: {
-            id: '00000000-0000-0000-0000-000000000001',
-            aud: 'authenticated',
-            role: 'authenticated',
-            email: 'test@serventica.com',
-            phone: formattedPhone,
-            created_at: new Date().toISOString(),
-            user_metadata: { first_name: 'Test', last_name: 'User', phone: formattedPhone },
-            app_metadata: { provider: 'phone' },
-          },
-        };
-        return { session: mockSession };
-      }
+    const validation = PhoneNormalizer.normalize(rawPhone);
+    if (!validation.isValid || !validation.normalized) {
+      return {
+        success: false,
+        error: {
+          code: 'INVALID_PHONE',
+          userMessage: validation.error || 'Invalid phone number format.',
+          isRetryable: true,
+          category: 'INVALID_INPUT',
+        },
+      };
+    }
+
+    const cleanToken = token.trim();
+    if (!/^\d{6}$/.test(cleanToken)) {
+      return {
+        success: false,
+        error: {
+          code: 'INVALID_TOKEN_FORMAT',
+          userMessage: 'Please enter the complete 6-digit verification code.',
+          isRetryable: true,
+          category: 'INVALID_INPUT',
+        },
+      };
+    }
+
+    try {
+      this.isVerifyingOtp = true;
 
       const { data, error } = await supabase.auth.verifyOtp({
-        phone: formattedPhone,
-        token: trimmedToken,
+        phone: validation.normalized,
+        token: cleanToken,
         type: 'sms',
       });
 
       if (error) {
-        return { error: error.message };
+        return {
+          success: false,
+          error: AuthErrorMapper.map(error),
+        };
       }
 
-      return { session: data.session || undefined };
+      if (!data.session) {
+        return {
+          success: false,
+          error: {
+            code: 'SESSION_CREATION_FAILED',
+            userMessage: 'Authentication succeeded but session could not be established. Please try again.',
+            isRetryable: true,
+            category: 'SESSION',
+          },
+        };
+      }
+
+      return {
+        success: true,
+        data: {
+          session: data.session,
+          user: data.user,
+        },
+      };
     } catch (err: any) {
-      return { error: err.message || 'Failed to verify OTP.' };
+      return {
+        success: false,
+        error: AuthErrorMapper.map(err),
+      };
+    } finally {
+      this.isVerifyingOtp = false;
     }
   }
 
   /**
    * Sign in with Google OAuth via browser/system redirect flow
    */
-  async signInWithGoogle(): Promise<{ url?: string; error?: string }> {
+  async signInWithGoogle(): Promise<AuthActionResult<{ url?: string }>> {
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -115,45 +190,92 @@ export class ServenticaAuthService {
       });
 
       if (error) {
-        return { error: error.message };
+        return {
+          success: false,
+          error: AuthErrorMapper.map(error),
+        };
       }
 
       if (data?.url) {
         try {
           await Linking.openURL(data.url);
-          return { url: data.url };
-        } catch (openErr: any) {
-          return { error: `Failed to launch browser: ${openErr.message}` };
+          return {
+            success: true,
+            data: { url: data.url },
+          };
+        } catch {
+          return {
+            success: false,
+            error: {
+              code: 'BROWSER_LAUNCH_FAILED',
+              userMessage: 'Unable to open browser for Google authentication.',
+              isRetryable: true,
+              category: 'UNKNOWN',
+            },
+          };
         }
       }
 
-      return { error: 'No OAuth URL returned by authentication provider.' };
+      return {
+        success: false,
+        error: {
+          code: 'OAUTH_URL_MISSING',
+          userMessage: 'No OAuth URL returned by authentication provider.',
+          isRetryable: false,
+          category: 'PROVIDER',
+        },
+      };
     } catch (err: any) {
-      return { error: err.message || 'Failed to initiate Google Sign-In.' };
+      return {
+        success: false,
+        error: AuthErrorMapper.map(err),
+      };
     }
   }
 
   /**
-   * Retrieve active authenticated session
+   * Retrieve active authenticated session from persistent storage
    */
   async getSession(): Promise<Session | null> {
-    const { data } = await supabase.auth.getSession();
-    return data.session;
+    try {
+      const { data } = await supabase.auth.getSession();
+      return data.session;
+    } catch {
+      return null;
+    }
   }
 
   /**
    * Retrieve current authenticated user
    */
   async getCurrentUser(): Promise<User | null> {
-    const { data } = await supabase.auth.getUser();
-    return data.user;
+    try {
+      const { data } = await supabase.auth.getUser();
+      return data.user;
+    } catch {
+      return null;
+    }
   }
 
   /**
-   * Sign out and clear stored session
+   * Sign out and clear stored Supabase session
    */
-  async signOut(): Promise<void> {
-    await supabase.auth.signOut();
+  async signOut(): Promise<AuthActionResult<void>> {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        return {
+          success: false,
+          error: AuthErrorMapper.map(error),
+        };
+      }
+      return { success: true };
+    } catch (err: any) {
+      return {
+        success: false,
+        error: AuthErrorMapper.map(err),
+      };
+    }
   }
 
   /**
