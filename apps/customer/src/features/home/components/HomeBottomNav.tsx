@@ -210,10 +210,19 @@ const FluidNavTabButton: React.FC<{
   onPress: () => void;
 }> = ({ tabConfig, isActive, onPress }) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const activeBgOpacity = useRef(new Animated.Value(isActive ? 1 : 0)).current;
+
+  useEffect(() => {
+    Animated.timing(activeBgOpacity, {
+      toValue: isActive ? 1 : 0,
+      duration: 220,
+      useNativeDriver: false,
+    }).start();
+  }, [isActive, activeBgOpacity]);
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
-      toValue: 0.92,
+      toValue: 0.94,
       friction: 6,
       tension: 300,
       useNativeDriver: true,
@@ -242,24 +251,29 @@ const FluidNavTabButton: React.FC<{
     >
       <Animated.View
         style={[
-          styles.iconContainer,
-          isActive && styles.iconContainerActive,
+          styles.tabPillContainer,
           {
+            backgroundColor: activeBgOpacity.interpolate({
+              inputRange: [0, 1],
+              outputRange: ['rgba(241, 245, 249, 0)', 'rgba(235, 238, 242, 0.95)'],
+            }),
             transform: [{ scale: scaleAnim }],
           },
         ]}
       >
-        <TabSvgIcon tab={tabConfig.id} isActive={isActive} theme={tabConfig} />
-      </Animated.View>
+        <View style={styles.iconContainer}>
+          <TabSvgIcon tab={tabConfig.id} isActive={isActive} theme={tabConfig} />
+        </View>
 
-      <Text
-        style={[
-          styles.tabLabel,
-          isActive ? styles.tabLabelActive : styles.tabLabelInactive,
-        ]}
-      >
-        {tabConfig.label}
-      </Text>
+        <Text
+          style={[
+            styles.tabLabel,
+            isActive ? styles.tabLabelActive : styles.tabLabelInactive,
+          ]}
+        >
+          {tabConfig.label}
+        </Text>
+      </Animated.View>
     </TouchableOpacity>
   );
 };
@@ -311,23 +325,23 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 22, // Slightly reduced horizontal width
     zIndex: 998,
   },
   navCapsule: {
     width: '100%',
-    maxWidth: 440,
-    backgroundColor: '#FFFFFF', // Full solid clean white panel
-    borderRadius: 36,
+    maxWidth: 410, // Slimmer max width
+    backgroundColor: '#FFFFFF',
+    borderRadius: 40,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    paddingVertical: 9,
+    paddingVertical: 9.5, // Increased vertical height
     paddingHorizontal: 6,
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 14,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 9,
   },
   row: {
     flexDirection: 'row',
@@ -337,19 +351,21 @@ const styles = StyleSheet.create({
   tabItem: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 3,
-    minWidth: 56,
+    flex: 1,
+  },
+  tabPillContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 5.5,
+    paddingHorizontal: 12,
+    borderRadius: 22, // Fully rounded light grey background encompassing icon + text
   },
   iconContainer: {
-    width: 48,
-    height: 30,
+    width: 28,
+    height: 25,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 2,
-    borderRadius: 15,
-  },
-  iconContainerActive: {
-    backgroundColor: 'rgba(250, 196, 32, 0.18)',
   },
   tabLabel: {
     fontSize: 11,
