@@ -251,9 +251,8 @@ const styles = StyleSheet.create({
   },
   verifiedText: {
     fontSize: 11,
-    fontFamily: ServenticaTokens.fonts.Medium,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
     color: '#059669',
-    fontWeight: '600',
   },
   input: {
     height: 48,

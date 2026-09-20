@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+import { Platform, Text, TextInput } from 'react-native';
 
 /**
  * Universal Cross-Platform Font Registry & Loader
@@ -7,6 +7,42 @@ import { Platform } from 'react-native';
  * - Expo Go on iOS / iPhone (loads via expo-font asynchronously)
  * - Bare React Native iOS (reads from bundled Info.plist UIAppFonts)
  */
+
+// Inject global default font for Text and TextInput across the entire app
+try {
+  const customTextProps = {
+    style: {
+      fontFamily: 'Lexend-Regular',
+    },
+  };
+  const customTextInputProps = {
+    style: {
+      fontFamily: 'Lexend-Regular',
+    },
+  };
+
+  // Safe prototype & defaultProps augmentation
+  const TextComponent = Text as any;
+  const TextInputComponent = TextInput as any;
+
+  if (TextComponent.defaultProps == null) {
+    TextComponent.defaultProps = {};
+  }
+  TextComponent.defaultProps.style = [
+    { fontFamily: 'Lexend-Regular' },
+    TextComponent.defaultProps.style,
+  ];
+
+  if (TextInputComponent.defaultProps == null) {
+    TextInputComponent.defaultProps = {};
+  }
+  TextInputComponent.defaultProps.style = [
+    { fontFamily: 'Lexend-Regular' },
+    TextInputComponent.defaultProps.style,
+  ];
+} catch (err) {
+  // Graceful fallback
+}
 
 let isLoaded = false;
 let loadPromise: Promise<boolean> | null = null;
@@ -54,3 +90,4 @@ export async function ensureFontsLoaded(): Promise<boolean> {
 
 // Kick off eager font load for Expo Go without blocking render
 ensureFontsLoaded().catch(() => {});
+

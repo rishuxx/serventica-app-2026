@@ -142,8 +142,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 11,
-    fontFamily: ServenticaTokens.fonts.Medium,
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#FFFFFF',
-    fontWeight: '700',
   },
 });

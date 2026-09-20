@@ -30,6 +30,7 @@ import { useLocation } from '../../../context/LocationContext';
 import { useCart } from '../../../features/cart/context/CartContext';
 import { AssetRegistry } from '../../../services/home.service';
 import { ShimmerPlaceholder } from '../../../shared/components/ShimmerPlaceholder';
+import { ServenticaTokens } from '../../../../../../packages/design-system/src';
 
 export interface ServiceDetailScreenProps {
   serviceId?: string;
@@ -517,7 +518,7 @@ const styles = StyleSheet.create({
   },
   headerBarTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#1E242B',
     flex: 1,
     textAlign: 'center',
@@ -562,20 +563,21 @@ const styles = StyleSheet.create({
   },
   categoryPillText: {
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#475569',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   serviceTitle: {
     fontSize: 22,
-    fontWeight: '800',
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#1E242B',
     lineHeight: 28,
     marginBottom: 6,
   },
   serviceShortDesc: {
     fontSize: 13,
+    fontFamily: ServenticaTokens.fonts.Regular,
     color: '#64748B',
     lineHeight: 19,
     marginBottom: 12,
@@ -598,22 +600,23 @@ const styles = StyleSheet.create({
   },
   metricBoldText: {
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#1E242B',
   },
   metricDimText: {
     fontSize: 11,
+    fontFamily: ServenticaTokens.fonts.Regular,
     color: '#64748B',
   },
   metricNormalText: {
     fontSize: 12,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
     color: '#1E242B',
-    fontWeight: '600',
   },
   newBadgeText: {
     fontSize: 11,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
     color: '#64748B',
-    fontWeight: '600',
   },
   serviceabilityBanner: {
     flexDirection: 'row',
@@ -640,7 +643,7 @@ const styles = StyleSheet.create({
   },
   serviceabilityStatusTitle: {
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#065F46',
   },
   serviceabilityStatusTitleWarning: {
@@ -648,6 +651,7 @@ const styles = StyleSheet.create({
   },
   serviceabilityAddressSub: {
     fontSize: 11,
+    fontFamily: ServenticaTokens.fonts.Regular,
     color: '#64748B',
     marginTop: 1,
   },
@@ -657,11 +661,12 @@ const styles = StyleSheet.create({
   },
   sectionHeading: {
     fontSize: 17,
-    fontWeight: '800',
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#1E242B',
   },
   sectionSubheading: {
     fontSize: 12,
+    fontFamily: ServenticaTokens.fonts.Regular,
     color: '#64748B',
     marginTop: 2,
     marginBottom: 10,
@@ -712,17 +717,18 @@ const styles = StyleSheet.create({
   },
   variantName: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#1E242B',
     flex: 1,
   },
   variantPrice: {
     fontSize: 15,
-    fontWeight: '800',
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#1E242B',
   },
   variantDescription: {
     fontSize: 12,
+    fontFamily: ServenticaTokens.fonts.Regular,
     color: '#64748B',
     lineHeight: 16,
     marginLeft: 26,
@@ -737,8 +743,8 @@ const styles = StyleSheet.create({
   },
   variantDuration: {
     fontSize: 11,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
     color: '#64748B',
-    fontWeight: '600',
   },
   promiseCard: {
     flexDirection: 'row',
@@ -757,11 +763,12 @@ const styles = StyleSheet.create({
   },
   promiseHeading: {
     fontSize: 13,
-    fontWeight: '800',
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#1E242B',
   },
   promiseSubtitle: {
     fontSize: 11,
+    fontFamily: ServenticaTokens.fonts.Regular,
     color: '#64748B',
     lineHeight: 15,
     marginTop: 2,
@@ -788,22 +795,25 @@ const styles = StyleSheet.create({
   },
   itemText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: ServenticaTokens.fonts.SemiBold,
     color: '#1E242B',
     lineHeight: 18,
   },
   itemSubtext: {
     fontSize: 11,
+    fontFamily: ServenticaTokens.fonts.Regular,
     color: '#64748B',
     marginTop: 2,
   },
   itemTextDim: {
     fontSize: 13,
+    fontFamily: ServenticaTokens.fonts.Regular,
     color: '#64748B',
     lineHeight: 18,
   },
   itemSubtextDim: {
     fontSize: 11,
+    fontFamily: ServenticaTokens.fonts.Regular,
     color: '#94A3B8',
     marginTop: 2,
   },
@@ -826,12 +836,13 @@ const styles = StyleSheet.create({
   },
   faqQuestionText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#1E242B',
     flex: 1,
   },
   faqAnswerText: {
     fontSize: 12,
+    fontFamily: ServenticaTokens.fonts.Regular,
     color: '#64748B',
     lineHeight: 18,
     marginTop: 8,
@@ -861,6 +872,7 @@ const styles = StyleSheet.create({
   },
   bottomPriceLabel: {
     fontSize: 11,
+    fontFamily: ServenticaTokens.fonts.Regular,
     color: '#64748B',
   },
   bottomPriceRow: {
@@ -869,12 +881,12 @@ const styles = StyleSheet.create({
   },
   bottomPriceCurrency: {
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#1E242B',
   },
   bottomPriceValue: {
     fontSize: 20,
-    fontWeight: '800',
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#1E242B',
   },
   ctaButton: {
@@ -891,7 +903,7 @@ const styles = StyleSheet.create({
   ctaButtonText: {
     color: '#FFFFFF',
     fontSize: 15,
-    fontWeight: '800',
+    fontFamily: ServenticaTokens.fonts.Bold,
   },
   centerContent: {
     flex: 1,
@@ -901,12 +913,13 @@ const styles = StyleSheet.create({
   },
   errorTitle: {
     fontSize: 17,
-    fontWeight: '800',
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#1E242B',
     marginTop: 12,
   },
   errorSubtitle: {
     fontSize: 13,
+    fontFamily: ServenticaTokens.fonts.Regular,
     color: '#64748B',
     textAlign: 'center',
     marginTop: 4,
@@ -923,7 +936,7 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     color: '#FFFFFF',
-    fontWeight: '700',
+    fontFamily: ServenticaTokens.fonts.Bold,
     fontSize: 13,
   },
 });
