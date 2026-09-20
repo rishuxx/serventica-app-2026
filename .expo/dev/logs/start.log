@@ -13661,3 +13661,1299 @@
 {"_e":"metro:bundling:progress","_t":1789832850853,"id":"3","progress":0.999,"total":2889,"current":2889}
 {"_e":"metro:bundling:done","_t":1789832851246,"id":"3","total":2889,"ms":42170.8512}
 {"_e":"metro:client_log","_t":1789832852436,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:server_log","_t":1789833098664,"level":"error","data":["[timeout] connection terminated with Device for app='%s' on device='%s' after not responding for %s seconds.","host.exp.Exponent","iPhone","60"]}
+{"_e":"metro:bundling:started","_t":1789834173866,"id":"q","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789834173866,"id":"q","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834173868,"id":"q","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834173978,"id":"q","progress":0.09,"total":6,"current":3}
+{"_e":"metro:bundling:progress","_t":1789834174147,"id":"q","progress":0.16000000000000003,"total":6,"current":4}
+{"_e":"metro:bundling:progress","_t":1789834174251,"id":"q","progress":0.16000000000000003,"total":130,"current":8}
+{"_e":"metro:bundling:progress","_t":1789834174393,"id":"q","progress":0.16000000000000003,"total":140,"current":13}
+{"_e":"metro:bundling:progress","_t":1789834174507,"id":"q","progress":0.16000000000000003,"total":145,"current":16}
+{"_e":"metro:bundling:progress","_t":1789834174609,"id":"q","progress":0.16000000000000003,"total":153,"current":21}
+{"_e":"metro:bundling:progress","_t":1789834174710,"id":"q","progress":0.16000000000000003,"total":158,"current":26}
+{"_e":"metro:bundling:progress","_t":1789834174811,"id":"q","progress":0.16000000000000003,"total":162,"current":30}
+{"_e":"metro:bundling:progress","_t":1789834174911,"id":"q","progress":0.16000000000000003,"total":162,"current":31}
+{"_e":"metro:bundling:progress","_t":1789834175014,"id":"q","progress":0.16000000000000003,"total":163,"current":36}
+{"_e":"metro:bundling:progress","_t":1789834175117,"id":"q","progress":0.16000000000000003,"total":184,"current":40}
+{"_e":"metro:bundling:progress","_t":1789834175224,"id":"q","progress":0.16000000000000003,"total":191,"current":51}
+{"_e":"metro:bundling:progress","_t":1789834175325,"id":"q","progress":0.16000000000000003,"total":206,"current":62}
+{"_e":"metro:bundling:progress","_t":1789834175429,"id":"q","progress":0.16000000000000003,"total":214,"current":72}
+{"_e":"metro:bundling:progress","_t":1789834175531,"id":"q","progress":0.16000000000000003,"total":226,"current":81}
+{"_e":"metro:bundling:progress","_t":1789834175631,"id":"q","progress":0.16000000000000003,"total":229,"current":91}
+{"_e":"metro:bundling:progress","_t":1789834175731,"id":"q","progress":0.16780374510088547,"total":249,"current":102}
+{"_e":"metro:bundling:progress","_t":1789834175845,"id":"q","progress":0.18513991841399344,"total":251,"current":108}
+{"_e":"metro:bundling:progress","_t":1789834175945,"id":"q","progress":0.18513991841399344,"total":253,"current":108}
+{"_e":"metro:bundling:progress","_t":1789834175996,"id":"q","progress":0.18561452295770908,"total":253,"current":109}
+{"_e":"metro:bundling:progress","_t":1789834176097,"id":"q","progress":0.20023013217459767,"total":257,"current":115}
+{"_e":"metro:bundling:progress","_t":1789834176196,"id":"q","progress":0.20023013217459767,"total":289,"current":119}
+{"_e":"metro:bundling:progress","_t":1789834176298,"id":"q","progress":0.20023013217459767,"total":307,"current":128}
+{"_e":"metro:bundling:progress","_t":1789834176400,"id":"q","progress":0.20737514792899409,"total":325,"current":148}
+{"_e":"metro:bundling:progress","_t":1789834176501,"id":"q","progress":0.24115114795918366,"total":336,"current":165}
+{"_e":"metro:bundling:progress","_t":1789834176603,"id":"q","progress":0.24115114795918366,"total":360,"current":174}
+{"_e":"metro:bundling:progress","_t":1789834176703,"id":"q","progress":0.24354865913307472,"total":385,"current":190}
+{"_e":"metro:bundling:progress","_t":1789834176803,"id":"q","progress":0.262592510086384,"total":402,"current":206}
+{"_e":"metro:bundling:progress","_t":1789834176905,"id":"q","progress":0.2786203823672531,"total":413,"current":218}
+{"_e":"metro:bundling:progress","_t":1789834177004,"id":"q","progress":0.3018681463865768,"total":435,"current":239}
+{"_e":"metro:bundling:progress","_t":1789834177106,"id":"q","progress":0.3350428130833536,"total":444,"current":257}
+{"_e":"metro:bundling:progress","_t":1789834177219,"id":"q","progress":0.33832309855912396,"total":447,"current":260}
+{"_e":"metro:bundling:progress","_t":1789834177325,"id":"q","progress":0.33832309855912396,"total":457,"current":265}
+{"_e":"metro:bundling:progress","_t":1789834177449,"id":"q","progress":0.34091351379573853,"total":459,"current":268}
+{"_e":"metro:bundling:progress","_t":1789834177556,"id":"q","progress":0.34812559699982587,"total":461,"current":272}
+{"_e":"metro:bundling:progress","_t":1789834177666,"id":"q","progress":0.3532639127427407,"total":461,"current":274}
+{"_e":"metro:bundling:progress","_t":1789834177749,"id":"q","progress":0.35584718686623906,"total":461,"current":275}
+{"_e":"metro:bundling:progress","_t":1789834177852,"id":"q","progress":0.3651244907197827,"total":470,"current":284}
+{"_e":"metro:bundling:progress","_t":1789834177955,"id":"q","progress":0.3804941828254847,"total":475,"current":293}
+{"_e":"metro:bundling:progress","_t":1789834178055,"id":"q","progress":0.3804941828254847,"total":483,"current":297}
+{"_e":"metro:bundling:progress","_t":1789834178168,"id":"q","progress":0.38066089699900124,"total":483,"current":298}
+{"_e":"metro:bundling:progress","_t":1789834178226,"id":"q","progress":0.3832199546485261,"total":483,"current":299}
+{"_e":"metro:bundling:progress","_t":1789834178339,"id":"q","progress":0.3874427321949188,"total":490,"current":305}
+{"_e":"metro:bundling:progress","_t":1789834178452,"id":"q","progress":0.40543107038733855,"total":490,"current":312}
+{"_e":"metro:bundling:progress","_t":1789834178557,"id":"q","progress":0.40543107038733855,"total":502,"current":318}
+{"_e":"metro:bundling:progress","_t":1789834178661,"id":"q","progress":0.4167277717870797,"total":505,"current":326}
+{"_e":"metro:bundling:progress","_t":1789834178761,"id":"q","progress":0.44005489657876684,"total":505,"current":335}
+{"_e":"metro:bundling:progress","_t":1789834178862,"id":"q","progress":0.4522759139564311,"total":513,"current":345}
+{"_e":"metro:bundling:progress","_t":1789834178962,"id":"q","progress":0.4794959762653907,"total":517,"current":358}
+{"_e":"metro:bundling:progress","_t":1789834179064,"id":"q","progress":0.5025175010095018,"total":529,"current":375}
+{"_e":"metro:bundling:progress","_t":1789834179164,"id":"q","progress":0.5286784872041226,"total":535,"current":389}
+{"_e":"metro:bundling:progress","_t":1789834179264,"id":"q","progress":0.5555513329003192,"total":538,"current":401}
+{"_e":"metro:bundling:progress","_t":1789834179369,"id":"q","progress":0.5701223338047611,"total":543,"current":410}
+{"_e":"metro:bundling:progress","_t":1789834179470,"id":"q","progress":0.5701223338047611,"total":555,"current":419}
+{"_e":"metro:bundling:progress","_t":1789834179570,"id":"q","progress":0.5717482302246846,"total":570,"current":431}
+{"_e":"metro:bundling:progress","_t":1789834179671,"id":"q","progress":0.5717482302246846,"total":600,"current":437}
+{"_e":"metro:bundling:progress","_t":1789834179775,"id":"q","progress":0.5717482302246846,"total":601,"current":445}
+{"_e":"metro:bundling:progress","_t":1789834179880,"id":"q","progress":0.5724776325599755,"total":604,"current":457}
+{"_e":"metro:bundling:progress","_t":1789834179983,"id":"q","progress":0.5861031980650363,"total":610,"current":467}
+{"_e":"metro:bundling:progress","_t":1789834180085,"id":"q","progress":0.6035316024573205,"total":614,"current":477}
+{"_e":"metro:bundling:progress","_t":1789834180188,"id":"q","progress":0.6038218921027975,"total":619,"current":481}
+{"_e":"metro:bundling:progress","_t":1789834180290,"id":"q","progress":0.6110571485253613,"total":623,"current":487}
+{"_e":"metro:bundling:progress","_t":1789834180390,"id":"q","progress":0.6182423581063723,"total":627,"current":493}
+{"_e":"metro:bundling:progress","_t":1789834180491,"id":"q","progress":0.6364380907947584,"total":628,"current":501}
+{"_e":"metro:bundling:progress","_t":1789834180591,"id":"q","progress":0.6364380907947584,"total":659,"current":513}
+{"_e":"metro:bundling:progress","_t":1789834180698,"id":"q","progress":0.6364380907947584,"total":674,"current":521}
+{"_e":"metro:bundling:progress","_t":1789834180807,"id":"q","progress":0.6364380907947584,"total":676,"current":528}
+{"_e":"metro:bundling:progress","_t":1789834180938,"id":"q","progress":0.6364380907947584,"total":676,"current":529}
+{"_e":"metro:bundling:progress","_t":1789834181042,"id":"q","progress":0.6364380907947584,"total":682,"current":536}
+{"_e":"metro:bundling:progress","_t":1789834181154,"id":"q","progress":0.6364380907947584,"total":688,"current":540}
+{"_e":"metro:bundling:progress","_t":1789834181255,"id":"q","progress":0.6364380907947584,"total":722,"current":541}
+{"_e":"metro:bundling:progress","_t":1789834181358,"id":"q","progress":0.6364380907947584,"total":770,"current":549}
+{"_e":"metro:bundling:progress","_t":1789834181469,"id":"q","progress":0.6364380907947584,"total":770,"current":557}
+{"_e":"metro:bundling:progress","_t":1789834181579,"id":"q","progress":0.6364380907947584,"total":771,"current":559}
+{"_e":"metro:bundling:progress","_t":1789834181671,"id":"q","progress":0.6364380907947584,"total":771,"current":560}
+{"_e":"metro:bundling:progress","_t":1789834181775,"id":"q","progress":0.6364380907947584,"total":773,"current":564}
+{"_e":"metro:bundling:progress","_t":1789834181878,"id":"q","progress":0.6364380907947584,"total":774,"current":568}
+{"_e":"metro:bundling:progress","_t":1789834181982,"id":"q","progress":0.6364380907947584,"total":778,"current":573}
+{"_e":"metro:bundling:progress","_t":1789834182085,"id":"q","progress":0.6364380907947584,"total":781,"current":586}
+{"_e":"metro:bundling:progress","_t":1789834182197,"id":"q","progress":0.6364380907947584,"total":783,"current":592}
+{"_e":"metro:bundling:progress","_t":1789834182297,"id":"q","progress":0.6364380907947584,"total":791,"current":602}
+{"_e":"metro:bundling:progress","_t":1789834182407,"id":"q","progress":0.6364380907947584,"total":798,"current":608}
+{"_e":"metro:bundling:progress","_t":1789834182514,"id":"q","progress":0.6364380907947584,"total":802,"current":620}
+{"_e":"metro:bundling:progress","_t":1789834182626,"id":"q","progress":0.6364380907947584,"total":803,"current":629}
+{"_e":"metro:bundling:progress","_t":1789834182731,"id":"q","progress":0.6364380907947584,"total":811,"current":634}
+{"_e":"metro:bundling:progress","_t":1789834182834,"id":"q","progress":0.6364380907947584,"total":819,"current":644}
+{"_e":"metro:bundling:progress","_t":1789834182935,"id":"q","progress":0.6364380907947584,"total":826,"current":652}
+{"_e":"metro:bundling:progress","_t":1789834183046,"id":"q","progress":0.6364380907947584,"total":829,"current":655}
+{"_e":"metro:bundling:progress","_t":1789834183171,"id":"q","progress":0.6364380907947584,"total":834,"current":657}
+{"_e":"metro:bundling:progress","_t":1789834183176,"id":"q","progress":0.6364380907947584,"total":834,"current":658}
+{"_e":"metro:bundling:progress","_t":1789834183280,"id":"q","progress":0.6364380907947584,"total":834,"current":659}
+{"_e":"metro:bundling:progress","_t":1789834183394,"id":"q","progress":0.6364380907947584,"total":834,"current":660}
+{"_e":"metro:bundling:progress","_t":1789834183484,"id":"q","progress":0.6364380907947584,"total":834,"current":661}
+{"_e":"metro:bundling:progress","_t":1789834183586,"id":"q","progress":0.642679022337557,"total":837,"current":671}
+{"_e":"metro:bundling:progress","_t":1789834183687,"id":"q","progress":0.6600349144766611,"total":837,"current":680}
+{"_e":"metro:bundling:progress","_t":1789834183794,"id":"q","progress":0.6724390947279596,"total":839,"current":688}
+{"_e":"metro:bundling:progress","_t":1789834183896,"id":"q","progress":0.6865306122448981,"total":840,"current":696}
+{"_e":"metro:bundling:progress","_t":1789834183996,"id":"q","progress":0.6957615507288695,"total":844,"current":704}
+{"_e":"metro:bundling:progress","_t":1789834184096,"id":"q","progress":0.7079878155526768,"total":845,"current":711}
+{"_e":"metro:bundling:progress","_t":1789834184204,"id":"q","progress":0.7088299173472131,"total":854,"current":719}
+{"_e":"metro:bundling:progress","_t":1789834184311,"id":"q","progress":0.7246913546391412,"total":854,"current":727}
+{"_e":"metro:bundling:progress","_t":1789834184415,"id":"q","progress":0.7321302486444291,"total":859,"current":735}
+{"_e":"metro:bundling:progress","_t":1789834184517,"id":"q","progress":0.7441321839158347,"total":859,"current":741}
+{"_e":"metro:bundling:progress","_t":1789834184617,"id":"q","progress":0.7570211185340303,"total":862,"current":750}
+{"_e":"metro:bundling:progress","_t":1789834184732,"id":"q","progress":0.7717134452160493,"total":864,"current":759}
+{"_e":"metro:bundling:progress","_t":1789834184832,"id":"q","progress":0.7803457802857768,"total":866,"current":765}
+{"_e":"metro:bundling:progress","_t":1789834184938,"id":"q","progress":0.7887570524512132,"total":867,"current":770}
+{"_e":"metro:bundling:progress","_t":1789834185042,"id":"q","progress":0.7951379303021937,"total":868,"current":774}
+{"_e":"metro:bundling:progress","_t":1789834185147,"id":"q","progress":0.81,"total":870,"current":783}
+{"_e":"metro:bundling:progress","_t":1789834185252,"id":"q","progress":0.8230417685195026,"total":873,"current":792}
+{"_e":"metro:bundling:progress","_t":1789834185352,"id":"q","progress":0.8230417685195026,"total":888,"current":802}
+{"_e":"metro:bundling:progress","_t":1789834185457,"id":"q","progress":0.8301690072767901,"total":889,"current":810}
+{"_e":"metro:bundling:progress","_t":1789834185557,"id":"q","progress":0.8449137843077238,"total":891,"current":819}
+{"_e":"metro:bundling:progress","_t":1789834185658,"id":"q","progress":0.8533451306078947,"total":892,"current":824}
+{"_e":"metro:bundling:progress","_t":1789834185766,"id":"q","progress":0.8661071323113573,"total":894,"current":832}
+{"_e":"metro:bundling:progress","_t":1789834185878,"id":"q","progress":0.8830965003188777,"total":896,"current":842}
+{"_e":"metro:bundling:progress","_t":1789834185978,"id":"q","progress":0.8922080029105068,"total":902,"current":852}
+{"_e":"metro:bundling:progress","_t":1789834186079,"id":"q","progress":0.9154865840332889,"total":903,"current":864}
+{"_e":"metro:bundling:progress","_t":1789834186179,"id":"q","progress":0.9287106928514633,"total":909,"current":876}
+{"_e":"metro:bundling:progress","_t":1789834186279,"id":"q","progress":0.9287106928514633,"total":950,"current":895}
+{"_e":"metro:bundling:progress","_t":1789834186392,"id":"q","progress":0.9287106928514633,"total":966,"current":907}
+{"_e":"metro:bundling:progress","_t":1789834186500,"id":"q","progress":0.9287106928514633,"total":971,"current":913}
+{"_e":"metro:bundling:progress","_t":1789834186604,"id":"q","progress":0.9287106928514633,"total":983,"current":927}
+{"_e":"metro:bundling:progress","_t":1789834186712,"id":"q","progress":0.9287106928514633,"total":1003,"current":941}
+{"_e":"metro:bundling:progress","_t":1789834186813,"id":"q","progress":0.9287106928514633,"total":1008,"current":945}
+{"_e":"metro:bundling:progress","_t":1789834186914,"id":"q","progress":0.9287106928514633,"total":1014,"current":953}
+{"_e":"metro:bundling:progress","_t":1789834187017,"id":"q","progress":0.9287106928514633,"total":1026,"current":959}
+{"_e":"metro:bundling:progress","_t":1789834187122,"id":"q","progress":0.9287106928514633,"total":1027,"current":967}
+{"_e":"metro:bundling:progress","_t":1789834187224,"id":"q","progress":0.9287106928514633,"total":1035,"current":976}
+{"_e":"metro:bundling:progress","_t":1789834187327,"id":"q","progress":0.9287106928514633,"total":1039,"current":982}
+{"_e":"metro:bundling:progress","_t":1789834187427,"id":"q","progress":0.9287106928514633,"total":1047,"current":995}
+{"_e":"metro:bundling:progress","_t":1789834187544,"id":"q","progress":0.9287106928514633,"total":1050,"current":1000}
+{"_e":"metro:bundling:progress","_t":1789834187657,"id":"q","progress":0.9287106928514633,"total":1052,"current":1004}
+{"_e":"metro:bundling:progress","_t":1789834187771,"id":"q","progress":0.9287106928514633,"total":1052,"current":1007}
+{"_e":"metro:bundling:progress","_t":1789834187871,"id":"q","progress":0.9287106928514633,"total":1056,"current":1013}
+{"_e":"metro:bundling:progress","_t":1789834187977,"id":"q","progress":0.9287106928514633,"total":1057,"current":1016}
+{"_e":"metro:bundling:progress","_t":1789834188083,"id":"q","progress":0.9313434645794266,"total":1059,"current":1022}
+{"_e":"metro:bundling:progress","_t":1789834188187,"id":"q","progress":0.9387619134758969,"total":1061,"current":1028}
+{"_e":"metro:bundling:progress","_t":1789834188292,"id":"q","progress":0.9517249420543841,"total":1064,"current":1038}
+{"_e":"metro:bundling:progress","_t":1789834188395,"id":"q","progress":0.9627939782670986,"total":1065,"current":1045}
+{"_e":"metro:bundling:progress","_t":1789834188506,"id":"q","progress":0.9646375278273711,"total":1065,"current":1046}
+{"_e":"metro:bundling:progress","_t":1789834188797,"id":"q","progress":0.9664828407062092,"total":1065,"current":1047}
+{"_e":"metro:bundling:progress","_t":1789834188911,"id":"q","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:started","_t":1789834207499,"id":"r","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789834207500,"id":"q","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834207500,"id":"r","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834207501,"id":"q","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834207501,"id":"r","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834207610,"id":"q","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834207610,"id":"r","progress":0.005835262345679013,"total":144,"current":11}
+{"_e":"metro:bundling:progress","_t":1789834207750,"id":"q","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834207750,"id":"r","progress":0.012075836251660426,"total":182,"current":20}
+{"_e":"metro:bundling:progress","_t":1789834207861,"id":"q","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834207865,"id":"r","progress":0.08090864197530864,"total":225,"current":64}
+{"_e":"metro:bundling:progress","_t":1789834208031,"id":"q","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834208032,"id":"r","progress":0.1111111111111111,"total":261,"current":87}
+{"_e":"metro:bundling:progress","_t":1789834208148,"id":"q","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834208148,"id":"r","progress":0.24708457303101805,"total":342,"current":170}
+{"_e":"metro:bundling:progress","_t":1789834208275,"id":"q","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834208275,"id":"r","progress":0.25,"total":342,"current":171}
+{"_e":"metro:bundling:progress","_t":1789834208483,"id":"q","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834208483,"id":"r","progress":0.2799473698944598,"total":378,"current":200}
+{"_e":"metro:bundling:progress","_t":1789834208636,"id":"q","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834208636,"id":"r","progress":0.2799473698944598,"total":390,"current":203}
+{"_e":"metro:bundling:progress","_t":1789834208730,"id":"q","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834208730,"id":"r","progress":0.2799473698944598,"total":390,"current":204}
+{"_e":"metro:bundling:progress","_t":1789834208830,"id":"q","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834208830,"id":"r","progress":0.34772319784604794,"total":407,"current":240}
+{"_e":"metro:bundling:progress","_t":1789834208933,"id":"q","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834208933,"id":"r","progress":0.4328951576663198,"total":497,"current":327}
+{"_e":"metro:bundling:progress","_t":1789834209063,"id":"q","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834209063,"id":"r","progress":0.470687955108884,"total":567,"current":389}
+{"_e":"metro:bundling:progress","_t":1789834209163,"id":"q","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834209164,"id":"r","progress":0.5444651056014693,"total":660,"current":487}
+{"_e":"metro:bundling:progress","_t":1789834209263,"id":"q","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834209263,"id":"r","progress":0.6489856650493123,"total":679,"current":547}
+{"_e":"metro:bundling:progress","_t":1789834209465,"id":"q","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834209465,"id":"r","progress":0.6489856650493123,"total":760,"current":551}
+{"_e":"metro:bundling:progress","_t":1789834209479,"id":"q","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834209479,"id":"r","progress":0.6489856650493123,"total":760,"current":552}
+{"_e":"metro:bundling:progress","_t":1789834209579,"id":"q","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834209579,"id":"r","progress":0.6489856650493123,"total":813,"current":637}
+{"_e":"metro:bundling:progress","_t":1789834209679,"id":"q","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834209680,"id":"r","progress":0.6839525167898296,"total":844,"current":698}
+{"_e":"metro:bundling:progress","_t":1789834209782,"id":"q","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834209782,"id":"r","progress":0.8087358566108518,"total":854,"current":768}
+{"_e":"metro:bundling:progress","_t":1789834209881,"id":"q","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834209881,"id":"r","progress":0.8723643579618535,"total":894,"current":835}
+{"_e":"metro:bundling:progress","_t":1789834209981,"id":"q","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834209981,"id":"r","progress":0.9408792069744707,"total":933,"current":905}
+{"_e":"metro:bundling:progress","_t":1789834210081,"id":"q","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834210081,"id":"r","progress":0.9408792069744707,"total":1047,"current":1003}
+{"_e":"metro:bundling:progress","_t":1789834210189,"id":"q","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834210189,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834217229,"id":"q","progress":0.9720293592541163,"total":1065,"current":1050}
+{"_e":"metro:bundling:progress","_t":1789834217229,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834217329,"id":"q","progress":0.9720293592541163,"total":2806,"current":1050}
+{"_e":"metro:bundling:progress","_t":1789834217329,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834217507,"id":"q","progress":0.9720293592541163,"total":2883,"current":1051}
+{"_e":"metro:bundling:progress","_t":1789834217507,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834217608,"id":"q","progress":0.9720293592541163,"total":2883,"current":1053}
+{"_e":"metro:bundling:progress","_t":1789834217608,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834217876,"id":"q","progress":0.9720293592541163,"total":2883,"current":1057}
+{"_e":"metro:bundling:progress","_t":1789834217878,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834217962,"id":"q","progress":0.9720293592541163,"total":2883,"current":1061}
+{"_e":"metro:bundling:progress","_t":1789834217962,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834218124,"id":"q","progress":0.9720293592541163,"total":2883,"current":1062}
+{"_e":"metro:bundling:progress","_t":1789834218125,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834218228,"id":"q","progress":0.9720293592541163,"total":2883,"current":1070}
+{"_e":"metro:bundling:progress","_t":1789834218230,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834218340,"id":"q","progress":0.9720293592541163,"total":2883,"current":1078}
+{"_e":"metro:bundling:progress","_t":1789834218340,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834218459,"id":"q","progress":0.9720293592541163,"total":2883,"current":1084}
+{"_e":"metro:bundling:progress","_t":1789834218466,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834218568,"id":"q","progress":0.9720293592541163,"total":2883,"current":1093}
+{"_e":"metro:bundling:progress","_t":1789834218568,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834218694,"id":"q","progress":0.9720293592541163,"total":2883,"current":1098}
+{"_e":"metro:bundling:progress","_t":1789834218694,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834218812,"id":"q","progress":0.9720293592541163,"total":2883,"current":1105}
+{"_e":"metro:bundling:progress","_t":1789834218812,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834218916,"id":"q","progress":0.9720293592541163,"total":2883,"current":1115}
+{"_e":"metro:bundling:progress","_t":1789834218916,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834219017,"id":"q","progress":0.9720293592541163,"total":2883,"current":1125}
+{"_e":"metro:bundling:progress","_t":1789834219017,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834219145,"id":"q","progress":0.9720293592541163,"total":2884,"current":1134}
+{"_e":"metro:bundling:progress","_t":1789834219146,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834219299,"id":"q","progress":0.9720293592541163,"total":2884,"current":1146}
+{"_e":"metro:bundling:progress","_t":1789834219299,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834219409,"id":"q","progress":0.9720293592541163,"total":2884,"current":1154}
+{"_e":"metro:bundling:progress","_t":1789834219409,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834219516,"id":"q","progress":0.9720293592541163,"total":2884,"current":1160}
+{"_e":"metro:bundling:progress","_t":1789834219517,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834219617,"id":"q","progress":0.9720293592541163,"total":2884,"current":1163}
+{"_e":"metro:bundling:progress","_t":1789834219617,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834219719,"id":"q","progress":0.9720293592541163,"total":2884,"current":1167}
+{"_e":"metro:bundling:progress","_t":1789834219719,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834219826,"id":"q","progress":0.9720293592541163,"total":2884,"current":1180}
+{"_e":"metro:bundling:progress","_t":1789834219826,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834219929,"id":"q","progress":0.9720293592541163,"total":2884,"current":1186}
+{"_e":"metro:bundling:progress","_t":1789834219929,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834220029,"id":"q","progress":0.9720293592541163,"total":2884,"current":1193}
+{"_e":"metro:bundling:progress","_t":1789834220029,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834220132,"id":"q","progress":0.9720293592541163,"total":2884,"current":1203}
+{"_e":"metro:bundling:progress","_t":1789834220132,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834220232,"id":"q","progress":0.9720293592541163,"total":2884,"current":1217}
+{"_e":"metro:bundling:progress","_t":1789834220232,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834220338,"id":"q","progress":0.9720293592541163,"total":2884,"current":1232}
+{"_e":"metro:bundling:progress","_t":1789834220338,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834220440,"id":"q","progress":0.9720293592541163,"total":2884,"current":1247}
+{"_e":"metro:bundling:progress","_t":1789834220440,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834220547,"id":"q","progress":0.9720293592541163,"total":2884,"current":1260}
+{"_e":"metro:bundling:progress","_t":1789834220548,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834220648,"id":"q","progress":0.9720293592541163,"total":2884,"current":1264}
+{"_e":"metro:bundling:progress","_t":1789834220676,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834220747,"id":"q","progress":0.9720293592541163,"total":2884,"current":1270}
+{"_e":"metro:bundling:progress","_t":1789834220747,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834220847,"id":"q","progress":0.9720293592541163,"total":2884,"current":1285}
+{"_e":"metro:bundling:progress","_t":1789834220847,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834220949,"id":"q","progress":0.9720293592541163,"total":2884,"current":1302}
+{"_e":"metro:bundling:progress","_t":1789834220950,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834221049,"id":"q","progress":0.9720293592541163,"total":2884,"current":1324}
+{"_e":"metro:bundling:progress","_t":1789834221049,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834221152,"id":"q","progress":0.9720293592541163,"total":2884,"current":1341}
+{"_e":"metro:bundling:progress","_t":1789834221152,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834221252,"id":"q","progress":0.9720293592541163,"total":2884,"current":1355}
+{"_e":"metro:bundling:progress","_t":1789834221252,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834221354,"id":"q","progress":0.9720293592541163,"total":2884,"current":1375}
+{"_e":"metro:bundling:progress","_t":1789834221354,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834221454,"id":"q","progress":0.9720293592541163,"total":2884,"current":1395}
+{"_e":"metro:bundling:progress","_t":1789834221455,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834221556,"id":"q","progress":0.9720293592541163,"total":2884,"current":1413}
+{"_e":"metro:bundling:progress","_t":1789834221556,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834221657,"id":"q","progress":0.9720293592541163,"total":2884,"current":1431}
+{"_e":"metro:bundling:progress","_t":1789834221657,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834221763,"id":"q","progress":0.9720293592541163,"total":2884,"current":1447}
+{"_e":"metro:bundling:progress","_t":1789834221763,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834221863,"id":"q","progress":0.9720293592541163,"total":2884,"current":1464}
+{"_e":"metro:bundling:progress","_t":1789834221863,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834221965,"id":"q","progress":0.9720293592541163,"total":2884,"current":1480}
+{"_e":"metro:bundling:progress","_t":1789834221966,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834222065,"id":"q","progress":0.9720293592541163,"total":2884,"current":1498}
+{"_e":"metro:bundling:progress","_t":1789834222065,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834222189,"id":"q","progress":0.9720293592541163,"total":2884,"current":1511}
+{"_e":"metro:bundling:progress","_t":1789834222189,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834222290,"id":"q","progress":0.9720293592541163,"total":2884,"current":1530}
+{"_e":"metro:bundling:progress","_t":1789834222290,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834222396,"id":"q","progress":0.9720293592541163,"total":2884,"current":1541}
+{"_e":"metro:bundling:progress","_t":1789834222396,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834222501,"id":"q","progress":0.9720293592541163,"total":2884,"current":1550}
+{"_e":"metro:bundling:progress","_t":1789834222519,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834222614,"id":"q","progress":0.9720293592541163,"total":2884,"current":1559}
+{"_e":"metro:bundling:progress","_t":1789834222614,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834222715,"id":"q","progress":0.9720293592541163,"total":2884,"current":1575}
+{"_e":"metro:bundling:progress","_t":1789834222715,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834222820,"id":"q","progress":0.9720293592541163,"total":2884,"current":1589}
+{"_e":"metro:bundling:progress","_t":1789834222820,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834222929,"id":"q","progress":0.9720293592541163,"total":2884,"current":1609}
+{"_e":"metro:bundling:progress","_t":1789834222930,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834223039,"id":"q","progress":0.9720293592541163,"total":2884,"current":1615}
+{"_e":"metro:bundling:progress","_t":1789834223039,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834223146,"id":"q","progress":0.9720293592541163,"total":2884,"current":1619}
+{"_e":"metro:bundling:progress","_t":1789834223146,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834223258,"id":"q","progress":0.9720293592541163,"total":2884,"current":1631}
+{"_e":"metro:bundling:progress","_t":1789834223260,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834223358,"id":"q","progress":0.9720293592541163,"total":2884,"current":1647}
+{"_e":"metro:bundling:progress","_t":1789834223358,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834223458,"id":"q","progress":0.9720293592541163,"total":2884,"current":1666}
+{"_e":"metro:bundling:progress","_t":1789834223458,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834223559,"id":"q","progress":0.9720293592541163,"total":2884,"current":1682}
+{"_e":"metro:bundling:progress","_t":1789834223559,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834223659,"id":"q","progress":0.9720293592541163,"total":2884,"current":1691}
+{"_e":"metro:bundling:progress","_t":1789834223659,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834223761,"id":"q","progress":0.9720293592541163,"total":2884,"current":1700}
+{"_e":"metro:bundling:progress","_t":1789834223761,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834223861,"id":"q","progress":0.9720293592541163,"total":2884,"current":1714}
+{"_e":"metro:bundling:progress","_t":1789834223861,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834223962,"id":"q","progress":0.9720293592541163,"total":2884,"current":1731}
+{"_e":"metro:bundling:progress","_t":1789834223962,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834224067,"id":"q","progress":0.9720293592541163,"total":2884,"current":1745}
+{"_e":"metro:bundling:progress","_t":1789834224067,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834224167,"id":"q","progress":0.9720293592541163,"total":2884,"current":1766}
+{"_e":"metro:bundling:progress","_t":1789834224167,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834224267,"id":"q","progress":0.9720293592541163,"total":2884,"current":1788}
+{"_e":"metro:bundling:progress","_t":1789834224267,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834224369,"id":"q","progress":0.9720293592541163,"total":2884,"current":1808}
+{"_e":"metro:bundling:progress","_t":1789834224369,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834224469,"id":"q","progress":0.9720293592541163,"total":2884,"current":1829}
+{"_e":"metro:bundling:progress","_t":1789834224469,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834224572,"id":"q","progress":0.9720293592541163,"total":2884,"current":1848}
+{"_e":"metro:bundling:progress","_t":1789834224572,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834224671,"id":"q","progress":0.9720293592541163,"total":2884,"current":1867}
+{"_e":"metro:bundling:progress","_t":1789834224672,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834224773,"id":"q","progress":0.9720293592541163,"total":2884,"current":1883}
+{"_e":"metro:bundling:progress","_t":1789834224774,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834224881,"id":"q","progress":0.9720293592541163,"total":2884,"current":1896}
+{"_e":"metro:bundling:progress","_t":1789834224881,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834224983,"id":"q","progress":0.9720293592541163,"total":2884,"current":1913}
+{"_e":"metro:bundling:progress","_t":1789834224983,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834225083,"id":"q","progress":0.9720293592541163,"total":2884,"current":1933}
+{"_e":"metro:bundling:progress","_t":1789834225083,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834225184,"id":"q","progress":0.9720293592541163,"total":2884,"current":1950}
+{"_e":"metro:bundling:progress","_t":1789834225184,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834225286,"id":"q","progress":0.9720293592541163,"total":2884,"current":1972}
+{"_e":"metro:bundling:progress","_t":1789834225286,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834225387,"id":"q","progress":0.9720293592541163,"total":2884,"current":1991}
+{"_e":"metro:bundling:progress","_t":1789834225387,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834225486,"id":"q","progress":0.9720293592541163,"total":2884,"current":2016}
+{"_e":"metro:bundling:progress","_t":1789834225487,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834225586,"id":"q","progress":0.9720293592541163,"total":2884,"current":2043}
+{"_e":"metro:bundling:progress","_t":1789834225586,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834225687,"id":"q","progress":0.9720293592541163,"total":2884,"current":2065}
+{"_e":"metro:bundling:progress","_t":1789834225687,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834225789,"id":"q","progress":0.9720293592541163,"total":2884,"current":2090}
+{"_e":"metro:bundling:progress","_t":1789834225789,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834225889,"id":"q","progress":0.9720293592541163,"total":2884,"current":2111}
+{"_e":"metro:bundling:progress","_t":1789834225889,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834225989,"id":"q","progress":0.9720293592541163,"total":2884,"current":2129}
+{"_e":"metro:bundling:progress","_t":1789834225989,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834226093,"id":"q","progress":0.9720293592541163,"total":2884,"current":2136}
+{"_e":"metro:bundling:progress","_t":1789834226093,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834226211,"id":"q","progress":0.9720293592541163,"total":2884,"current":2141}
+{"_e":"metro:bundling:progress","_t":1789834226211,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834226310,"id":"q","progress":0.9720293592541163,"total":2884,"current":2145}
+{"_e":"metro:bundling:progress","_t":1789834226310,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834226411,"id":"q","progress":0.9720293592541163,"total":2884,"current":2163}
+{"_e":"metro:bundling:progress","_t":1789834226411,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834226513,"id":"q","progress":0.9720293592541163,"total":2884,"current":2179}
+{"_e":"metro:bundling:progress","_t":1789834226513,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834226617,"id":"q","progress":0.9720293592541163,"total":2884,"current":2200}
+{"_e":"metro:bundling:progress","_t":1789834226618,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834226716,"id":"q","progress":0.9720293592541163,"total":2884,"current":2217}
+{"_e":"metro:bundling:progress","_t":1789834226716,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834226816,"id":"q","progress":0.9720293592541163,"total":2884,"current":2228}
+{"_e":"metro:bundling:progress","_t":1789834226816,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834226922,"id":"q","progress":0.9720293592541163,"total":2884,"current":2243}
+{"_e":"metro:bundling:progress","_t":1789834226922,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834227042,"id":"q","progress":0.9720293592541163,"total":2884,"current":2262}
+{"_e":"metro:bundling:progress","_t":1789834227043,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834227142,"id":"q","progress":0.9720293592541163,"total":2884,"current":2283}
+{"_e":"metro:bundling:progress","_t":1789834227142,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834227242,"id":"q","progress":0.9720293592541163,"total":2884,"current":2305}
+{"_e":"metro:bundling:progress","_t":1789834227242,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834227342,"id":"q","progress":0.9720293592541163,"total":2884,"current":2322}
+{"_e":"metro:bundling:progress","_t":1789834227342,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834227442,"id":"q","progress":0.9720293592541163,"total":2884,"current":2344}
+{"_e":"metro:bundling:progress","_t":1789834227442,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834227542,"id":"q","progress":0.9720293592541163,"total":2884,"current":2360}
+{"_e":"metro:bundling:progress","_t":1789834227542,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834227675,"id":"q","progress":0.9720293592541163,"total":2884,"current":2368}
+{"_e":"metro:bundling:progress","_t":1789834227675,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834227776,"id":"q","progress":0.9720293592541163,"total":2884,"current":2380}
+{"_e":"metro:bundling:progress","_t":1789834227776,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834227876,"id":"q","progress":0.9720293592541163,"total":2884,"current":2401}
+{"_e":"metro:bundling:progress","_t":1789834227876,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834227976,"id":"q","progress":0.9720293592541163,"total":2884,"current":2417}
+{"_e":"metro:bundling:progress","_t":1789834227976,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834228076,"id":"q","progress":0.9720293592541163,"total":2890,"current":2426}
+{"_e":"metro:bundling:progress","_t":1789834228076,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834228200,"id":"q","progress":0.9720293592541163,"total":2891,"current":2430}
+{"_e":"metro:bundling:progress","_t":1789834228200,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:started","_t":1789834247921,"id":"t","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789834247921,"id":"q","progress":0.9720293592541163,"total":2891,"current":2430}
+{"_e":"metro:bundling:progress","_t":1789834247921,"id":"r","progress":0.9701787564195816,"total":1065,"current":1049}
+{"_e":"metro:bundling:progress","_t":1789834247921,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834256507,"id":"q","progress":0.9720293592541163,"total":2891,"current":2430}
+{"_e":"metro:bundling:progress","_t":1789834256507,"id":"r","progress":0.9887851353855855,"total":1067,"current":1061}
+{"_e":"metro:bundling:progress","_t":1789834256507,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834256696,"id":"q","progress":0.9720293592541163,"total":2891,"current":2430}
+{"_e":"metro:bundling:progress","_t":1789834256696,"id":"r","progress":0.9887851353855855,"total":2885,"current":1061}
+{"_e":"metro:bundling:progress","_t":1789834256696,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834256707,"id":"q","progress":0.9720293592541163,"total":2891,"current":2430}
+{"_e":"metro:bundling:progress","_t":1789834256707,"id":"r","progress":0.9887851353855855,"total":2885,"current":1062}
+{"_e":"metro:bundling:progress","_t":1789834256707,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834256843,"id":"q","progress":0.9720293592541163,"total":2891,"current":2430}
+{"_e":"metro:bundling:progress","_t":1789834256843,"id":"r","progress":0.9887851353855855,"total":2885,"current":1065}
+{"_e":"metro:bundling:progress","_t":1789834256843,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834256943,"id":"q","progress":0.9720293592541163,"total":2891,"current":2431}
+{"_e":"metro:bundling:progress","_t":1789834256943,"id":"r","progress":0.9887851353855855,"total":2885,"current":1065}
+{"_e":"metro:bundling:progress","_t":1789834256944,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834257054,"id":"q","progress":0.9720293592541163,"total":2891,"current":2438}
+{"_e":"metro:bundling:progress","_t":1789834257054,"id":"r","progress":0.9887851353855855,"total":2885,"current":1065}
+{"_e":"metro:bundling:progress","_t":1789834257055,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834257161,"id":"q","progress":0.9720293592541163,"total":2891,"current":2438}
+{"_e":"metro:bundling:progress","_t":1789834257161,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834257161,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834257264,"id":"q","progress":0.9720293592541163,"total":2891,"current":2443}
+{"_e":"metro:bundling:progress","_t":1789834257264,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834257264,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834257365,"id":"q","progress":0.9720293592541163,"total":2891,"current":2454}
+{"_e":"metro:bundling:progress","_t":1789834257365,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834257365,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834257466,"id":"q","progress":0.9720293592541163,"total":2891,"current":2464}
+{"_e":"metro:bundling:progress","_t":1789834257466,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834257466,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834257569,"id":"q","progress":0.9720293592541163,"total":2891,"current":2474}
+{"_e":"metro:bundling:progress","_t":1789834257569,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834257569,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834257677,"id":"q","progress":0.9720293592541163,"total":2891,"current":2485}
+{"_e":"metro:bundling:progress","_t":1789834257678,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834257678,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834257780,"id":"q","progress":0.9720293592541163,"total":2891,"current":2495}
+{"_e":"metro:bundling:progress","_t":1789834257780,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834257780,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834257882,"id":"q","progress":0.9720293592541163,"total":2891,"current":2505}
+{"_e":"metro:bundling:progress","_t":1789834257882,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834257882,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834257988,"id":"q","progress":0.9720293592541163,"total":2891,"current":2515}
+{"_e":"metro:bundling:progress","_t":1789834257988,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834257988,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834258092,"id":"q","progress":0.9720293592541163,"total":2891,"current":2525}
+{"_e":"metro:bundling:progress","_t":1789834258092,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834258092,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834258192,"id":"q","progress":0.9720293592541163,"total":2891,"current":2535}
+{"_e":"metro:bundling:progress","_t":1789834258192,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834258192,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834258294,"id":"q","progress":0.9720293592541163,"total":2891,"current":2546}
+{"_e":"metro:bundling:progress","_t":1789834258294,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834258294,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834258395,"id":"q","progress":0.9720293592541163,"total":2891,"current":2557}
+{"_e":"metro:bundling:progress","_t":1789834258395,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834258395,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834258495,"id":"q","progress":0.9720293592541163,"total":2891,"current":2568}
+{"_e":"metro:bundling:progress","_t":1789834258495,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834258495,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834258595,"id":"q","progress":0.9720293592541163,"total":2891,"current":2579}
+{"_e":"metro:bundling:progress","_t":1789834258595,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834258595,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834258695,"id":"q","progress":0.9720293592541163,"total":2891,"current":2590}
+{"_e":"metro:bundling:progress","_t":1789834258695,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834258695,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834258797,"id":"q","progress":0.9720293592541163,"total":2891,"current":2602}
+{"_e":"metro:bundling:progress","_t":1789834258797,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834258797,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834258897,"id":"q","progress":0.9720293592541163,"total":2891,"current":2614}
+{"_e":"metro:bundling:progress","_t":1789834258897,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834258897,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834258998,"id":"q","progress":0.9720293592541163,"total":2891,"current":2626}
+{"_e":"metro:bundling:progress","_t":1789834258998,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834258998,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834259100,"id":"q","progress":0.9720293592541163,"total":2891,"current":2638}
+{"_e":"metro:bundling:progress","_t":1789834259100,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834259100,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834259201,"id":"q","progress":0.9720293592541163,"total":2891,"current":2649}
+{"_e":"metro:bundling:progress","_t":1789834259201,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834259201,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834259301,"id":"q","progress":0.9720293592541163,"total":2891,"current":2661}
+{"_e":"metro:bundling:progress","_t":1789834259301,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834259301,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834259401,"id":"q","progress":0.9720293592541163,"total":2891,"current":2673}
+{"_e":"metro:bundling:progress","_t":1789834259401,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834259401,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834259501,"id":"q","progress":0.9720293592541163,"total":2891,"current":2684}
+{"_e":"metro:bundling:progress","_t":1789834259501,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834259501,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834259602,"id":"q","progress":0.9720293592541163,"total":2891,"current":2696}
+{"_e":"metro:bundling:progress","_t":1789834259602,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834259602,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834259701,"id":"q","progress":0.9720293592541163,"total":2891,"current":2707}
+{"_e":"metro:bundling:progress","_t":1789834259701,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834259701,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834259802,"id":"q","progress":0.9720293592541163,"total":2891,"current":2719}
+{"_e":"metro:bundling:progress","_t":1789834259802,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834259802,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834259903,"id":"q","progress":0.9720293592541163,"total":2891,"current":2731}
+{"_e":"metro:bundling:progress","_t":1789834259903,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834259903,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834260007,"id":"q","progress":0.9720293592541163,"total":2891,"current":2743}
+{"_e":"metro:bundling:progress","_t":1789834260007,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834260007,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834260109,"id":"q","progress":0.9720293592541163,"total":2891,"current":2754}
+{"_e":"metro:bundling:progress","_t":1789834260110,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834260110,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834260211,"id":"q","progress":0.9720293592541163,"total":2891,"current":2767}
+{"_e":"metro:bundling:progress","_t":1789834260211,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834260211,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834260312,"id":"q","progress":0.9720293592541163,"total":2891,"current":2778}
+{"_e":"metro:bundling:progress","_t":1789834260312,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834260312,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834260412,"id":"q","progress":0.9720293592541163,"total":2891,"current":2790}
+{"_e":"metro:bundling:progress","_t":1789834260412,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834260412,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834260514,"id":"q","progress":0.9720293592541163,"total":2891,"current":2802}
+{"_e":"metro:bundling:progress","_t":1789834260514,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834260514,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834260616,"id":"q","progress":0.9720293592541163,"total":2891,"current":2813}
+{"_e":"metro:bundling:progress","_t":1789834260616,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834260616,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834260716,"id":"q","progress":0.9720293592541163,"total":2891,"current":2824}
+{"_e":"metro:bundling:progress","_t":1789834260716,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834260716,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834260816,"id":"q","progress":0.9720293592541163,"total":2891,"current":2835}
+{"_e":"metro:bundling:progress","_t":1789834260816,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834260816,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834260917,"id":"q","progress":0.9720293592541163,"total":2891,"current":2845}
+{"_e":"metro:bundling:progress","_t":1789834260917,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834260917,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834261016,"id":"q","progress":0.9752501860220313,"total":2891,"current":2855}
+{"_e":"metro:bundling:progress","_t":1789834261016,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834261016,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834261117,"id":"q","progress":0.9827797261052175,"total":2891,"current":2866}
+{"_e":"metro:bundling:progress","_t":1789834261117,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834261117,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834261222,"id":"q","progress":0.9910267925566301,"total":2891,"current":2878}
+{"_e":"metro:bundling:progress","_t":1789834261222,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834261222,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834261323,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834261323,"id":"r","progress":0.9887851353855855,"total":2885,"current":1523}
+{"_e":"metro:bundling:progress","_t":1789834261323,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834261431,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834261431,"id":"r","progress":0.9887851353855855,"total":2891,"current":2431}
+{"_e":"metro:bundling:progress","_t":1789834261431,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834261532,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834261532,"id":"r","progress":0.9887851353855855,"total":2891,"current":2438}
+{"_e":"metro:bundling:progress","_t":1789834261532,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834261638,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834261638,"id":"r","progress":0.9887851353855855,"total":2891,"current":2450}
+{"_e":"metro:bundling:progress","_t":1789834261638,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834261739,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834261739,"id":"r","progress":0.9887851353855855,"total":2891,"current":2462}
+{"_e":"metro:bundling:progress","_t":1789834261739,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834261843,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834261843,"id":"r","progress":0.9887851353855855,"total":2891,"current":2474}
+{"_e":"metro:bundling:progress","_t":1789834261843,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834261946,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834261946,"id":"r","progress":0.9887851353855855,"total":2891,"current":2483}
+{"_e":"metro:bundling:progress","_t":1789834261946,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834262046,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834262046,"id":"r","progress":0.9887851353855855,"total":2891,"current":2493}
+{"_e":"metro:bundling:progress","_t":1789834262046,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834262147,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834262147,"id":"r","progress":0.9887851353855855,"total":2891,"current":2502}
+{"_e":"metro:bundling:progress","_t":1789834262147,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834262247,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834262247,"id":"r","progress":0.9887851353855855,"total":2891,"current":2514}
+{"_e":"metro:bundling:progress","_t":1789834262247,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834262348,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834262348,"id":"r","progress":0.9887851353855855,"total":2891,"current":2527}
+{"_e":"metro:bundling:progress","_t":1789834262348,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834262449,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834262449,"id":"r","progress":0.9887851353855855,"total":2891,"current":2539}
+{"_e":"metro:bundling:progress","_t":1789834262449,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834262554,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834262554,"id":"r","progress":0.9887851353855855,"total":2891,"current":2553}
+{"_e":"metro:bundling:progress","_t":1789834262554,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834262655,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834262655,"id":"r","progress":0.9887851353855855,"total":2891,"current":2566}
+{"_e":"metro:bundling:progress","_t":1789834262655,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834262759,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834262759,"id":"r","progress":0.9887851353855855,"total":2891,"current":2574}
+{"_e":"metro:bundling:progress","_t":1789834262759,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834262860,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834262860,"id":"r","progress":0.9887851353855855,"total":2891,"current":2587}
+{"_e":"metro:bundling:progress","_t":1789834262860,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834262961,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834262961,"id":"r","progress":0.9887851353855855,"total":2891,"current":2598}
+{"_e":"metro:bundling:progress","_t":1789834262961,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834263063,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834263063,"id":"r","progress":0.9887851353855855,"total":2891,"current":2610}
+{"_e":"metro:bundling:progress","_t":1789834263063,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834263165,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834263165,"id":"r","progress":0.9887851353855855,"total":2891,"current":2621}
+{"_e":"metro:bundling:progress","_t":1789834263165,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834263267,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834263267,"id":"r","progress":0.9887851353855855,"total":2891,"current":2634}
+{"_e":"metro:bundling:progress","_t":1789834263267,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834263369,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834263369,"id":"r","progress":0.9887851353855855,"total":2891,"current":2645}
+{"_e":"metro:bundling:progress","_t":1789834263369,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834263470,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834263470,"id":"r","progress":0.9887851353855855,"total":2891,"current":2658}
+{"_e":"metro:bundling:progress","_t":1789834263470,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834263571,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834263571,"id":"r","progress":0.9887851353855855,"total":2891,"current":2670}
+{"_e":"metro:bundling:progress","_t":1789834263571,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834263671,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834263671,"id":"r","progress":0.9887851353855855,"total":2891,"current":2683}
+{"_e":"metro:bundling:progress","_t":1789834263671,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834263774,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834263774,"id":"r","progress":0.9887851353855855,"total":2891,"current":2696}
+{"_e":"metro:bundling:progress","_t":1789834263774,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834263881,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834263881,"id":"r","progress":0.9887851353855855,"total":2891,"current":2708}
+{"_e":"metro:bundling:progress","_t":1789834263881,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834263989,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834263989,"id":"r","progress":0.9887851353855855,"total":2891,"current":2719}
+{"_e":"metro:bundling:progress","_t":1789834263989,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834264113,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834264113,"id":"r","progress":0.9887851353855855,"total":2891,"current":2725}
+{"_e":"metro:bundling:progress","_t":1789834264113,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834264223,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834264223,"id":"r","progress":0.9887851353855855,"total":2891,"current":2728}
+{"_e":"metro:bundling:progress","_t":1789834264223,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834264331,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834264331,"id":"r","progress":0.9887851353855855,"total":2891,"current":2734}
+{"_e":"metro:bundling:progress","_t":1789834264332,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834264431,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834264431,"id":"r","progress":0.9887851353855855,"total":2891,"current":2742}
+{"_e":"metro:bundling:progress","_t":1789834264431,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834264535,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834264535,"id":"r","progress":0.9887851353855855,"total":2891,"current":2747}
+{"_e":"metro:bundling:progress","_t":1789834264535,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834264642,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834264643,"id":"r","progress":0.9887851353855855,"total":2891,"current":2753}
+{"_e":"metro:bundling:progress","_t":1789834264644,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834264743,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834264743,"id":"r","progress":0.9887851353855855,"total":2891,"current":2762}
+{"_e":"metro:bundling:progress","_t":1789834264743,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834264843,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834264844,"id":"r","progress":0.9887851353855855,"total":2891,"current":2770}
+{"_e":"metro:bundling:progress","_t":1789834264844,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834264955,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834264955,"id":"r","progress":0.9887851353855855,"total":2891,"current":2777}
+{"_e":"metro:bundling:progress","_t":1789834264955,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834265112,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834265112,"id":"r","progress":0.9887851353855855,"total":2891,"current":2779}
+{"_e":"metro:bundling:progress","_t":1789834265112,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834265213,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834265213,"id":"r","progress":0.9887851353855855,"total":2891,"current":2786}
+{"_e":"metro:bundling:progress","_t":1789834265213,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834265315,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834265315,"id":"r","progress":0.9887851353855855,"total":2891,"current":2791}
+{"_e":"metro:bundling:progress","_t":1789834265315,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834265418,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834265418,"id":"r","progress":0.9887851353855855,"total":2891,"current":2798}
+{"_e":"metro:bundling:progress","_t":1789834265418,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834265521,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834265521,"id":"r","progress":0.9887851353855855,"total":2891,"current":2805}
+{"_e":"metro:bundling:progress","_t":1789834265521,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834265625,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834265625,"id":"r","progress":0.9887851353855855,"total":2891,"current":2813}
+{"_e":"metro:bundling:progress","_t":1789834265625,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834265732,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834265732,"id":"r","progress":0.9887851353855855,"total":2891,"current":2823}
+{"_e":"metro:bundling:progress","_t":1789834265732,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834265833,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834265833,"id":"r","progress":0.9887851353855855,"total":2891,"current":2834}
+{"_e":"metro:bundling:progress","_t":1789834265833,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834265934,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834265934,"id":"r","progress":0.9887851353855855,"total":2891,"current":2846}
+{"_e":"metro:bundling:progress","_t":1789834265934,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834266038,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834266038,"id":"r","progress":0.9887851353855855,"total":2891,"current":2855}
+{"_e":"metro:bundling:progress","_t":1789834266038,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834266138,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834266138,"id":"r","progress":0.9887851353855855,"total":2891,"current":2864}
+{"_e":"metro:bundling:progress","_t":1789834266138,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834266240,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834266240,"id":"r","progress":0.9889617954598778,"total":2891,"current":2875}
+{"_e":"metro:bundling:progress","_t":1789834266240,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834266342,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834266342,"id":"r","progress":0.9958534944443455,"total":2891,"current":2885}
+{"_e":"metro:bundling:progress","_t":1789834266342,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834266444,"id":"q","progress":0.9979256703942063,"total":2891,"current":2888}
+{"_e":"metro:bundling:progress","_t":1789834266444,"id":"r","progress":0.999,"total":2896,"current":2896}
+{"_e":"metro:bundling:progress","_t":1789834266444,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789834266590,"id":"q","total":2891,"ms":92724.3792}
+{"_e":"metro:bundling:progress","_t":1789834266590,"id":"r","progress":0.999,"total":2896,"current":2896}
+{"_e":"metro:bundling:progress","_t":1789834266590,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834266596,"id":"r","progress":0.999,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834266596,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789834267008,"id":"r","total":1,"ms":59508.749}
+{"_e":"metro:bundling:progress","_t":1789834267008,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834267011,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834267295,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834267395,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789834267495,"id":"t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789834267649,"id":"t","total":1,"ms":19727.9437}
+{"_e":"metro:bundling:started","_t":1789834270374,"id":"u","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789834270374,"id":"u","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789834270447,"id":"u","total":1,"ms":72.7584}
+{"_e":"metro:client_log","_t":1789834273043,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789834273044,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789834273044,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:client_log","_t":1789834277141,"level":"warn","data":["Nominatim reverse error:","[Error: fetch failed: request.start is not a function (it is undefined)]"]}
+{"_e":"metro:client_log","_t":1789834277146,"level":"warn","data":["BigDataCloud fallback error:","[Error: fetch failed: request.start is not a function (it is undefined)]"]}
+{"_e":"metro:client_log","_t":1789834299026,"level":"warn","data":["[AuthRetryableFetchError: fetch failed: request.start is not a function (it is undefined)]"]}
+{"_e":"metro:client_log","_t":1789834299028,"level":"warn","data":["[AuthRetryableFetchError: fetch failed: request.start is not a function (it is undefined)]"]}
+{"_e":"metro:client_log","_t":1789834394343,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:bundling:started","_t":1789834416272,"id":"18","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789834416273,"id":"18","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789834416359,"id":"18","total":1,"ms":86.5481}
+{"_e":"metro:client_log","_t":1789834419116,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789834419116,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789834419117,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:client_log","_t":1789834423448,"level":"warn","data":["Nominatim reverse error:","[SyntaxError: JSON Parse error: Unexpected end of input]"]}
+{"_e":"metro:client_log","_t":1789834423453,"level":"warn","data":["BigDataCloud fallback error:","[SyntaxError: JSON Parse error: Unexpected end of input]"]}
+{"_e":"metro:client_log","_t":1789834445308,"level":"warn","data":["[AuthRetryableFetchError: JSON Parse error: Unexpected end of input]"]}
+{"_e":"metro:client_log","_t":1789834445312,"level":"warn","data":["[AuthRetryableFetchError: JSON Parse error: Unexpected end of input]"]}
+{"_e":"metro:client_log","_t":1789834487458,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:bundling:started","_t":1789834494529,"id":"19","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789834494529,"id":"19","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789834494622,"id":"19","total":1,"ms":93.2623}
+{"_e":"metro:client_log","_t":1789834497479,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789834497479,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789834497479,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:client_log","_t":1789834501509,"level":"warn","data":["Nominatim reverse error:","[SyntaxError: JSON Parse error: Unexpected end of input]"]}
+{"_e":"metro:client_log","_t":1789834501511,"level":"warn","data":["BigDataCloud fallback error:","[SyntaxError: JSON Parse error: Unexpected end of input]"]}
+{"_e":"metro:client_log","_t":1789834523422,"level":"warn","data":["[AuthRetryableFetchError: JSON Parse error: Unexpected end of input]"]}
+{"_e":"metro:client_log","_t":1789834523425,"level":"warn","data":["[AuthRetryableFetchError: JSON Parse error: Unexpected end of input]"]}
+{"_e":"metro:client_log","_t":1789834566410,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:bundling:started","_t":1789834575659,"id":"1a","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789834575659,"id":"1a","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789834575742,"id":"1a","total":1,"ms":82.5599}
+{"_e":"metro:client_log","_t":1789834578423,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789834578423,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789834578423,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:client_log","_t":1789834582660,"level":"warn","data":["Nominatim reverse error:","[SyntaxError: JSON Parse error: Unexpected end of input]"]}
+{"_e":"metro:client_log","_t":1789834582662,"level":"warn","data":["BigDataCloud fallback error:","[SyntaxError: JSON Parse error: Unexpected end of input]"]}
+{"_e":"metro:client_log","_t":1789834604372,"level":"warn","data":["[AuthRetryableFetchError: JSON Parse error: Unexpected end of input]"]}
+{"_e":"metro:client_log","_t":1789834604374,"level":"warn","data":["[AuthRetryableFetchError: JSON Parse error: Unexpected end of input]"]}
+{"_e":"metro:client_log","_t":1789834617042,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:bundling:started","_t":1789834630032,"id":"1b","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789834630032,"id":"1b","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789834630119,"id":"1b","total":1,"ms":86.9293}
+{"_e":"metro:client_log","_t":1789834632918,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789834632918,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789834632919,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:client_log","_t":1789834637758,"level":"warn","data":["Nominatim reverse error:","[SyntaxError: JSON Parse error: Unexpected end of input]"]}
+{"_e":"metro:client_log","_t":1789834637759,"level":"warn","data":["BigDataCloud fallback error:","[SyntaxError: JSON Parse error: Unexpected end of input]"]}
+{"_e":"metro:client_log","_t":1789834658921,"level":"warn","data":["[AuthRetryableFetchError: JSON Parse error: Unexpected end of input]"]}
+{"_e":"metro:client_log","_t":1789834658924,"level":"warn","data":["[AuthRetryableFetchError: JSON Parse error: Unexpected end of input]"]}
+{"_e":"metro:client_log","_t":1789834664980,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:bundling:started","_t":1789834673723,"id":"1c","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789834673723,"id":"1c","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789834673842,"id":"1c","total":1,"ms":119.4401}
+{"_e":"metro:client_log","_t":1789834675492,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789834675492,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789834675492,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:bundling:started","_t":1789836845845,"id":"1d","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789836845845,"id":"1d","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789836845848,"id":"1d","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789836846114,"id":"1d","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789836846656,"id":"1d","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789836846756,"id":"1d","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789836846856,"id":"1d","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789836846956,"id":"1d","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789836847056,"id":"1d","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789836847156,"id":"1d","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789836847257,"id":"1d","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789836847361,"id":"1d","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789836847473,"id":"1d","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789836847607,"id":"1d","total":1,"ms":1762.5965}
+{"_e":"metro:client_log","_t":1789836849227,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789836849227,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789836849227,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":11,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:bundling:started","_t":1789839622796,"id":"1e","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789839622833,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839623947,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839624573,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839628381,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839629181,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839629295,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839629396,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839629514,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839629671,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839629782,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839629900,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839630078,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839630222,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839630323,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839630429,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839630850,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839630957,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839631102,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839631216,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839631357,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839631477,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839631608,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839631727,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839631842,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839631954,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839632074,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839632245,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839632472,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839632601,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839632902,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839633014,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839633148,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839633252,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839633426,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839633562,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839633662,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839633883,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839633986,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839634149,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839634265,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839634390,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839634510,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839634629,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839634803,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839634933,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839635039,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839635145,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839635320,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839635441,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839635576,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839635768,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839635875,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839636036,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839636183,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839636289,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839636395,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839636528,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839636769,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839636877,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839637018,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839637238,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839637349,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839637543,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839637655,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839637783,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839637883,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839638035,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839638143,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839638278,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839638438,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839638561,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839638679,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839638860,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839638974,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839639163,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839639307,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839639519,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839639621,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839639753,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839639884,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839640034,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839640186,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839640302,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839640433,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839640580,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839640684,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839640887,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839641022,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839641122,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839641224,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839641324,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839641432,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839641565,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839641665,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839641784,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839641892,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839644644,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839645332,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839645445,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789839645574,"id":"1e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789839645751,"id":"1e","total":1,"ms":22948.8998}
+{"_e":"metro:client_log","_t":1789839648106,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789839648108,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789839648110,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:bundling:started","_t":1789839879535,"id":"1g","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789839879535,"id":"1g","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789839879620,"id":"1g","total":1,"ms":85.0198}
+{"_e":"metro:client_log","_t":1789839882906,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789839882906,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789839882906,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:bundling:started","_t":1789839931602,"id":"1h","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789839931602,"id":"1h","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789839931689,"id":"1h","total":1,"ms":86.7269}
+{"_e":"metro:client_log","_t":1789839934613,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789839934613,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789839934614,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:bundling:started","_t":1789840084973,"id":"1k","platform":"ios","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789840084973,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840084980,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840085239,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840085290,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840085405,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840086065,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840086165,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840087560,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840087660,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840088162,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840088266,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840088371,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840088470,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840088582,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840088682,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840088782,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840088882,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840088982,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840089082,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840089182,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840089284,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840089388,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840089489,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840089607,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840089707,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840089816,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840089936,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840090050,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840090167,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840090281,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840090347,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840090508,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840091406,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789840091578,"id":"1k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789840092799,"id":"1k","total":1,"ms":7825.1437}
+{"_e":"metro:client_log","_t":1789840094213,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789840107539,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:client_log","_t":1789840124062,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:bundling:started","_t":1789840189615,"id":"2p","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789840189615,"id":"2p","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789840189723,"id":"2p","total":1,"ms":108.3188}
+{"_e":"metro:client_log","_t":1789840193357,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789840193358,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789840193359,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:server_log","_t":1789840449224,"level":"error","data":["[timeout] connection terminated with Device for app='%s' on device='%s' after not responding for %s seconds.","host.exp.Exponent","iPhone","60"]}
+{"_e":"metro:server_log","_t":1789840705604,"level":"error","data":["[timeout] connection terminated with Device for app='%s' on device='%s' after not responding for %s seconds.","host.exp.Exponent","iPhone","60"]}
+{"_e":"metro:client_log","_t":1789840972713,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:client_log","_t":1789841000708,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:bundling:started","_t":1789841232352,"id":"3b","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789841232352,"id":"3b","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789841232444,"id":"3b","total":1,"ms":92.0109}
+{"_e":"metro:client_log","_t":1789841235726,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789841235726,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789841235726,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:client_log","_t":1789841462227,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:bundling:started","_t":1789841504150,"id":"3c","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789841504150,"id":"3c","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789841504240,"id":"3c","total":1,"ms":89.755}
+{"_e":"metro:client_log","_t":1789841508018,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789841508019,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789841508019,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:bundling:started","_t":1789841565103,"id":"3d","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789841565103,"id":"3d","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789841565202,"id":"3d","total":1,"ms":99.2024}
+{"_e":"metro:client_log","_t":1789841567033,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789841567039,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789841567039,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:bundling:started","_t":1789841605568,"id":"3e","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789841605568,"id":"3e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789841605669,"id":"3e","total":1,"ms":100.9838}
+{"_e":"metro:client_log","_t":1789841608556,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789841608556,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789841608556,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:client_log","_t":1789841742412,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:bundling:started","_t":1789841866925,"id":"3f","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789841866925,"id":"3f","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789841867017,"id":"3f","total":1,"ms":91.9816}
+{"_e":"metro:client_log","_t":1789841870562,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789841870563,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789841870577,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:client_log","_t":1789842704563,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:client_log","_t":1789842714609,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:client_log","_t":1789842724368,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:client_log","_t":1789842731115,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:client_log","_t":1789842740952,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:client_log","_t":1789842751592,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:client_log","_t":1789842767181,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:client_log","_t":1789842771559,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:bundling:started","_t":1789842911379,"id":"3g","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789842911379,"id":"3g","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789842911464,"id":"3g","total":1,"ms":84.6557}
+{"_e":"metro:client_log","_t":1789842914920,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789842914921,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789842914922,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:bundling:started","_t":1789843541011,"id":"41","platform":"ios","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789843541011,"id":"41","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789843541014,"id":"41","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789843541167,"id":"41","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789843541373,"id":"41","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789843541479,"id":"41","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789843541646,"id":"41","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789843541824,"id":"41","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789843541924,"id":"41","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789843542024,"id":"41","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789843542128,"id":"41","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789843542228,"id":"41","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789843542328,"id":"41","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789843542434,"id":"41","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789843542560,"id":"41","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789843542812,"id":"41","total":1,"ms":1800.8032}
+{"_e":"metro:client_log","_t":1789843543946,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:server_log","_t":1789843687407,"level":"error","data":["[timeout] connection terminated with Device for app='%s' on device='%s' after not responding for %s seconds.","host.exp.Exponent","iPhone","60"]}
+{"_e":"metro:client_log","_t":1789844204298,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:client_log","_t":1789844259393,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:client_log","_t":1789844290075,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:client_log","_t":1789844350577,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:client_log","_t":1789844380280,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:bundling:started","_t":1789844415068,"id":"4x","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789844415069,"id":"4x","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789844415162,"id":"4x","total":1,"ms":93.7643}
+{"_e":"metro:client_log","_t":1789844417753,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789844417754,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789844417755,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:bundling:started","_t":1789844474155,"id":"4y","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789844474155,"id":"4y","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789844474257,"id":"4y","total":1,"ms":102.6511}
+{"_e":"metro:client_log","_t":1789844479077,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789844479077,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789844479078,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:bundling:started","_t":1789844643449,"id":"50","platform":"ios","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789844643449,"id":"50","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789844643452,"id":"50","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789844643656,"id":"50","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789844643773,"id":"50","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789844644148,"id":"50","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789844644733,"id":"50","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789844644897,"id":"50","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789844645279,"id":"50","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789844645380,"id":"50","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789844645479,"id":"50","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789844645584,"id":"50","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789844645684,"id":"50","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789844645785,"id":"50","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789844645885,"id":"50","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789844645985,"id":"50","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789844646085,"id":"50","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789844646186,"id":"50","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789844646293,"id":"50","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789844646397,"id":"50","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789844646497,"id":"50","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789844646600,"id":"50","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789844646740,"id":"50","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789844646844,"id":"50","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789844647099,"id":"50","total":1,"ms":3649.9993}
+{"_e":"metro:client_log","_t":1789844648284,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789844652173,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:client_log","_t":1789844657227,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:client_log","_t":1789844688911,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:client_log","_t":1789844721832,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:client_log","_t":1789844722247,"level":"error","data":["React has detected a change in the order of Hooks called by FloatingCartBar. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://react.dev/link/rules-of-hooks\n\n   Previous render            Next render\n   ------------------------------------------------------\n1. useContext                 useContext\n2. useRef                     useContext\n   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"]}
+{"_e":"metro:bundling:started","_t":1789844731467,"id":"6m","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789844731467,"id":"6m","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789844731468,"id":"6m","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789844731613,"id":"6m","total":1,"ms":146.2706}
+{"_e":"metro:client_log","_t":1789844735553,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789844735560,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789844735565,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:bundling:started","_t":1789844754394,"id":"6n","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789844754394,"id":"6n","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789844754574,"id":"6n","total":1,"ms":180.7493}
+{"_e":"metro:client_log","_t":1789844757627,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789844757629,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789844757630,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:client_log","_t":1789844985756,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:client_log","_t":1789844993121,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:client_log","_t":1789845000242,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:bundling:started","_t":1789845041132,"id":"6o","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789845041132,"id":"6o","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789845041229,"id":"6o","total":1,"ms":97.0566}
+{"_e":"metro:client_log","_t":1789845043486,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789845043486,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789845043486,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:bundling:started","_t":1789845046285,"id":"6q","platform":"ios","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789845046285,"id":"6q","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789845046287,"id":"6q","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789845046390,"id":"6q","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789845046446,"id":"6q","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789845046621,"id":"6q","total":1,"ms":335.413}
+{"_e":"metro:client_log","_t":1789845047789,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:bundling:failed","_t":1789845385234,"id":null,"message":"Unable to resolve \"../assets/login_hero.jpg\" from \"apps\\customer\\src\\screens\\CustomerLoginScreen.tsx\"\n  117 |       {/* 1. TOP HERO ARTWORK SECTION */}\n  118 |       <ImageBackground\n> 119 |         source={require('../assets/login_hero.jpg')}\n      |                          ^\n  120 |         style={styles.heroBackground}\n  121 |         resizeMode=\"cover\"\n  122 |       >","importStack":"\u001b[1mImport stack:\u001b[22m\n\n\u001b[90m \u001b[39mapps\\customer\\src\\screens\\CustomerLoginScreen.tsx\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"../assets/login_hero.jpg\"\u001b[39m\n\n\u001b[90m \u001b[39mApp.tsx\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./apps/customer/src/screens/CustomerLoginScreen\"\u001b[39m\n\n\u001b[90m \u001b[39mindex.js\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./App\"\u001b[39m\n\n\u001b[90m \u001b[39m\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./index\"\u001b[39m\n","filename":null,"targetModuleName":"../assets/login_hero.jpg","originModulePath":"apps\\customer\\src\\screens\\CustomerLoginScreen.tsx"}
+{"_e":"metro:bundling:failed","_t":1789845385506,"id":null,"message":"Unable to resolve \"../assets/login_hero.jpg\" from \"apps\\customer\\src\\screens\\CustomerLoginScreen.tsx\"\n  117 |       {/* 1. TOP HERO ARTWORK SECTION */}\n  118 |       <ImageBackground\n> 119 |         source={require('../assets/login_hero.jpg')}\n      |                          ^\n  120 |         style={styles.heroBackground}\n  121 |         resizeMode=\"cover\"\n  122 |       >","importStack":"\u001b[1mImport stack:\u001b[22m\n\n\u001b[90m \u001b[39mapps\\customer\\src\\screens\\CustomerLoginScreen.tsx\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"../assets/login_hero.jpg\"\u001b[39m\n\n\u001b[90m \u001b[39mApp.tsx\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./apps/customer/src/screens/CustomerLoginScreen\"\u001b[39m\n\n\u001b[90m \u001b[39mindex.js\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./App\"\u001b[39m\n\n\u001b[90m \u001b[39m\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./index\"\u001b[39m\n","filename":null,"targetModuleName":"../assets/login_hero.jpg","originModulePath":"apps\\customer\\src\\screens\\CustomerLoginScreen.tsx"}
+{"_e":"metro:bundling:started","_t":1789845409958,"id":"7b","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789845409958,"id":"7b","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789845410056,"id":"7b","total":1,"ms":98.1933}
+{"_e":"metro:client_log","_t":1789845414587,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789845414589,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789845414590,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:client_log","_t":1789845578714,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:client_log","_t":1789845585893,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:bundling:started","_t":1789845674481,"id":"7e","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789845674481,"id":"7e","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789845674570,"id":"7e","total":1,"ms":89.2874}
+{"_e":"metro:bundling:started","_t":1789845676750,"id":"7g","platform":"ios","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789845676750,"id":"7g","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789845676751,"id":"7g","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789845676851,"id":"7g","progress":0,"total":1,"current":0}
+{"_e":"metro:client_log","_t":1789845676872,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:bundling:progress","_t":1789845676872,"id":"7g","progress":0,"total":1,"current":0}
+{"_e":"metro:client_log","_t":1789845676872,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:bundling:progress","_t":1789845676872,"id":"7g","progress":0,"total":1,"current":0}
+{"_e":"metro:client_log","_t":1789845676872,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:bundling:progress","_t":1789845676872,"id":"7g","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789845676961,"id":"7g","total":1,"ms":210.6319}
+{"_e":"metro:client_log","_t":1789845678115,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:server_log","_t":1789846838766,"level":"error","data":["[timeout] connection terminated with Device for app='%s' on device='%s' after not responding for %s seconds.","host.exp.Exponent","iPhone","60"]}
+{"_e":"metro:bundling:started","_t":1789847020686,"id":"7k","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789847020686,"id":"7k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847020687,"id":"7k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847020795,"id":"7k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847020907,"id":"7k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847020918,"id":"7k","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:failed","_t":1789847020975,"id":"7k","message":"Unable to resolve \"../../../../../packages/design-system/src\" from \"apps\\customer\\src\\components\\LoginInteractiveSheet.tsx\"\n  12 | } from 'react-native';\n  13 | import Svg, { Path } from 'react-native-svg';\n> 14 | import { ServenticaTokens } from '../../../../../packages/design-system/src';\n     |                                   ^\n  15 |\n  16 | interface LoginSheetProps {\n  17 |   phoneNumber: string;","importStack":"\u001b[1mImport stack:\u001b[22m\n\n\u001b[90m \u001b[39mapps\\customer\\src\\components\\LoginInteractiveSheet.tsx\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"../../../../../packages/design-system/src\"\u001b[39m\n\n\u001b[90m \u001b[39mapps\\customer\\src\\screens\\CustomerLoginScreen.tsx\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"../components/LoginInteractiveSheet\"\u001b[39m\n\n\u001b[90m \u001b[39mApp.tsx\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./apps/customer/src/screens/CustomerLoginScreen\"\u001b[39m\n\n\u001b[90m \u001b[39mindex.js\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./App\"\u001b[39m\n\n\u001b[90m \u001b[39m\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./index\"\u001b[39m\n","filename":null,"targetModuleName":"../../../../../packages/design-system/src","originModulePath":"apps\\customer\\src\\components\\LoginInteractiveSheet.tsx"}
+{"_e":"metro:bundling:started","_t":1789847029762,"id":"7l","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789847029762,"id":"7l","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847029763,"id":"7l","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:failed","_t":1789847029782,"id":"7l","message":"Unable to resolve \"../../../../../packages/design-system/src\" from \"apps\\customer\\src\\components\\LoginInteractiveSheet.tsx\"\n  12 | } from 'react-native';\n  13 | import Svg, { Path } from 'react-native-svg';\n> 14 | import { ServenticaTokens } from '../../../../../packages/design-system/src';\n     |                                   ^\n  15 |\n  16 | interface LoginSheetProps {\n  17 |   phoneNumber: string;","importStack":"\u001b[1mImport stack:\u001b[22m\n\n\u001b[90m \u001b[39mapps\\customer\\src\\components\\LoginInteractiveSheet.tsx\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"../../../../../packages/design-system/src\"\u001b[39m\n\n\u001b[90m \u001b[39mapps\\customer\\src\\screens\\CustomerLoginScreen.tsx\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"../components/LoginInteractiveSheet\"\u001b[39m\n\n\u001b[90m \u001b[39mApp.tsx\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./apps/customer/src/screens/CustomerLoginScreen\"\u001b[39m\n\n\u001b[90m \u001b[39mindex.js\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./App\"\u001b[39m\n\n\u001b[90m \u001b[39m\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./index\"\u001b[39m\n","filename":null,"targetModuleName":"../../../../../packages/design-system/src","originModulePath":"apps\\customer\\src\\components\\LoginInteractiveSheet.tsx"}
+{"_e":"metro:bundling:started","_t":1789847039132,"id":"7m","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789847039132,"id":"7m","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847039133,"id":"7m","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:failed","_t":1789847039149,"id":"7m","message":"Unable to resolve \"../../../../../packages/design-system/src\" from \"apps\\customer\\src\\components\\LoginInteractiveSheet.tsx\"\n  12 | } from 'react-native';\n  13 | import Svg, { Path } from 'react-native-svg';\n> 14 | import { ServenticaTokens } from '../../../../../packages/design-system/src';\n     |                                   ^\n  15 |\n  16 | interface LoginSheetProps {\n  17 |   phoneNumber: string;","importStack":"\u001b[1mImport stack:\u001b[22m\n\n\u001b[90m \u001b[39mapps\\customer\\src\\components\\LoginInteractiveSheet.tsx\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"../../../../../packages/design-system/src\"\u001b[39m\n\n\u001b[90m \u001b[39mapps\\customer\\src\\screens\\CustomerLoginScreen.tsx\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"../components/LoginInteractiveSheet\"\u001b[39m\n\n\u001b[90m \u001b[39mApp.tsx\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./apps/customer/src/screens/CustomerLoginScreen\"\u001b[39m\n\n\u001b[90m \u001b[39mindex.js\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./App\"\u001b[39m\n\n\u001b[90m \u001b[39m\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./index\"\u001b[39m\n","filename":null,"targetModuleName":"../../../../../packages/design-system/src","originModulePath":"apps\\customer\\src\\components\\LoginInteractiveSheet.tsx"}
+{"_e":"metro:bundling:started","_t":1789847205189,"id":"7n","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789847205189,"id":"7n","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847205194,"id":"7n","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847205637,"id":"7n","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847206108,"id":"7n","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847206208,"id":"7n","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847206322,"id":"7n","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847206428,"id":"7n","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847206528,"id":"7n","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847206628,"id":"7n","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847206728,"id":"7n","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847206828,"id":"7n","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847206928,"id":"7n","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847207029,"id":"7n","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789847207225,"id":"7n","total":1,"ms":2035.3113}
+{"_e":"metro:client_log","_t":1789847210317,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789847210317,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789847210317,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:bundling:failed","_t":1789847210398,"id":"7m","message":"Unable to resolve \"../../../design-system/src\" from \"apps\\customer\\src\\components\\LoginInteractiveSheet.tsx\"\n  12 | } from 'react-native';\n  13 | import Svg, { Path } from 'react-native-svg';\n> 14 | import { ServenticaTokens } from '../../../design-system/src';\n     |                                   ^\n  15 |\n  16 | interface LoginSheetProps {\n  17 |   phoneNumber: string;","importStack":"\u001b[1mImport stack:\u001b[22m\n\n\u001b[90m \u001b[39mapps\\customer\\src\\components\\LoginInteractiveSheet.tsx\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"../../../design-system/src\"\u001b[39m\n\n\u001b[90m \u001b[39mapps\\customer\\src\\screens\\CustomerLoginScreen.tsx\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"../components/LoginInteractiveSheet\"\u001b[39m\n\n\u001b[90m \u001b[39mApp.tsx\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./apps/customer/src/screens/CustomerLoginScreen\"\u001b[39m\n\n\u001b[90m \u001b[39mindex.js\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./App\"\u001b[39m\n\n\u001b[90m \u001b[39m\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./index\"\u001b[39m\n","filename":null,"targetModuleName":"../../../design-system/src","originModulePath":"apps\\customer\\src\\components\\LoginInteractiveSheet.tsx"}
+{"_e":"metro:bundling:started","_t":1789847320245,"id":"7r","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789847320245,"id":"7r","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789847320332,"id":"7r","total":1,"ms":87.2099}
+{"_e":"metro:bundling:started","_t":1789847321181,"id":"7t","platform":"ios","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789847321182,"id":"7t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847321186,"id":"7t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847321594,"id":"7t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847321827,"id":"7t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847321935,"id":"7t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847322297,"id":"7t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847322633,"id":"7t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847322734,"id":"7t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847322834,"id":"7t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847322934,"id":"7t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847323034,"id":"7t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847323135,"id":"7t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847323235,"id":"7t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847323335,"id":"7t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847323443,"id":"7t","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789847323612,"id":"7t","total":1,"ms":2430.4989}
+{"_e":"metro:client_log","_t":1789847324783,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789847326024,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789847326025,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789847326026,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:bundling:failed","_t":1789847664346,"id":"7m","message":"Unable to resolve \"../../../../src/assets/images/LoginPageImages/washitup.webp\" from \"apps\\customer\\src\\screens\\CustomerLoginScreen.tsx\"\n  76 |       {/* 1. IMMERSIVE HERO ARTWORK SECTION (washitup.webp) */}\n  77 |       <ImageBackground\n> 78 |         source={require('../../../../src/assets/images/LoginPageImages/washitup.webp')}\n     |                          ^\n  79 |         style={styles.heroBackground}\n  80 |         resizeMode=\"cover\"\n  81 |       >","importStack":"\u001b[1mImport stack:\u001b[22m\n\n\u001b[90m \u001b[39mapps\\customer\\src\\screens\\CustomerLoginScreen.tsx\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"../../../../src/assets/images/LoginPageImages/washitup.webp\"\u001b[39m\n\n\u001b[90m \u001b[39mApp.tsx\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./apps/customer/src/screens/CustomerLoginScreen\"\u001b[39m\n\n\u001b[90m \u001b[39mindex.js\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./App\"\u001b[39m\n\n\u001b[90m \u001b[39m\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./index\"\u001b[39m\n","filename":null,"targetModuleName":"../../../../src/assets/images/LoginPageImages/washitup.webp","originModulePath":"apps\\customer\\src\\screens\\CustomerLoginScreen.tsx"}
+{"_e":"metro:client_log","_t":1789847670687,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:bundling:started","_t":1789847681403,"id":"7y","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789847681403,"id":"7y","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789847681485,"id":"7y","total":1,"ms":82.3448}
+{"_e":"metro:client_log","_t":1789847685350,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789847685351,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789847685353,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:client_log","_t":1789847778136,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:client_log","_t":1789847789044,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:bundling:failed","_t":1789847798510,"id":"7m","message":"Unable to resolve \"../../../../src/assets/images/LoginPageImages/washitup.webp\" from \"apps\\customer\\src\\screens\\CustomerLoginScreen.tsx\"\n  76 |       {/* 1. IMMERSIVE HERO ARTWORK SECTION (washitup.webp) */}\n  77 |       <ImageBackground\n> 78 |         source={require('../../../../src/assets/images/LoginPageImages/washitup.webp')}\n     |                          ^\n  79 |         style={styles.heroBackground}\n  80 |         resizeMode=\"cover\"\n  81 |       >","importStack":"\u001b[1mImport stack:\u001b[22m\n\n\u001b[90m \u001b[39mapps\\customer\\src\\screens\\CustomerLoginScreen.tsx\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"../../../../src/assets/images/LoginPageImages/washitup.webp\"\u001b[39m\n\n\u001b[90m \u001b[39mApp.tsx\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./apps/customer/src/screens/CustomerLoginScreen\"\u001b[39m\n\n\u001b[90m \u001b[39mindex.js\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./App\"\u001b[39m\n\n\u001b[90m \u001b[39m\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./index\"\u001b[39m\n","filename":null,"targetModuleName":"../../../../src/assets/images/LoginPageImages/washitup.webp","originModulePath":"apps\\customer\\src\\screens\\CustomerLoginScreen.tsx"}
+{"_e":"metro:client_log","_t":1789847803157,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:bundling:started","_t":1789847811190,"id":"83","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789847811190,"id":"83","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789847811268,"id":"83","total":1,"ms":77.407}
+{"_e":"metro:client_log","_t":1789847815131,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789847815131,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789847815133,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:bundling:failed","_t":1789847874041,"id":"7m","message":"Unable to resolve \"../../../../src/assets/images/LoginPageImages/washitup.webp\" from \"apps\\customer\\src\\screens\\CustomerLoginScreen.tsx\"\n  76 |       {/* 1. IMMERSIVE HERO ARTWORK SECTION (washitup.webp) */}\n  77 |       <ImageBackground\n> 78 |         source={require('../../../../src/assets/images/LoginPageImages/washitup.webp')}\n     |                          ^\n  79 |         style={styles.heroBackground}\n  80 |         resizeMode=\"cover\"\n  81 |       >","importStack":"\u001b[1mImport stack:\u001b[22m\n\n\u001b[90m \u001b[39mapps\\customer\\src\\screens\\CustomerLoginScreen.tsx\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"../../../../src/assets/images/LoginPageImages/washitup.webp\"\u001b[39m\n\n\u001b[90m \u001b[39mApp.tsx\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./apps/customer/src/screens/CustomerLoginScreen\"\u001b[39m\n\n\u001b[90m \u001b[39mindex.js\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./App\"\u001b[39m\n\n\u001b[90m \u001b[39m\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./index\"\u001b[39m\n","filename":null,"targetModuleName":"../../../../src/assets/images/LoginPageImages/washitup.webp","originModulePath":"apps\\customer\\src\\screens\\CustomerLoginScreen.tsx"}
+{"_e":"metro:client_log","_t":1789847881953,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:bundling:started","_t":1789847888801,"id":"87","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789847888801,"id":"87","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789847888903,"id":"87","total":1,"ms":102.1875}
+{"_e":"metro:client_log","_t":1789847892712,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789847892720,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789847892721,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:bundling:started","_t":1789847896430,"id":"89","platform":"ios","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789847896431,"id":"89","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847896434,"id":"89","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847896585,"id":"89","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847896617,"id":"89","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847896717,"id":"89","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847896761,"id":"89","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847896989,"id":"89","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847897093,"id":"89","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847897193,"id":"89","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847897293,"id":"89","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847897393,"id":"89","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847897495,"id":"89","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789847897632,"id":"89","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789847897769,"id":"89","total":1,"ms":1338.54}
+{"_e":"metro:client_log","_t":1789847898916,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789848144104,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:bundling:started","_t":1789848219370,"id":"8c","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789848219371,"id":"8c","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789848219467,"id":"8c","total":1,"ms":96.8729}
+{"_e":"metro:client_log","_t":1789848221736,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789848221737,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789848221738,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:client_log","_t":1789848222538,"level":"warn","data":["setLayoutAnimationEnabledExperimental is currently a no-op in the New Architecture."]}
+{"_e":"metro:bundling:failed","_t":1789848366195,"id":"7m","message":"Unable to resolve \"../../../../src/assets/images/LoginPageImages/washitup.webp\" from \"apps\\customer\\src\\screens\\CustomerLoginScreen.tsx\"\n  76 |       {/* 1. IMMERSIVE HERO ARTWORK SECTION (washitup.webp) */}\n  77 |       <ImageBackground\n> 78 |         source={require('../../../../src/assets/images/LoginPageImages/washitup.webp')}\n     |                          ^\n  79 |         style={styles.heroBackground}\n  80 |         resizeMode=\"cover\"\n  81 |       >","importStack":"\u001b[1mImport stack:\u001b[22m\n\n\u001b[90m \u001b[39mapps\\customer\\src\\screens\\CustomerLoginScreen.tsx\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"../../../../src/assets/images/LoginPageImages/washitup.webp\"\u001b[39m\n\n\u001b[90m \u001b[39mApp.tsx\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./apps/customer/src/screens/CustomerLoginScreen\"\u001b[39m\n\n\u001b[90m \u001b[39mindex.js\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./App\"\u001b[39m\n\n\u001b[90m \u001b[39m\n\u001b[90m |\u001b[39m \u001b[36mimport\u001b[39m \u001b[32m\"./index\"\u001b[39m\n","filename":null,"targetModuleName":"../../../../src/assets/images/LoginPageImages/washitup.webp","originModulePath":"apps\\customer\\src\\screens\\CustomerLoginScreen.tsx"}
+{"_e":"metro:client_log","_t":1789848368177,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:bundling:started","_t":1789848375962,"id":"8f","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789848375962,"id":"8f","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789848376044,"id":"8f","total":1,"ms":81.5796}
+{"_e":"metro:bundling:started","_t":1789848378015,"id":"8h","platform":"ios","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789848378015,"id":"8h","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789848378017,"id":"8h","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789848378217,"id":"8h","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789848378243,"id":"8h","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789848378647,"id":"8h","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789848378939,"id":"8h","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789848379039,"id":"8h","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789848379139,"id":"8h","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789848379239,"id":"8h","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789848379339,"id":"8h","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789848379439,"id":"8h","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789848379566,"id":"8h","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789848379711,"id":"8h","total":1,"ms":1696.3328}
+{"_e":"metro:client_log","_t":1789848380623,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789848380624,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789848380624,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:client_log","_t":1789848380837,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789848381185,"level":"warn","data":["setLayoutAnimationEnabledExperimental is currently a no-op in the New Architecture."]}
+{"_e":"metro:client_log","_t":1789848542720,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:client_log","_t":1789848570008,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:bundling:started","_t":1789848581310,"id":"9s","platform":"ios","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789848581310,"id":"9s","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1789848581311,"id":"9s","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789848581469,"id":"9s","total":1,"ms":158.9954}
+{"_e":"metro:client_log","_t":1789848582602,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789848598472,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:bundling:started","_t":1789848609047,"id":"ad","platform":"ios","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:started","_t":1789848682121,"id":"ai","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789848682122,"id":"ai","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789848682218,"id":"ai","total":1,"ms":96.369}
+{"_e":"metro:client_log","_t":1789848685830,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789848685835,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789848685852,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:client_log","_t":1789848686618,"level":"warn","data":["setLayoutAnimationEnabledExperimental is currently a no-op in the New Architecture."]}
+{"_e":"metro:client_log","_t":1789848739150,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:client_log","_t":1789848754365,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:bundling:started","_t":1789848772194,"id":"aj","platform":"android","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789848772194,"id":"aj","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789848772272,"id":"aj","total":1,"ms":77.46}
+{"_e":"metro:client_log","_t":1789848774759,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789848774760,"level":"log","data":["[FontLoader] Notice:","AssetModule.downloadAsync is not a function (it is undefined)"]}
+{"_e":"metro:client_log","_t":1789848774760,"level":"log","data":["Running \"ServenticaApp\" with {\"rootTag\":1,\"initialProps\":{},\"fabric\":true}"]}
+{"_e":"metro:client_log","_t":1789848775422,"level":"warn","data":["setLayoutAnimationEnabledExperimental is currently a no-op in the New Architecture."]}
+{"_e":"metro:client_log","_t":1789848955182,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:client_log","_t":1789848955207,"level":"error","data":["React has detected a change in the order of Hooks called by LoginInteractiveSheet. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://react.dev/link/rules-of-hooks\n\n   Previous render            Next render\n   ------------------------------------------------------\n1. useState                   useRef\n   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"]}
+{"_e":"metro:client_log","_t":1789848955267,"level":"error","data":["[Error: Rendered fewer hooks than expected. This may be caused by an accidental early return statement.]"]}
+{"_e":"metro:bundling:started","_t":1789848960908,"id":"as","platform":"ios","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789848960908,"id":"as","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789848960983,"id":"as","total":1,"ms":75.574}
+{"_e":"metro:client_log","_t":1789848962145,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789848964231,"level":"error","data":["[TypeError: undefined is not a function]"]}
+{"_e":"metro:bundling:started","_t":1789848975399,"id":"ax","platform":"ios","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1789848975399,"id":"ax","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1789848975493,"id":"ax","total":1,"ms":94.0031}
+{"_e":"metro:client_log","_t":1789848976667,"level":"warn","data":["The global process.env.EXPO_OS is not defined. This should be inlined by babel-preset-expo during transformation."]}
+{"_e":"metro:client_log","_t":1789848985531,"level":"warn","data":["[MobileErrorBoundary] Caught rendering exception:","[Error: Rendered fewer hooks than expected. This may be caused by an accidental early return statement.]","\n\n"]}
+{"_e":"metro:client_log","_t":1789848986043,"level":"error","data":["React has detected a change in the order of Hooks called by CustomerLoginScreen. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://react.dev/link/rules-of-hooks\n\n   Previous render            Next render\n   ------------------------------------------------------\n1. useState                   useState\n2. useState                   useState\n3. useState                   useState\n4. undefined                  useState\n   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"]}
+{"_e":"metro:client_log","_t":1789848986043,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}
+{"_e":"metro:client_log","_t":1789848986067,"level":"error","data":["[Error: Rendered more hooks than during the previous render.]"]}
+{"_e":"metro:client_log","_t":1789848991343,"level":"error","data":["[SyntaxError: Parsing source code unsupported: __d(function (global, _$$_REQUIR]"]}

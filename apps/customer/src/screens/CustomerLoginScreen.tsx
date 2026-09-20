@@ -169,7 +169,7 @@ export const CustomerLoginScreen: React.FC<CustomerLoginScreenProps> = ({
               />
             </TouchableOpacity>
           )}
-          style={StyleSheet.absoluteFillObject}
+          style={StyleSheet.absoluteFill}
         />
       </View>
 

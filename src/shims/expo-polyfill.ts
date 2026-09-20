@@ -126,12 +126,15 @@ const createModuleProxy = () => {
           stopLocationUpdatesAsync: async () => {},
           loadAsync: async () => {},
           getLoadedFonts: () => [],
+          exportedMethods: {},
+          modulesConstants: {},
         } as Record<string, any>;
 
         target[moduleName] = new Proxy(moduleObj, {
           get: (modTarget, propName: string) => {
             if (typeof propName !== 'string') return undefined;
             if (propName in modTarget) return modTarget[propName];
+            if (propName === 'exportedMethods' || propName === 'modulesConstants') return {};
             if (propName === 'NativeResponse') return NativeResponse;
             if (propName === 'NativeRequest') return NativeRequest;
             // If property starts with uppercase, return a class constructor that can be extended
