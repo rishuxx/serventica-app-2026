@@ -94,14 +94,12 @@ const styles = StyleSheet.create({
   },
   welcomeText: {
     fontSize: 29,
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
-    fontWeight: '700',
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#ffffff',
     letterSpacing: 0.2,
   },
   dotGold: {
     color: '#ffc107',
-    fontWeight: '900',
   },
   centerSection: {
     flex: 1,
@@ -116,8 +114,7 @@ const styles = StyleSheet.create({
   },
   wordmarkLine1: {
     fontSize: width * 0.24,
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
-    fontWeight: '900',
+    fontFamily: ServenticaTokens.fonts.Black,
     color: '#ffffff',
     lineHeight: width * 0.24,
     letterSpacing: -0.5,
@@ -129,8 +126,7 @@ const styles = StyleSheet.create({
   },
   wordmarkLine2: {
     fontSize: width * 0.24,
-    fontFamily: ServenticaTokens.fonts.Coolvetica,
-    fontWeight: '900',
+    fontFamily: ServenticaTokens.fonts.Black,
     color: '#ffffff',
     lineHeight: width * 0.24,
     letterSpacing: -0.5,
@@ -157,7 +153,6 @@ const styles = StyleSheet.create({
   },
   dotGoldLarge: {
     color: '#ffc107',
-    fontWeight: '900',
   },
   bottomSection: {
     width: '100%',
@@ -167,17 +162,17 @@ const styles = StyleSheet.create({
   tagline: {
     fontSize: 13,
     color: '#ffffff',
-    fontFamily: ServenticaTokens.fonts.Medium,
+    fontFamily: ServenticaTokens.fonts.Regular,
     marginBottom: 28,
     textAlign: 'center',
   },
   taglineBold: {
-    fontWeight: '800',
+    fontFamily: ServenticaTokens.fonts.Bold,
     color: '#ffffff',
   },
   taglineGold: {
     color: '#ffc107',
-    fontWeight: '800',
+    fontFamily: ServenticaTokens.fonts.Bold,
   },
   sliderWrapper: {
     width: '100%',
@@ -194,12 +189,11 @@ const styles = StyleSheet.create({
   exploreText: {
     color: '#ffffff',
     fontSize: 14,
-    fontFamily: ServenticaTokens.fonts.Medium,
-    fontWeight: '600',
+    fontFamily: ServenticaTokens.fonts.SemiBold,
     letterSpacing: 0.2,
   },
   exploreArrow: {
     color: '#ffc107',
-    fontWeight: '800',
+    fontFamily: ServenticaTokens.fonts.Bold,
   },
 });

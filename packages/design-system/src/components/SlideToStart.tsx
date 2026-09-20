@@ -144,7 +144,6 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 17,
     fontFamily: ServenticaTokens.fonts.Bold,
-    fontWeight: '800',
     letterSpacing: 0.5,
   },
   thumb: {
