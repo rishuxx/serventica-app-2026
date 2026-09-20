@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import {
   StyleSheet,
   View,
-  Text,
   StatusBar,
   Animated,
   Dimensions,
@@ -22,148 +21,47 @@ interface WelcomeSplashScreenProps {
 const { width } = Dimensions.get('window');
 
 export const WelcomeSplashScreen: React.FC<WelcomeSplashScreenProps> = ({ onFinish }) => {
-  // Staggered cinematic entry drivers
+  // Pure opacity-only fade drivers - zero scaling/rasterization to keep vector paths 100% razor sharp
   const logoOpacity = useRef(new Animated.Value(0)).current;
-  const logoScale = useRef(new Animated.Value(0.92)).current;
-  const logoTranslateY = useRef(new Animated.Value(8)).current;
-
-  const dotScale = useRef(new Animated.Value(0)).current;
-
-  const dividerScaleX = useRef(new Animated.Value(0)).current;
   const dividerOpacity = useRef(new Animated.Value(0)).current;
-
   const textOpacity = useRef(new Animated.Value(0)).current;
-  const textTranslateY = useRef(new Animated.Value(6)).current;
-
-  // Ultra-soft, subtle ambient breath driver (continuous luxury motion)
-  const breathAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // 1. Choreographed Entry Sequence (Soft, premium Apple/Airbnb feel)
-    Animated.sequence([
-      // Step A: Logo gently glides up and scales smoothly
-      Animated.parallel([
-        Animated.timing(logoOpacity, {
-          toValue: 1,
-          duration: 600,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        Animated.spring(logoScale, {
-          toValue: 1,
-          friction: 8,
-          tension: 40,
-          useNativeDriver: true,
-        }),
-        Animated.timing(logoTranslateY, {
-          toValue: 0,
-          duration: 600,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        // Golden accent dot soft pop
-        Animated.spring(dotScale, {
-          toValue: 1,
-          friction: 6,
-          tension: 60,
-          delay: 200,
-          useNativeDriver: true,
-        }),
-      ]),
-
-      // Step B: Divider gracefully expands horizontally from center
-      Animated.parallel([
-        Animated.timing(dividerScaleX, {
-          toValue: 1,
-          duration: 450,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        Animated.timing(dividerOpacity, {
-          toValue: 1,
-          duration: 450,
-          useNativeDriver: true,
-        }),
-      ]),
-
-      // Step C: Tagline softly fades in and settles
-      Animated.parallel([
-        Animated.timing(textOpacity, {
-          toValue: 1,
-          duration: 500,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
-        }),
-        Animated.timing(textTranslateY, {
-          toValue: 0,
-          duration: 500,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
-        }),
-      ]),
+    // Soft, crisp staggered fade-in sequence without any scaling distortion
+    Animated.stagger(140, [
+      Animated.timing(logoOpacity, {
+        toValue: 1,
+        duration: 450,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+      Animated.timing(dividerOpacity, {
+        toValue: 1,
+        duration: 400,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+      Animated.timing(textOpacity, {
+        toValue: 1,
+        duration: 450,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
     ]).start();
-
-    // 2. Soft, ultra-slow ambient breathing motion loop
-    const breathLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(breathAnim, {
-          toValue: 1,
-          duration: 2000,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-        Animated.timing(breathAnim, {
-          toValue: 0,
-          duration: 2000,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    breathLoop.start();
-
-    return () => {
-      breathLoop.stop();
-    };
   }, []);
-
-  // Subtle floating micro-motion
-  const floatY = breathAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -3],
-  });
-
-  const ambientScale = breathAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1, 1.012],
-  });
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-      {/* Main Center Group with subtle ambient breathing */}
-      <Animated.View
-        style={[
-          styles.centerGroup,
-          {
-            transform: [
-              { translateY: floatY },
-              { scale: ambientScale },
-            ],
-          },
-        ]}
-      >
-        {/* Animated Logo */}
+      {/* Main Center Group */}
+      <View style={styles.centerGroup}>
+        {/* Crisp White Serventica Logo (Native Vector Path Render) */}
         <Animated.View
           style={[
             styles.logoContainer,
             {
               opacity: logoOpacity,
-              transform: [
-                { scale: logoScale },
-                { translateY: logoTranslateY },
-              ],
             },
           ]}
         >
@@ -230,30 +128,28 @@ export const WelcomeSplashScreen: React.FC<WelcomeSplashScreenProps> = ({ onFini
           </Svg>
         </Animated.View>
 
-        {/* Animated Horizontal Expanding Divider Line */}
+        {/* Thin Divider Line */}
         <Animated.View
           style={[
             styles.dividerLine,
             {
               opacity: dividerOpacity,
-              transform: [{ scaleX: dividerScaleX }],
             },
           ]}
         />
 
-        {/* Animated 8-Word Quote with soft settling */}
+        {/* 8-Word Quote */}
         <Animated.Text
           style={[
             styles.taglineText,
             {
               opacity: textOpacity,
-              transform: [{ translateY: textTranslateY }],
             },
           ]}
         >
           Instant home services and repairs delivered at your doorstep
         </Animated.Text>
-      </Animated.View>
+      </View>
     </View>
   );
 };
