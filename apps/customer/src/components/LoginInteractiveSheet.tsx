@@ -169,7 +169,7 @@ export const LoginInteractiveSheet: React.FC<LoginSheetProps> = ({
             </View>
 
             {/* Quick action button when collapsed with Purple Gradient */}
-            {!isExpanded ? (
+            {!isExpanded && (
               <TouchableOpacity
                 style={styles.collapsedCtaPill}
                 activeOpacity={0.85}
@@ -180,16 +180,6 @@ export const LoginInteractiveSheet: React.FC<LoginSheetProps> = ({
                 <PurpleGradientBg id="collapsedLoginGrad" rx={20} active={true} />
                 <Text style={styles.collapsedCtaText}>Login</Text>
                 <Text style={styles.collapsedCtaArrow}>→</Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                style={styles.closeHandleBtn}
-                activeOpacity={0.7}
-                onPress={() => onToggleExpand(false)}
-                accessibilityRole="button"
-                accessibilityLabel="Minimize sheet"
-              >
-                <Text style={styles.closeHandleText}>▾</Text>
               </TouchableOpacity>
             )}
           </View>
