@@ -56,11 +56,11 @@ export const WelcomeSplashScreen: React.FC<WelcomeSplashScreenProps> = ({ onFini
           },
         ]}
       >
-        {/* Crisp Centered White Serventica Logo with Amber Dot */}
+        {/* Compact, Clean White Serventica Logo with Amber Dot */}
         <Svg
           viewBox="0 0 220.48 34.98"
-          width={width * 0.58}
-          height={34}
+          width={width * 0.44}
+          height={25}
           style={styles.svgLogo}
         >
           <G id="ServenticaWordmark">
@@ -122,9 +122,9 @@ export const WelcomeSplashScreen: React.FC<WelcomeSplashScreenProps> = ({ onFini
         {/* Thin Divider Line directly under the logo */}
         <View style={styles.dividerLine} />
 
-        {/* Tagline text: We serve you better */}
+        {/* 8-Word Crisp Premium Tagline */}
         <Text style={styles.taglineText}>
-          We serve you better
+          Instant home services and repairs delivered at your doorstep
         </Text>
       </Animated.View>
     </View>
@@ -141,24 +141,25 @@ const styles = StyleSheet.create({
   centerGroup: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: 28,
   },
   svgLogo: {
     alignSelf: 'center',
   },
   dividerLine: {
-    width: width * 0.52,
+    width: width * 0.44,
     height: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.35)',
-    marginTop: 18,
-    marginBottom: 18,
+    marginTop: 16,
+    marginBottom: 16,
   },
   taglineText: {
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: ServenticaTokens.fonts.SemiBold,
     color: '#FFFFFF',
     textAlign: 'center',
-    lineHeight: 23,
+    lineHeight: 22,
     letterSpacing: 0.2,
+    maxWidth: 280,
   },
 });
