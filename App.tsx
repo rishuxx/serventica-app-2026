@@ -27,11 +27,11 @@ function RootNavigator() {
   const [actionLoading, setActionLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Guarantee splash screen is visible for at least 1.8 seconds on every launch
+  // Guarantee splash screen is visible for at least 2.5 seconds on every launch
   useEffect(() => {
     const timer = setTimeout(() => {
       setSplashFinished(true);
-    }, 1800);
+    }, 2500);
 
     return () => clearTimeout(timer);
   }, []);
