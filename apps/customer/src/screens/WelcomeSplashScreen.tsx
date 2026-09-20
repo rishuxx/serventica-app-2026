@@ -2,8 +2,10 @@ import React, { useEffect, useRef } from 'react';
 import {
   StyleSheet,
   View,
+  Text,
   StatusBar,
   Animated,
+  Dimensions,
   Easing,
 } from 'react-native';
 import Svg, {
@@ -11,14 +13,17 @@ import Svg, {
   Path,
   Circle,
 } from 'react-native-svg';
+import { ServenticaTokens } from '../../../../packages/design-system/src/tokens';
 
 interface WelcomeSplashScreenProps {
   onFinish?: () => void;
 }
 
+const { width } = Dimensions.get('window');
+
 export const WelcomeSplashScreen: React.FC<WelcomeSplashScreenProps> = ({ onFinish }) => {
   const contentFade = useRef(new Animated.Value(0)).current;
-  const logoScale = useRef(new Animated.Value(0.95)).current;
+  const contentScale = useRef(new Animated.Value(0.96)).current;
 
   useEffect(() => {
     Animated.parallel([
@@ -28,10 +33,10 @@ export const WelcomeSplashScreen: React.FC<WelcomeSplashScreenProps> = ({ onFini
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
-      Animated.spring(logoScale, {
+      Animated.spring(contentScale, {
         toValue: 1,
-        friction: 9,
-        tension: 60,
+        friction: 8,
+        tension: 50,
         useNativeDriver: true,
       }),
     ]).start();
@@ -41,20 +46,21 @@ export const WelcomeSplashScreen: React.FC<WelcomeSplashScreenProps> = ({ onFini
     <View style={styles.container}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-      {/* Centered Small Serventica Vector Logo */}
+      {/* Center Group: Serventica Logo + Thin Divider + Tagline */}
       <Animated.View
         style={[
-          styles.centerSection,
+          styles.centerGroup,
           {
             opacity: contentFade,
-            transform: [{ scale: logoScale }],
+            transform: [{ scale: contentScale }],
           },
         ]}
       >
+        {/* Crisp Centered White Serventica Logo with Amber Dot */}
         <Svg
           viewBox="0 0 220.48 34.98"
-          width={128}
-          height={20}
+          width={width * 0.58}
+          height={34}
           style={styles.svgLogo}
         >
           <G id="ServenticaWordmark">
@@ -112,6 +118,14 @@ export const WelcomeSplashScreen: React.FC<WelcomeSplashScreenProps> = ({ onFini
             <Circle cx="216.75" cy="29.9" r="3.73" fill="#FBBF24" />
           </G>
         </Svg>
+
+        {/* Thin Divider Line directly under the logo */}
+        <View style={styles.dividerLine} />
+
+        {/* Tagline text: Get professional house help in minutes! */}
+        <Text style={styles.taglineText}>
+          Get professional house help{'\n'}in minutes!
+        </Text>
       </Animated.View>
     </View>
   );
@@ -120,19 +134,31 @@ export const WelcomeSplashScreen: React.FC<WelcomeSplashScreenProps> = ({ onFini
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#8B5CF6', // Bright Light Purple (Vibrant Modern Violet)
+    backgroundColor: '#8B5CF6', // Bright Light Purple
     justifyContent: 'center',
     alignItems: 'center',
   },
-  centerSection: {
+  centerGroup: {
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  logoWrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingHorizontal: 24,
   },
   svgLogo: {
     alignSelf: 'center',
+  },
+  dividerLine: {
+    width: width * 0.52,
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.35)',
+    marginTop: 18,
+    marginBottom: 18,
+  },
+  taglineText: {
+    fontSize: 16,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
+    color: '#FFFFFF',
+    textAlign: 'center',
+    lineHeight: 23,
+    letterSpacing: 0.2,
   },
 });
