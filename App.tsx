@@ -218,10 +218,8 @@ function RootNavigator() {
 }
 
 export default function App() {
-  const [showShowcase, setShowShowcase] = useState(false);
-
   // Hook-based robust cross-platform font loader for Expo Go & Bare RN
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     'Lexend-Thin': Lexend_100Thin,
     'Lexend-Light': Lexend_300Light,
     'Lexend-Regular': Lexend_400Regular,
@@ -240,7 +238,10 @@ export default function App() {
     Lexend_900Black,
   });
 
-  if (!fontsLoaded) {
+  const [showShowcase, setShowShowcase] = useState(false);
+
+  // If fonts are still loading and there is no error yet, show clean loading indicator
+  if (!fontsLoaded && !fontError) {
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color="#ffb300" />
