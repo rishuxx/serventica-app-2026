@@ -7,7 +7,9 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   StatusBar,
+  Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, ShieldCheck, Inbox, AlertCircle, RefreshCw } from 'lucide-react-native';
 import { CategoryItem } from '../../../types/category.types';
 import { useCategoryServices } from '../../../hooks/useCategoryServices';
@@ -30,6 +32,7 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
   onBack,
   onSelectService,
 }) => {
+  const insets = useSafeAreaInsets();
   const targetIdentifier = categoryId || categorySlug;
   const {
     category,
@@ -62,7 +65,14 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
       <StatusBar barStyle="dark-content" />
 
       {/* HEADER ROW */}
-      <View style={styles.headerRow}>
+      <View
+        style={[
+          styles.headerRow,
+          {
+            paddingTop: Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 16) + 8,
+          },
+        ]}
+      >
         <TouchableOpacity
           style={styles.backButton}
           onPress={onBack}

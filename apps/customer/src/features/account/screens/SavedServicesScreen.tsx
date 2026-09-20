@@ -9,6 +9,7 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, Heart } from 'lucide-react-native';
 import { useSavedServices } from '../../../hooks/useSavedServices';
 import { ServiceCard } from '../../categories/components/ServiceCard';
@@ -26,6 +27,7 @@ export const SavedServicesScreen: React.FC<SavedServicesScreenProps> = ({
   onSelectService,
   onExploreServices,
 }) => {
+  const insets = useSafeAreaInsets();
   const { savedServices, isLoading, refresh, toggleSave } = useSavedServices();
 
   const keyExtractor = useCallback((item: SavedServiceItem) => item.id, []);
@@ -64,7 +66,14 @@ export const SavedServicesScreen: React.FC<SavedServicesScreenProps> = ({
       <StatusBar barStyle="dark-content" />
 
       {/* HEADER */}
-      <View style={styles.headerBar}>
+      <View
+        style={[
+          styles.headerBar,
+          {
+            paddingTop: Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 16) + 8,
+          },
+        ]}
+      >
         <TouchableOpacity
           style={styles.circleBackButton}
           onPress={onBack}

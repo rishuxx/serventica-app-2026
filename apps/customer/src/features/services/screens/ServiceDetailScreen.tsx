@@ -7,7 +7,9 @@ import {
   TouchableOpacity,
   Image,
   StatusBar,
+  Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ArrowLeft,
   Star,
@@ -49,6 +51,7 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({
   onBack,
   onContinue,
 }) => {
+  const insets = useSafeAreaInsets();
   const targetIdentifier = slug || serviceId;
   const {
     details,
@@ -70,6 +73,10 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({
 
   // Evaluate Serviceability
   const isAvailable = serviceability ? serviceability.isServiceable : true;
+
+  const headerSafeStyle = {
+    paddingTop: Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 16) + 8,
+  };
 
   const handleBookNow = () => {
     if (!details?.service) return;
@@ -97,7 +104,7 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({
     return (
       <View style={styles.stateContainer}>
         <StatusBar barStyle="dark-content" />
-        <View style={styles.headerBar}>
+        <View style={[styles.headerBar, headerSafeStyle]}>
           <TouchableOpacity
             style={styles.circleBackButton}
             onPress={onBack}
@@ -127,7 +134,7 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({
     return (
       <View style={styles.stateContainer}>
         <StatusBar barStyle="dark-content" />
-        <View style={styles.headerBar}>
+        <View style={[styles.headerBar, headerSafeStyle]}>
           <TouchableOpacity
             style={styles.circleBackButton}
             onPress={onBack}
@@ -171,7 +178,7 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({
       <StatusBar barStyle="dark-content" />
 
       {/* FIXED TOP HEADER */}
-      <View style={styles.headerBar}>
+      <View style={[styles.headerBar, headerSafeStyle]}>
         <TouchableOpacity
           style={styles.circleBackButton}
           onPress={onBack}
@@ -432,7 +439,14 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({
       </ScrollView>
 
       {/* FIXED BOTTOM STICKY CTA BAR */}
-      <View style={styles.bottomBar}>
+      <View
+        style={[
+          styles.bottomBar,
+          {
+            paddingBottom: Math.max(insets.bottom, Platform.OS === 'ios' ? 14 : 12),
+          },
+        ]}
+      >
         <View style={styles.priceContainer}>
           {hasRealPrice ? (
             <>

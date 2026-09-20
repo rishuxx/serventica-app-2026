@@ -9,6 +9,7 @@ import {
   Platform,
   Alert,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ArrowLeft,
   User,
@@ -67,6 +68,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
   const { bookings } = useBookings('UPCOMING');
   const { savedServices } = useSavedServices();
   const { unreadCount } = useNotifications();
+  const insets = useSafeAreaInsets();
 
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -90,7 +92,14 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
       <StatusBar barStyle="dark-content" />
 
       {/* TOP APP BAR WITH BACK TO HOME BUTTON */}
-      <View style={styles.topBar}>
+      <View
+        style={[
+          styles.topBar,
+          {
+            paddingTop: Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 16) + 8,
+          },
+        ]}
+      >
         {onBack ? (
           <TouchableOpacity
             onPress={onBack}

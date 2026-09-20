@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, Lock, CheckCircle2 } from 'lucide-react-native';
 import { ServenticaTokens } from '../../../../../../packages/design-system/src';
 import { useProfile } from '../../../hooks/useProfile';
@@ -20,6 +21,7 @@ interface EditProfileScreenProps {
 }
 
 export const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ onBack }) => {
+  const insets = useSafeAreaInsets();
   const { profile, user, updateProfile, isUpdating } = useProfile();
 
   const [firstName, setFirstName] = useState(profile?.first_name || '');
@@ -55,7 +57,14 @@ export const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ onBack }) 
       <StatusBar barStyle="dark-content" />
 
       {/* HEADER */}
-      <View style={styles.headerBar}>
+      <View
+        style={[
+          styles.headerBar,
+          {
+            paddingTop: Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 16) + 8,
+          },
+        ]}
+      >
         <TouchableOpacity
           style={styles.circleBackButton}
           onPress={onBack}

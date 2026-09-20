@@ -8,7 +8,9 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
+  StatusBar,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, Star, MessageSquare } from 'lucide-react-native';
 import { accountRepository } from '../../../repositories/account.repository';
 import { ServiceReviewRecord } from '@serventica/types';
@@ -23,6 +25,7 @@ export const ReviewsScreen: React.FC<ReviewsScreenProps> = ({
   onBack,
   onExploreServices,
 }) => {
+  const insets = useSafeAreaInsets();
   const [reviews, setReviews] = useState<ServiceReviewRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -77,8 +80,16 @@ export const ReviewsScreen: React.FC<ReviewsScreenProps> = ({
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
+      <StatusBar barStyle="dark-content" />
+      {/* HEADER */}
+      <View
+        style={[
+          styles.header,
+          {
+            paddingTop: Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 16) + 8,
+          },
+        ]}
+      >
         <TouchableOpacity style={styles.backBtn} onPress={onBack}>
           <ArrowLeft size={20} color="#1E242B" />
         </TouchableOpacity>

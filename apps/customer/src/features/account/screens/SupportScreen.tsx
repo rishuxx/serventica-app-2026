@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, CheckCircle2, MessageSquare, Headphones } from 'lucide-react-native';
 import { ServenticaTokens } from '../../../../../../packages/design-system/src';
 import { useAuth } from '../../../context/AuthContext';
@@ -33,6 +34,7 @@ export const SupportScreen: React.FC<SupportScreenProps> = ({
   initialBookingId = null,
   onBack,
 }) => {
+  const insets = useSafeAreaInsets();
   const { user } = useAuth();
 
   const [selectedCategory, setSelectedCategory] = useState(ISSUE_CATEGORIES[0]);
@@ -78,7 +80,14 @@ export const SupportScreen: React.FC<SupportScreenProps> = ({
     return (
       <View style={styles.container}>
         <StatusBar barStyle="dark-content" />
-        <View style={styles.headerBar}>
+        <View
+          style={[
+            styles.headerBar,
+            {
+              paddingTop: Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 16) + 8,
+            },
+          ]}
+        >
           <TouchableOpacity style={styles.circleBackButton} onPress={onBack}>
             <ArrowLeft size={20} color='#1E242B' strokeWidth={2.2} />
           </TouchableOpacity>
@@ -107,7 +116,14 @@ export const SupportScreen: React.FC<SupportScreenProps> = ({
       <StatusBar barStyle="dark-content" />
 
       {/* HEADER */}
-      <View style={styles.headerBar}>
+      <View
+        style={[
+          styles.headerBar,
+          {
+            paddingTop: Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 16) + 8,
+          },
+        ]}
+      >
         <TouchableOpacity style={styles.circleBackButton} onPress={onBack}>
           <ArrowLeft size={20} color='#1E242B' strokeWidth={2.2} />
         </TouchableOpacity>

@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 6 : 8,
+    paddingTop: 8,
     minHeight: 44,
   },
   brandContainer: {
@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
   glassSkipButton: {
     position: 'absolute',
     right: 0,
-    top: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 6 : 8,
+    top: 8,
     paddingHorizontal: 12,
     paddingVertical: 6,
   },

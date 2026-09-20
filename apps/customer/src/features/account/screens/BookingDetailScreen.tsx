@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ArrowLeft,
   Calendar,
@@ -39,6 +40,7 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
   onGetHelp,
   onBookAgain,
 }) => {
+  const insets = useSafeAreaInsets();
   const { booking, isLoading, error, isCancelling, cancel } = useBookingDetail(bookingId);
 
   const [cancelPromptVisible, setCancelPromptVisible] = useState(false);
@@ -143,7 +145,14 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
       <StatusBar barStyle="dark-content" />
 
       {/* HEADER */}
-      <View style={styles.headerBar}>
+      <View
+        style={[
+          styles.headerBar,
+          {
+            paddingTop: Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 16) + 8,
+          },
+        ]}
+      >
         <TouchableOpacity
           style={styles.circleBackButton}
           onPress={onBack}

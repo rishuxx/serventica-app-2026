@@ -12,6 +12,7 @@ import {
   Modal,
   BackHandler,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TopHeroSection } from '../components/TopHeroSection';
 import { HomeSearchBar } from '../components/HomeSearchBar';
 import { SelectLocationScreen } from '../../location/screens/SelectLocationScreen';
@@ -79,6 +80,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onSelectService,
   initialShowcase = false,
 }) => {
+  const insets = useSafeAreaInsets();
   const { data, isLoading: isHomeLoading, refresh: refreshHome } = useHome();
   const location = useLocation();
   const search = useHomeSearch();
@@ -628,6 +630,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 backgroundColor: stickyGradientColors[0],
                 opacity: stickyHeaderOpacity,
                 transform: [{ translateY: stickyHeaderTranslateY }],
+                paddingTop: Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 16) + 4,
               },
             ]}
             onLayout={(e) => {

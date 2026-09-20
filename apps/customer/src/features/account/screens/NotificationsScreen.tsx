@@ -7,7 +7,9 @@ import {
   FlatList,
   ActivityIndicator,
   Platform,
+  StatusBar,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, Bell, Calendar, CheckCircle2, AlertCircle, Sparkles, CreditCard, ChevronRight } from 'lucide-react-native';
 import { useNotifications } from '../../../hooks/useNotifications';
 import { NotificationRecord } from '@serventica/types';
@@ -24,6 +26,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
   onNavigateToBooking,
   onNavigateToServices,
 }) => {
+  const insets = useSafeAreaInsets();
   const {
     notifications,
     unreadCount,
@@ -100,8 +103,16 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="dark-content" />
       {/* Header */}
-      <View style={styles.header}>
+      <View
+        style={[
+          styles.header,
+          {
+            paddingTop: Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 16) + 8,
+          },
+        ]}
+      >
         <TouchableOpacity
           onPress={onBack}
           style={styles.backButton}
