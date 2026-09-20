@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import {
   StyleSheet,
   View,
@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   Platform,
   Animated,
+  PanResponder,
+  LayoutChangeEvent,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path, Rect } from 'react-native-svg';
@@ -58,11 +60,18 @@ const TAB_CONFIGS: Record<BottomNavTab, TabThemeConfig> = {
   },
 };
 
-// Crisp, refined SVG Icons with light glass aesthetics
-const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThemeConfig }> = ({
+const TABS: TabThemeConfig[] = [
+  TAB_CONFIGS.HOME,
+  TAB_CONFIGS.ORDERS,
+  TAB_CONFIGS.CATEGORIES,
+  TAB_CONFIGS.SAVED,
+  TAB_CONFIGS.PROFILE,
+];
+
+// Crisp, refined SVG Icons
+const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean }> = ({
   tab,
   isActive,
-  theme,
 }) => {
   const stroke = isActive ? '#1E242B' : '#64748B';
   const strokeWidth = isActive ? 2.2 : 1.8;
@@ -71,7 +80,7 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
   switch (tab) {
     case 'HOME':
       return (
-        <Svg width={21} height={21} viewBox="0 0 24 24">
+        <Svg width={22} height={22} viewBox="0 0 24 24">
           <Path
             d="M3 10.5L12 3l9 7.5V20a1.5 1.5 0 0 1-1.5 1.5H4.5A1.5 1.5 0 0 1 3 20V10.5z"
             fill={fill}
@@ -93,7 +102,7 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
 
     case 'ORDERS':
       return (
-        <Svg width={21} height={21} viewBox="0 0 24 24">
+        <Svg width={22} height={22} viewBox="0 0 24 24">
           <Rect
             x="4"
             y="4.5"
@@ -122,7 +131,7 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
 
     case 'CATEGORIES':
       return (
-        <Svg width={21} height={21} viewBox="0 0 24 24">
+        <Svg width={22} height={22} viewBox="0 0 24 24">
           <Rect
             x="3"
             y="3"
@@ -168,7 +177,7 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
 
     case 'SAVED':
       return (
-        <Svg width={21} height={21} viewBox="0 0 24 24">
+        <Svg width={22} height={22} viewBox="0 0 24 24">
           <Path
             d="M19.5 13.572L12 21l-7.5-7.428A5 5 0 1 1 12 6.706a5 5 0 1 1 7.5 6.866z"
             fill={fill}
@@ -182,7 +191,7 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
 
     case 'PROFILE':
       return (
-        <Svg width={21} height={21} viewBox="0 0 24 24">
+        <Svg width={22} height={22} viewBox="0 0 24 24">
           <Path
             d="M20 21v-1.5A4.5 4.5 0 0 0 15.5 15h-7A4.5 4.5 0 0 0 4 19.5V21"
             fill={fill}
@@ -204,77 +213,104 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean; theme: TabThe
   }
 };
 
-const FluidNavTabButton: React.FC<{
-  tabConfig: TabThemeConfig;
-  isActive: boolean;
-  onPress: () => void;
-}> = ({ tabConfig, isActive, onPress }) => {
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-
-  const handlePressIn = () => {
-    Animated.spring(scaleAnim, {
-      toValue: 0.94,
-      friction: 5,
-      tension: 400,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const handlePressOut = () => {
-    Animated.spring(scaleAnim, {
-      toValue: 1,
-      friction: 4,
-      tension: 300,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  return (
-    <TouchableOpacity
-      style={[styles.tabItem, isActive && styles.tabItemActive]}
-      activeOpacity={0.88}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityState={{ selected: isActive }}
-      accessibilityLabel={tabConfig.label}
-    >
-      <Animated.View
-        style={[
-          styles.iconContainer,
-          {
-            transform: [{ scale: scaleAnim }],
-          },
-        ]}
-      >
-        <TabSvgIcon tab={tabConfig.id} isActive={isActive} theme={tabConfig} />
-      </Animated.View>
-
-      <Text
-        style={[
-          styles.tabLabel,
-          isActive ? styles.tabLabelActive : styles.tabLabelInactive,
-        ]}
-      >
-        {tabConfig.label}
-      </Text>
-    </TouchableOpacity>
-  );
-};
-
 export const HomeBottomNav: React.FC<HomeBottomNavProps> = ({
   activeTab,
   onSelectTab,
 }) => {
   const insets = useSafeAreaInsets();
-  const tabs: TabThemeConfig[] = [
-    TAB_CONFIGS.HOME,
-    TAB_CONFIGS.ORDERS,
-    TAB_CONFIGS.CATEGORIES,
-    TAB_CONFIGS.SAVED,
-    TAB_CONFIGS.PROFILE,
-  ];
+  const [tabLayouts, setTabLayouts] = useState<Array<{ x: number; width: number }>>([]);
+  const activeIndex = TABS.findIndex((t) => t.id === activeTab);
+
+  // Fluid Spring Physical Drivers
+  const indicatorX = useRef(new Animated.Value(0)).current;
+  const indicatorWidth = useRef(new Animated.Value(68)).current;
+  const isDragging = useRef(false);
+
+  // Handle Tab Layout Capturing
+  const handleItemLayout = (index: number, e: LayoutChangeEvent) => {
+    const { x, width } = e.nativeEvent.layout;
+    setTabLayouts((prev) => {
+      const next = [...prev];
+      next[index] = { x, width };
+      return next;
+    });
+  };
+
+  // Animate indicator whenever activeTab or layout changes
+  useEffect(() => {
+    if (tabLayouts[activeIndex] && !isDragging.current) {
+      const target = tabLayouts[activeIndex];
+      Animated.parallel([
+        Animated.spring(indicatorX, {
+          toValue: target.x,
+          damping: 18,
+          stiffness: 240,
+          mass: 0.7,
+          useNativeDriver: false,
+        }),
+        Animated.spring(indicatorWidth, {
+          toValue: target.width,
+          damping: 18,
+          stiffness: 240,
+          mass: 0.7,
+          useNativeDriver: false,
+        }),
+      ]).start();
+    }
+  }, [activeIndex, tabLayouts]);
+
+  // iOS-style Hold & Drag to Select PanResponder
+  const panResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: (_, gestureState) => Math.abs(gestureState.dx) > 4,
+        onPanResponderGrant: (_, gestureState) => {
+          isDragging.current = true;
+          const touchX = gestureState.x0;
+          findAndSelectTabAt(touchX);
+        },
+        onPanResponderMove: (_, gestureState) => {
+          const currentX = gestureState.moveX;
+          findAndSelectTabAt(currentX);
+        },
+        onPanResponderRelease: () => {
+          isDragging.current = false;
+          if (tabLayouts[activeIndex]) {
+            const target = tabLayouts[activeIndex];
+            Animated.parallel([
+              Animated.spring(indicatorX, {
+                toValue: target.x,
+                damping: 18,
+                stiffness: 240,
+                mass: 0.7,
+                useNativeDriver: false,
+              }),
+              Animated.spring(indicatorWidth, {
+                toValue: target.width,
+                damping: 18,
+                stiffness: 240,
+                mass: 0.7,
+                useNativeDriver: false,
+              }),
+            ]).start();
+          }
+        },
+      }),
+    [tabLayouts, activeIndex]
+  );
+
+  const findAndSelectTabAt = (pageX: number) => {
+    if (tabLayouts.length === 0) return;
+    // Estimate container offset
+    const index = tabLayouts.findIndex((layout) => {
+      return pageX >= layout.x && pageX <= layout.x + layout.width;
+    });
+
+    if (index !== -1 && index !== activeIndex) {
+      onSelectTab(TABS[index].id);
+    }
+  };
 
   return (
     <View
@@ -284,17 +320,47 @@ export const HomeBottomNav: React.FC<HomeBottomNavProps> = ({
       ]}
       pointerEvents="box-none"
     >
-      <View style={styles.navCapsule}>
+      <View style={styles.navCapsule} {...panResponder.panHandlers}>
+        {/* Full-size Rounded Sliding Grey Pill Indicator with Spring Physics */}
+        {tabLayouts.length > 0 && (
+          <Animated.View
+            style={[
+              styles.slidingPill,
+              {
+                left: indicatorX,
+                width: indicatorWidth,
+              },
+            ]}
+          />
+        )}
+
         <View style={styles.row}>
-          {tabs.map((tab) => {
+          {TABS.map((tab, idx) => {
             const isActive = activeTab === tab.id;
             return (
-              <FluidNavTabButton
+              <TouchableOpacity
                 key={tab.id}
-                tabConfig={tab}
-                isActive={isActive}
+                style={styles.tabItem}
+                activeOpacity={0.88}
+                onLayout={(e) => handleItemLayout(idx, e)}
                 onPress={() => onSelectTab(tab.id)}
-              />
+                accessibilityRole="button"
+                accessibilityState={{ selected: isActive }}
+                accessibilityLabel={tab.label}
+              >
+                <View style={styles.iconContainer}>
+                  <TabSvgIcon tab={tab.id} isActive={isActive} />
+                </View>
+
+                <Text
+                  style={[
+                    styles.tabLabel,
+                    isActive ? styles.tabLabelActive : styles.tabLabelInactive,
+                  ]}
+                >
+                  {tab.label}
+                </Text>
+              </TouchableOpacity>
             );
           })}
         </View>
@@ -310,48 +376,55 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     zIndex: 998,
   },
   navCapsule: {
     width: '100%',
     maxWidth: 440,
     backgroundColor: '#FFFFFF', // Full solid clean white panel
-    borderRadius: 36,
+    borderRadius: 38,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    paddingVertical: 9,
+    paddingVertical: 6,
     paddingHorizontal: 6,
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 14,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 9,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  slidingPill: {
+    position: 'absolute',
+    top: 6,
+    bottom: 6,
+    backgroundColor: '#F1F5F9', // Very light soft grey pill
+    borderRadius: 28, // Extra rounded full size pill
+    zIndex: 1,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
+    zIndex: 2,
   },
   tabItem: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 24,
-    minWidth: 62,
-  },
-  tabItemActive: {
-    backgroundColor: '#F1F5F9', // Very light soft grey pill covering full item
+    paddingVertical: 7,
+    paddingHorizontal: 4,
+    borderRadius: 28,
   },
   iconContainer: {
-    width: 32,
+    width: 34,
     height: 26,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 2,
   },
-  iconContainerActive: {},
   tabLabel: {
     fontSize: 11,
     letterSpacing: 0.1,
