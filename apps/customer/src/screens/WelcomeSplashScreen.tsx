@@ -5,14 +5,9 @@ import {
   Text,
   StatusBar,
   Animated,
-  Dimensions,
   Easing,
 } from 'react-native';
 import Svg, {
-  Defs,
-  LinearGradient as SvgLinearGradient,
-  Stop,
-  Rect,
   G,
   Path,
   Circle,
@@ -23,8 +18,6 @@ interface WelcomeSplashScreenProps {
   onFinish?: () => void;
 }
 
-const { width, height } = Dimensions.get('window');
-
 const SPLASH_TIPS = [
   'Verified pros at your doorstep in minutes',
   'Craftsmanship backed by Serventica guarantee',
@@ -34,21 +27,21 @@ const SPLASH_TIPS = [
 
 export const WelcomeSplashScreen: React.FC<WelcomeSplashScreenProps> = ({ onFinish }) => {
   const contentFade = useRef(new Animated.Value(0)).current;
-  const logoScale = useRef(new Animated.Value(0.94)).current;
+  const logoScale = useRef(new Animated.Value(0.96)).current;
   const tipIndex = useRef(Math.floor(Math.random() * SPLASH_TIPS.length)).current;
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(contentFade, {
         toValue: 1,
-        duration: 650,
+        duration: 500,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
       Animated.spring(logoScale, {
         toValue: 1,
-        friction: 8,
-        tension: 50,
+        friction: 9,
+        tension: 60,
         useNativeDriver: true,
       }),
     ]).start();
@@ -58,38 +51,9 @@ export const WelcomeSplashScreen: React.FC<WelcomeSplashScreenProps> = ({ onFini
     <View style={styles.container}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-      {/* iOS Mesh Gradient Blend from JSON stops */}
-      <Svg
-        pointerEvents="none"
-        style={StyleSheet.absoluteFill}
-        width={width}
-        height={height}
-      >
-        <Defs>
-          <SvgLinearGradient
-            id="iosBlendGradient"
-            x1="0%"
-            y1="0%"
-            x2="0%"
-            y2="100%"
-          >
-            {/* VIOLET (position: 0.025) */}
-            <Stop offset="2.5%" stopColor="#7058A3" stopOpacity="1" />
-            {/* BELLFLOWER (position: 0.37) */}
-            <Stop offset="37%" stopColor="#5654A2" stopOpacity="1" />
-            {/* WISTERIA (position: 0.786) */}
-            <Stop offset="78.6%" stopColor="#B28FCE" stopOpacity="1" />
-            {/* PINK DIANTHUS (position: 0.941) */}
-            <Stop offset="94.1%" stopColor="#EEBBCB" stopOpacity="1" />
-          </SvgLinearGradient>
-        </Defs>
-
-        <Rect x="0" y="0" width={width} height={height} fill="url(#iosBlendGradient)" />
-      </Svg>
-
-      {/* Main Content */}
+      {/* Main Content Area */}
       <Animated.View style={[styles.mainContent, { opacity: contentFade }]}>
-        {/* CENTER: Pure, Clean Serventica Vector Logo */}
+        {/* CENTER: Extra-Small, Clean Serventica Vector Logo */}
         <View style={styles.centerSection}>
           <Animated.View
             style={[
@@ -101,8 +65,8 @@ export const WelcomeSplashScreen: React.FC<WelcomeSplashScreenProps> = ({ onFini
           >
             <Svg
               viewBox="0 0 220.48 34.98"
-              width={172}
-              height={28}
+              width={128}
+              height={20}
               style={styles.svgLogo}
             >
               <G id="ServenticaWordmark">
@@ -179,7 +143,7 @@ export const WelcomeSplashScreen: React.FC<WelcomeSplashScreenProps> = ({ onFini
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#7058A3',
+    backgroundColor: '#5654A2',
   },
   mainContent: {
     flex: 1,
@@ -207,7 +171,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   dividerLine: {
-    width: 38,
+    width: 32,
     height: 1.5,
     borderRadius: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.40)',
@@ -220,14 +184,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: 0.25,
     marginBottom: 5,
-    textShadowColor: 'rgba(0, 0, 0, 0.15)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
   },
   subVersionText: {
     fontSize: 9,
     fontFamily: ServenticaTokens.fonts.SemiBold,
-    color: 'rgba(255, 255, 255, 0.60)',
+    color: 'rgba(255, 255, 255, 0.55)',
     letterSpacing: 1.4,
     textTransform: 'uppercase',
   },
