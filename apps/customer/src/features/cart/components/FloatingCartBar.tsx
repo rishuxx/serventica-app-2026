@@ -170,17 +170,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fac420', // Luxury golden Serventica yellow
     borderRadius: 36,
-    paddingLeft: 6,
-    paddingRight: 6,
-    paddingVertical: 6,
-    width: 218,
+    paddingLeft: 7,
+    paddingRight: 7,
+    paddingVertical: 7.5,
+    width: 204, // Slightly reduced horizontal width
+    minHeight: 56, // Slightly increased vertical height
     borderWidth: 1.2,
     borderColor: 'rgba(255, 255, 255, 0.65)',
   },
   thumbnailCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
@@ -193,12 +194,12 @@ const styles = StyleSheet.create({
   },
   textColumn: {
     flex: 1,
-    paddingLeft: 12,
+    paddingLeft: 10,
     paddingRight: 4,
     justifyContent: 'center',
   },
   viewCartTitle: {
-    fontSize: 14.5,
+    fontSize: 14,
     fontFamily: ServenticaTokens.fonts.Bold,
     color: '#0F172A',
     letterSpacing: -0.2,
