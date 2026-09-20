@@ -21,10 +21,20 @@ type UnauthScreen = 'SPLASH' | 'LOGIN' | 'OTP' | 'ONBOARDING_NAME';
 
 function RootNavigator() {
   const { authState, profile, sendOtp, verifyOtp, updateProfileNames } = useAuth();
-  const [unauthScreen, setUnauthScreen] = useState<UnauthScreen>('SPLASH');
+  const [splashFinished, setSplashFinished] = useState(false);
+  const [unauthScreen, setUnauthScreen] = useState<UnauthScreen>('LOGIN');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Guarantee splash screen is visible for at least 1.8 seconds on every launch
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSplashFinished(true);
+    }, 1800);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // When authState transitions to UNAUTHENTICATED (e.g. on logout), ensure screen is LOGIN rather than OTP
   useEffect(() => {
@@ -33,12 +43,6 @@ function RootNavigator() {
       setErrorMessage(null);
     }
   }, [authState]);
-
-  // 1. Splash slide-to-start
-  const handleSlideStart = () => {
-    setUnauthScreen('LOGIN');
-    setErrorMessage(null);
-  };
 
   // 2. Request OTP via Supabase Auth (authoritative phone-only input)
   const handleGetOtp = async (phone: string) => {
@@ -136,13 +140,9 @@ function RootNavigator() {
     setErrorMessage(null);
   };
 
-  // Initializing state
-  if (authState === 'INITIALIZING') {
-    return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#ffb300" />
-      </View>
-    );
+  // Always show the classy splash screen for minimum 1.8 seconds (or until auth initialization finishes)
+  if (!splashFinished || authState === 'INITIALIZING') {
+    return <WelcomeSplashScreen />;
   }
 
   // Authenticated state: If first_name is missing (New User), prompt onboarding name screen
@@ -179,15 +179,6 @@ function RootNavigator() {
   }
 
   // Unauthenticated flow
-  if (unauthScreen === 'SPLASH') {
-    return (
-      <WelcomeSplashScreen
-        onStart={handleSlideStart}
-        onExplore={handleExploreGuest}
-      />
-    );
-  }
-
   if (unauthScreen === 'OTP') {
     return (
       <CustomerOtpScreen
@@ -209,7 +200,6 @@ function RootNavigator() {
       onGetOtp={handleGetOtp}
       onGoogleLogin={handleGoogleLogin}
       onExploreGuest={handleExploreGuest}
-      onBackToSplash={() => setUnauthScreen('SPLASH')}
       isLoading={actionLoading}
       errorMessage={errorMessage}
     />
