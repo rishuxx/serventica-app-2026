@@ -7,7 +7,6 @@ import {
   Platform,
   Animated,
   PanResponder,
-  LayoutChangeEvent,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path, Rect } from 'react-native-svg';
@@ -218,46 +217,32 @@ export const HomeBottomNav: React.FC<HomeBottomNavProps> = ({
   onSelectTab,
 }) => {
   const insets = useSafeAreaInsets();
-  const [tabLayouts, setTabLayouts] = useState<Array<{ x: number; width: number }>>([]);
+  const [rowWidth, setRowWidth] = useState<number>(0);
   const activeIndex = TABS.findIndex((t) => t.id === activeTab);
 
-  // Fluid Spring Physical Drivers
-  const indicatorX = useRef(new Animated.Value(0)).current;
-  const indicatorWidth = useRef(new Animated.Value(68)).current;
+  // Exact oval pill dimensions
+  const PILL_WIDTH = 68;
+  const tabWidth = rowWidth > 0 ? rowWidth / TABS.length : 0;
+
+  // Spring physical driver for exact center alignment
+  const indicatorCenterX = useRef(new Animated.Value(0)).current;
   const isDragging = useRef(false);
 
-  // Handle Tab Layout Capturing
-  const handleItemLayout = (index: number, e: LayoutChangeEvent) => {
-    const { x, width } = e.nativeEvent.layout;
-    setTabLayouts((prev) => {
-      const next = [...prev];
-      next[index] = { x, width };
-      return next;
-    });
-  };
-
-  // Animate indicator whenever activeTab or layout changes
+  // Smoothly center the oval pill over the active tab slot
   useEffect(() => {
-    if (tabLayouts[activeIndex] && !isDragging.current) {
-      const target = tabLayouts[activeIndex];
-      Animated.parallel([
-        Animated.spring(indicatorX, {
-          toValue: target.x,
-          damping: 18,
-          stiffness: 240,
-          mass: 0.7,
-          useNativeDriver: false,
-        }),
-        Animated.spring(indicatorWidth, {
-          toValue: target.width,
-          damping: 18,
-          stiffness: 240,
-          mass: 0.7,
-          useNativeDriver: false,
-        }),
-      ]).start();
+    if (tabWidth > 0 && !isDragging.current) {
+      // Calculate exact center of slot: (index + 0.5) * tabWidth - (PILL_WIDTH / 2)
+      const targetLeft = activeIndex * tabWidth + (tabWidth - PILL_WIDTH) / 2;
+
+      Animated.spring(indicatorCenterX, {
+        toValue: targetLeft,
+        damping: 18,
+        stiffness: 260,
+        mass: 0.6,
+        useNativeDriver: false,
+      }).start();
     }
-  }, [activeIndex, tabLayouts]);
+  }, [activeIndex, tabWidth]);
 
   // iOS-style Hold & Drag to Select PanResponder
   const panResponder = useMemo(
@@ -265,50 +250,37 @@ export const HomeBottomNav: React.FC<HomeBottomNavProps> = ({
       PanResponder.create({
         onStartShouldSetPanResponder: () => true,
         onMoveShouldSetPanResponder: (_, gestureState) => Math.abs(gestureState.dx) > 4,
-        onPanResponderGrant: (_, gestureState) => {
+        onPanResponderGrant: (evt) => {
           isDragging.current = true;
-          const touchX = gestureState.x0;
-          findAndSelectTabAt(touchX);
+          handleTouch(evt.nativeEvent.locationX);
         },
-        onPanResponderMove: (_, gestureState) => {
-          const currentX = gestureState.moveX;
-          findAndSelectTabAt(currentX);
+        onPanResponderMove: (evt) => {
+          handleTouch(evt.nativeEvent.locationX);
         },
         onPanResponderRelease: () => {
           isDragging.current = false;
-          if (tabLayouts[activeIndex]) {
-            const target = tabLayouts[activeIndex];
-            Animated.parallel([
-              Animated.spring(indicatorX, {
-                toValue: target.x,
-                damping: 18,
-                stiffness: 240,
-                mass: 0.7,
-                useNativeDriver: false,
-              }),
-              Animated.spring(indicatorWidth, {
-                toValue: target.width,
-                damping: 18,
-                stiffness: 240,
-                mass: 0.7,
-                useNativeDriver: false,
-              }),
-            ]).start();
+          if (tabWidth > 0) {
+            const targetLeft = activeIndex * tabWidth + (tabWidth - PILL_WIDTH) / 2;
+            Animated.spring(indicatorCenterX, {
+              toValue: targetLeft,
+              damping: 18,
+              stiffness: 260,
+              mass: 0.6,
+              useNativeDriver: false,
+            }).start();
           }
         },
       }),
-    [tabLayouts, activeIndex]
+    [tabWidth, activeIndex]
   );
 
-  const findAndSelectTabAt = (pageX: number) => {
-    if (tabLayouts.length === 0) return;
-    // Estimate container offset
-    const index = tabLayouts.findIndex((layout) => {
-      return pageX >= layout.x && pageX <= layout.x + layout.width;
-    });
+  const handleTouch = (localX: number) => {
+    if (tabWidth <= 0) return;
+    const clampedX = Math.max(0, Math.min(localX, rowWidth));
+    const targetIndex = Math.min(Math.floor(clampedX / tabWidth), TABS.length - 1);
 
-    if (index !== -1 && index !== activeIndex) {
-      onSelectTab(TABS[index].id);
+    if (targetIndex >= 0 && targetIndex !== activeIndex) {
+      onSelectTab(TABS[targetIndex].id);
     }
   };
 
@@ -320,29 +292,33 @@ export const HomeBottomNav: React.FC<HomeBottomNavProps> = ({
       ]}
       pointerEvents="box-none"
     >
-      <View style={styles.navCapsule} {...panResponder.panHandlers}>
-        {/* Full-size Rounded Sliding Grey Pill Indicator with Spring Physics */}
-        {tabLayouts.length > 0 && (
-          <Animated.View
-            style={[
-              styles.slidingPill,
-              {
-                left: indicatorX,
-                width: indicatorWidth,
-              },
-            ]}
-          />
-        )}
+      <View style={styles.navCapsule}>
+        <View
+          style={styles.rowContainer}
+          onLayout={(e) => setRowWidth(e.nativeEvent.layout.width)}
+          {...panResponder.panHandlers}
+        >
+          {/* Perfectly Centered Rounded Oval Pill Indicator */}
+          {tabWidth > 0 && (
+            <Animated.View
+              style={[
+                styles.ovalPill,
+                {
+                  left: indicatorCenterX,
+                  width: PILL_WIDTH,
+                },
+              ]}
+            />
+          )}
 
-        <View style={styles.row}>
-          {TABS.map((tab, idx) => {
+          {/* Interactive Navigation Tabs */}
+          {TABS.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
               <TouchableOpacity
                 key={tab.id}
                 style={styles.tabItem}
                 activeOpacity={0.88}
-                onLayout={(e) => handleItemLayout(idx, e)}
                 onPress={() => onSelectTab(tab.id)}
                 accessibilityRole="button"
                 accessibilityState={{ selected: isActive }}
@@ -386,40 +362,40 @@ const styles = StyleSheet.create({
     borderRadius: 38,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    paddingVertical: 6,
+    paddingVertical: 5,
     paddingHorizontal: 6,
     shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.12,
     shadowRadius: 16,
     elevation: 9,
-    position: 'relative',
     overflow: 'hidden',
   },
-  slidingPill: {
-    position: 'absolute',
-    top: 6,
-    bottom: 6,
-    backgroundColor: '#F1F5F9', // Very light soft grey pill
-    borderRadius: 28, // Extra rounded full size pill
-    zIndex: 1,
-  },
-  row: {
+  rowContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    zIndex: 2,
+    position: 'relative',
+    width: '100%',
+  },
+  ovalPill: {
+    position: 'absolute',
+    top: 2,
+    bottom: 2,
+    backgroundColor: '#F1F5F9', // Very light soft grey
+    borderRadius: 24, // Symmetrical oval pill
+    zIndex: 1,
   },
   tabItem: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 7,
-    paddingHorizontal: 4,
-    borderRadius: 28,
+    paddingVertical: 6,
+    paddingHorizontal: 2,
+    zIndex: 2,
   },
   iconContainer: {
-    width: 34,
+    width: 32,
     height: 26,
     alignItems: 'center',
     justifyContent: 'center',
