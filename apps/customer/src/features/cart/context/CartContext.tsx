@@ -1,7 +1,9 @@
-import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { CartItem, CartFeeBreakdown } from '../domain/Cart';
 import { ServiceDetailItem } from '../../../types/category.types';
 import { SafeAsyncStorage as AsyncStorage } from '@serventica/utils';
+import { useAuth } from '../../../context/AuthContext';
+import { cartCloudSyncService } from '../services/CartCloudSyncService';
 
 const CART_STORAGE_KEY = '@serventica_customer_cart_v1';
 
@@ -104,9 +106,11 @@ const storageService = new CartStorageService();
 const CartContext = createContext<CartContextValue | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user } = useAuth();
   const [items, setItems] = useState<Record<string, CartItem>>({});
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState<boolean>(false);
   const [isHydrated, setIsHydrated] = useState<boolean>(false);
+  const isRemoteSyncRef = useRef<boolean>(false);
 
   // 1. Hydrate cart from AsyncStorage on mount
   useEffect(() => {
@@ -118,12 +122,39 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   }, []);
 
-  // 2. Persist cart changes
+  // 2. Real-time Multi-Device Sync: Subscribe to user's real-time cart channel
+  useEffect(() => {
+    if (!user?.id) {
+      cartCloudSyncService.unsubscribe();
+      return;
+    }
+
+    cartCloudSyncService.subscribe(user.id, (remoteItems) => {
+      isRemoteSyncRef.current = true;
+      setItems(remoteItems);
+      storageService.persistCart(remoteItems);
+    });
+
+    return () => {
+      cartCloudSyncService.unsubscribe();
+    };
+  }, [user?.id]);
+
+  // 3. Persist cart changes locally and broadcast to other devices
   useEffect(() => {
     if (isHydrated) {
       storageService.persistCart(items);
+
+      // Only broadcast if the change was made locally on THIS device
+      if (!isRemoteSyncRef.current) {
+        if (user?.id) {
+          cartCloudSyncService.broadcastCartChange(items);
+        }
+      } else {
+        isRemoteSyncRef.current = false;
+      }
     }
-  }, [items, isHydrated]);
+  }, [items, isHydrated, user?.id]);
 
   const fees = useMemo(() => calculationEngine.calculateFees(items), [items]);
   const itemCount = useMemo(() => calculationEngine.calculateTotalItems(items), [items]);
