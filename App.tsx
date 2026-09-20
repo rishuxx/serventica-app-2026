@@ -2,6 +2,17 @@ import './src/shims/expo-polyfill';
 import React, { useState, useEffect } from 'react';
 import { View, ActivityIndicator, StyleSheet, LogBox } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import {
+  useFonts,
+  Lexend_100Thin,
+  Lexend_300Light,
+  Lexend_400Regular,
+  Lexend_500Medium,
+  Lexend_600SemiBold,
+  Lexend_700Bold,
+  Lexend_800ExtraBold,
+  Lexend_900Black,
+} from '@expo-google-fonts/lexend';
 
 LogBox.ignoreAllLogs(true);
 import './src/shims/font-loader';
@@ -208,20 +219,28 @@ function RootNavigator() {
 
 export default function App() {
   const [showShowcase, setShowShowcase] = useState(false);
-  const [fontsReady, setFontsReady] = useState(false);
 
-  useEffect(() => {
-    let mounted = true;
-    const { ensureFontsLoaded } = require('./src/shims/font-loader');
-    ensureFontsLoaded().finally(() => {
-      if (mounted) setFontsReady(true);
-    });
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  // Hook-based robust cross-platform font loader for Expo Go & Bare RN
+  const [fontsLoaded] = useFonts({
+    'Lexend-Thin': Lexend_100Thin,
+    'Lexend-Light': Lexend_300Light,
+    'Lexend-Regular': Lexend_400Regular,
+    'Lexend-Medium': Lexend_500Medium,
+    'Lexend-SemiBold': Lexend_600SemiBold,
+    'Lexend-Bold': Lexend_700Bold,
+    'Lexend-ExtraBold': Lexend_800ExtraBold,
+    'Lexend-Black': Lexend_900Black,
+    Lexend_100Thin,
+    Lexend_300Light,
+    Lexend_400Regular,
+    Lexend_500Medium,
+    Lexend_600SemiBold,
+    Lexend_700Bold,
+    Lexend_800ExtraBold,
+    Lexend_900Black,
+  });
 
-  if (!fontsReady) {
+  if (!fontsLoaded) {
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color="#ffb300" />
