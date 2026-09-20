@@ -122,9 +122,9 @@ export const WelcomeSplashScreen: React.FC<WelcomeSplashScreenProps> = ({ onFini
         {/* Thin Divider Line directly under the logo */}
         <View style={styles.dividerLine} />
 
-        {/* Tagline text: Get professional house help in minutes! */}
+        {/* Tagline text: We serve you better */}
         <Text style={styles.taglineText}>
-          Get professional house help{'\n'}in minutes!
+          We serve you better
         </Text>
       </Animated.View>
     </View>
