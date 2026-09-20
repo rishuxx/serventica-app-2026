@@ -4,28 +4,28 @@ import { CartItem } from '../domain/Cart';
 export interface CartPayload {
   items: Record<string, CartItem>;
   updatedAt: string;
-  deviceOrigin?: string;
+  deviceOrigin: string;
 }
 
 export type CartSyncCallback = (items: Record<string, CartItem>) => void;
 
 /**
  * CartCloudSyncService
- * Realtime multi-device cart sync using Supabase Realtime Broadcast & Database Sync.
- * When a user logs in with the same account on multiple devices:
- * 1. Listening to Realtime Broadcast updates cart immediately across all active devices (<50ms).
- * 2. Emits changes when user adds/removes items.
- * 3. Persists to user's profile metadata / active draft booking for persistent cross-device restoration.
+ * Multi-Device Realtime Cart Synchronization
+ * Uses Supabase Realtime Channels (Broadcast) + Customer Profiles Table backup.
  */
 export class CartCloudSyncService {
   private activeChannel: any = null;
   private currentUserId: string | null = null;
-  private deviceId: string = Math.random().toString(36).substring(2, 10);
+  private deviceId: string = `dev_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+  private syncCallback: CartSyncCallback | null = null;
 
   /**
    * Subscribe to real-time cart updates for the authenticated user
    */
   subscribe(userId: string, onRemoteCartUpdate: CartSyncCallback) {
+    this.syncCallback = onRemoteCartUpdate;
+
     if (this.currentUserId === userId && this.activeChannel) {
       return;
     }
@@ -33,38 +33,38 @@ export class CartCloudSyncService {
     this.unsubscribe();
     this.currentUserId = userId;
 
-    const channelName = `cart_sync_${userId}`;
+    // 1. Initial pull from customer_profiles table or user session
+    this.pullLatestCart(userId).then((cloudItems) => {
+      if (cloudItems && Object.keys(cloudItems).length > 0) {
+        onRemoteCartUpdate(cloudItems);
+      }
+    });
+
+    // 2. Realtime WebSocket channel for cross-device broadcast
+    const channelName = `cart_channel_${userId}`;
     this.activeChannel = supabase.channel(channelName, {
       config: {
         broadcast: {
-          self: false, // Don't receive own broadcasts
+          self: false, // Do not echo back to sender
+          ack: true,
         },
       },
     });
 
     this.activeChannel
       .on('broadcast', { event: 'CART_UPDATED' }, (payload: { payload?: CartPayload }) => {
-        if (payload?.payload?.items && payload?.payload?.deviceOrigin !== this.deviceId) {
+        if (payload?.payload?.items && payload.payload.deviceOrigin !== this.deviceId) {
           onRemoteCartUpdate(payload.payload.items);
         }
       })
-      .subscribe((status: string) => {
-        if (status === 'SUBSCRIBED') {
-          // Pull latest cart from user metadata / cloud
-          this.pullLatestCart(userId).then((cloudItems) => {
-            if (cloudItems && Object.keys(cloudItems).length > 0) {
-              onRemoteCartUpdate(cloudItems);
-            }
-          });
-        }
-      });
+      .subscribe();
   }
 
   /**
    * Broadcast local cart modifications to all other logged-in devices
    */
   async broadcastCartChange(items: Record<string, CartItem>) {
-    if (!this.activeChannel || !this.currentUserId) return;
+    if (!this.currentUserId) return;
 
     const payload: CartPayload = {
       items,
@@ -73,22 +73,27 @@ export class CartCloudSyncService {
     };
 
     try {
-      // 1. Instant Realtime broadcast to other connected devices
-      await this.activeChannel.send({
-        type: 'broadcast',
-        event: 'CART_UPDATED',
-        payload,
-      });
+      // 1. Send Realtime WebSocket Broadcast
+      if (this.activeChannel) {
+        this.activeChannel.send({
+          type: 'broadcast',
+          event: 'CART_UPDATED',
+          payload,
+        });
+      }
 
-      // 2. Persist to Supabase user metadata asynchronously so newly opened devices fetch it
-      await supabase.auth.updateUser({
-        data: {
+      // 2. Persist to customer_profiles table if available
+      supabase
+        .from('customer_profiles')
+        .update({
           synced_cart: items,
-          synced_cart_updated_at: payload.updatedAt,
-        },
-      });
+          updated_at: new Date().toISOString(),
+        } as any)
+        .eq('user_id', this.currentUserId)
+        .then(() => {})
+        .catch(() => {});
     } catch (err) {
-      console.warn('[CartCloudSyncService] Failed to broadcast cart change:', err);
+      console.warn('[CartCloudSyncService] broadcast error:', err);
     }
   }
 
@@ -97,12 +102,17 @@ export class CartCloudSyncService {
    */
   async pullLatestCart(userId: string): Promise<Record<string, CartItem> | null> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user?.id === userId && user.user_metadata?.synced_cart) {
-        return user.user_metadata.synced_cart as Record<string, CartItem>;
+      const { data } = await supabase
+        .from('customer_profiles')
+        .select('synced_cart')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (data && (data as any).synced_cart) {
+        return (data as any).synced_cart as Record<string, CartItem>;
       }
     } catch (e) {
-      console.warn('[CartCloudSyncService] Failed to pull latest cart:', e);
+      // Non-blocking fallback
     }
     return null;
   }
@@ -116,6 +126,7 @@ export class CartCloudSyncService {
       this.activeChannel = null;
     }
     this.currentUserId = null;
+    this.syncCallback = null;
   }
 }
 
