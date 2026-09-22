@@ -1,19 +1,16 @@
 import { CartItem, CartFeeBreakdown } from '../domain/Cart';
 import { ICartCalculationEngine } from './ICartEngine';
+import { PriceCalculationEngine } from '../../../services/pricing/PriceCalculationEngine';
 
 /**
  * CartCalculationEngine
  * Single Responsibility: Pure fee, discount, and total calculation.
+ * Delegates to centralized domain PriceCalculationEngine for 100% price consistency across app.
  */
 export class CartCalculationEngine implements ICartCalculationEngine {
-  private readonly CONVENIENCE_FEE = 29;
-  private readonly SAFETY_FEE = 19;
-
   calculateFees(items: Record<string, CartItem>): CartFeeBreakdown {
     const itemList = Object.values(items);
-    const itemTotal = itemList.reduce((sum, item) => sum + (item.basePrice * item.quantity), 0);
-
-    if (itemTotal === 0) {
+    if (itemList.length === 0) {
       return {
         itemTotal: 0,
         convenienceFee: 0,
@@ -23,22 +20,20 @@ export class CartCalculationEngine implements ICartCalculationEngine {
       };
     }
 
-    // Tiered promo discount logic
-    let discountAmount = 0;
-    if (itemTotal >= 999) {
-      discountAmount = Math.round(itemTotal * 0.1); // 10% off on orders above 999
-    }
-
-    const convenienceFee = this.CONVENIENCE_FEE;
-    const partnerSafetyFee = this.SAFETY_FEE;
-    const finalPayable = Math.max(0, itemTotal + convenienceFee + partnerSafetyFee - discountAmount);
+    const bill = PriceCalculationEngine.calculateBill({
+      items: itemList.map((it) => ({
+        unitPrice: it.basePrice,
+        quantity: it.quantity,
+        totalPrice: it.basePrice * it.quantity,
+      })),
+    });
 
     return {
-      itemTotal,
-      convenienceFee,
-      partnerSafetyFee,
-      discountAmount,
-      finalPayable,
+      itemTotal: bill.itemTotal,
+      convenienceFee: bill.deliveryOrSafetyFee,
+      partnerSafetyFee: bill.isHandlingFeeFree ? 0 : bill.handlingFee,
+      discountAmount: bill.discountAmount,
+      finalPayable: bill.finalPayable,
     };
   }
 

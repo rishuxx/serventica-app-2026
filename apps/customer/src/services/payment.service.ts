@@ -1,7 +1,10 @@
 import { SafeAsyncStorage as AsyncStorage } from '../../../../packages/utils/src/storage/safe-storage';
 import { supabase } from '../lib/supabase/client';
 import { ServenticaEnvironment } from '../../../../packages/config/src';
+import { PriceCalculationEngine } from './pricing/PriceCalculationEngine';
 import { razorpayService } from './razorpay.service';
+import { bookingRepository } from '../repositories/booking.repository';
+import { ensureUuid, isUuid } from '../lib/uuid.utils';
 import {
   CreatePaymentOrderRequest,
   CreatePaymentOrderResponse,
@@ -83,6 +86,26 @@ export class ProductionPaymentService {
    */
   async createPaymentOrder(params: StartPaymentParams): Promise<CreatePaymentOrderResponse> {
     const userId = params.userId || '00000000-0000-0000-0000-000000000001';
+
+    // Pre-insert / upsert selected address into public.addresses so foreign key constraint succeeds and database has real address details
+    try {
+      if (params.addressId && isUuid(params.addressId)) {
+        await supabase.from('addresses').upsert({
+          id: params.addressId,
+          user_id: isUuid(userId) ? userId : null,
+          title: params.shortAddress || 'Service Address',
+          address_line1: params.formattedAddress || 'Main Service Location',
+          city: params.city || 'Dehradun',
+          state: 'Uttarakhand',
+          pincode: '248007',
+          formatted_address: params.formattedAddress,
+          is_default: true,
+          updated_at: new Date().toISOString(),
+        });
+      }
+    } catch (e) {
+      console.warn('[PaymentService] Address pre-sync note:', e);
+    }
 
     try {
       const { data, error } = await supabase.rpc('create_booking_payment_order', {
@@ -179,6 +202,7 @@ export class ProductionPaymentService {
       }
 
       // Offline / Local storage fallback confirmation
+      const fallbackBill = PriceCalculationEngine.calculateBill({});
       return {
         success: true,
         bookingId: params.bookingId,
@@ -187,10 +211,11 @@ export class ProductionPaymentService {
         status: 'CAPTURED',
         message: 'Payment verified successfully.',
         transactionId: params.razorpayPaymentId,
-        amount: 597,
+        amount: fallbackBill.finalPayable,
       };
     } catch (err: any) {
       console.warn('[PaymentService.verifyPayment] Exception:', err);
+      const fallbackBill = PriceCalculationEngine.calculateBill({});
       return {
         success: true,
         bookingId: params.bookingId,
@@ -199,7 +224,7 @@ export class ProductionPaymentService {
         status: 'CAPTURED',
         message: 'Payment verified.',
         transactionId: params.razorpayPaymentId,
-        amount: 597,
+        amount: fallbackBill.finalPayable,
       };
     }
   }
@@ -324,18 +349,20 @@ export class ProductionPaymentService {
     paymentStatus: 'PAID' | 'PENDING'
   ) {
     try {
-      const existingRaw = await AsyncStorage.getItem(LOCAL_BOOKINGS_STORAGE_KEY);
-      const list: BookingRecord[] = existingRaw ? JSON.parse(existingRaw) : [];
+      const finalBookingId = ensureUuid(bookingId);
+      const bill = PriceCalculationEngine.calculateBill({
+        itemTotal: 499,
+      });
 
       const newBooking: BookingRecord = {
-        id: bookingId,
+        id: finalBookingId,
         bookingNumber,
-        customerId: params.userId || 'cust_verified',
+        customerId: params.userId || 'guest_user',
         partnerId: null,
-        addressId: params.addressId,
+        addressId: isUuid(params.addressId) ? params.addressId : 'a1000000-0000-0000-0000-000000000001',
         status: 'CONFIRMED' as BookingStatus,
-        scheduledDate: params.startAt.split('T')[0] || 'Today',
-        scheduledStartTime: params.scheduleDisplay,
+        scheduledDate: params.startAt ? params.startAt.split('T')[0] : 'Today',
+        scheduledStartTime: params.scheduleDisplay || params.startAt,
         serviceId: params.serviceId,
         serviceName: params.serviceName,
         address: {
@@ -346,49 +373,43 @@ export class ProductionPaymentService {
           pincode: '248007',
           formattedAddress: params.formattedAddress,
         },
-        partner: {
-          id: 'partner_verified_pro',
-          name: 'Rajesh Kumar (Master Specialist)',
-          rating: 4.95,
-          phone: '+91 98765 43210',
-          specialization: params.serviceName,
-        },
+        partner: null,
         payment: {
-          subtotal: 499,
+          subtotal: bill.itemTotal,
           tax: 0,
-          discount: 0,
-          platformFee: 98,
-          total: 597,
+          discount: bill.discountAmount,
+          platformFee: bill.deliveryOrSafetyFee,
+          total: bill.finalPayable,
           currency: 'INR',
           paymentStatus,
         },
         items: [
           {
-            id: `item_${Date.now()}`,
-            bookingId,
+            id: ensureUuid(),
+            bookingId: finalBookingId,
             serviceId: params.serviceId,
             serviceName: params.serviceName,
-            unitPrice: 499,
+            unitPrice: bill.itemTotal,
             quantity: 1,
-            totalPrice: 499,
+            totalPrice: bill.itemTotal,
           },
         ],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
 
-      list.unshift(newBooking);
-      await AsyncStorage.setItem(LOCAL_BOOKINGS_STORAGE_KEY, JSON.stringify(list));
+      await bookingRepository.saveBooking(newBooking);
     } catch (e) {
       console.warn('[PaymentService] Error persisting local booking:', e);
     }
   }
 
   private fallbackLocalOrderCreation(params: StartPaymentParams): CreatePaymentOrderResponse {
-    const bookingId = `book_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const bookingId = ensureUuid();
     const bookingNumber = `SRV-${Math.floor(100000 + Math.random() * 900000)}`;
-    const paymentId = `pay_init_${Date.now()}`;
-    const amountRupees = 597;
+    const paymentId = ensureUuid();
+    const bill = PriceCalculationEngine.calculateBill({});
+    const amountRupees = bill.finalPayable;
 
     return {
       success: true,

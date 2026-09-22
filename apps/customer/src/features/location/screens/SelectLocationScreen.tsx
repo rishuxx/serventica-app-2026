@@ -37,7 +37,11 @@ import {
   AddressLabel,
 } from '../../../types/location.types';
 import { ServenticaTokens } from '../../../../../../packages/design-system/src';
-import { MapLocationPickerModal } from '../components/MapLocationPickerModal';
+import MapLocationPickerModalDefault, {
+  MapLocationPickerModal as MapLocationPickerModalNamed,
+} from '../components/MapLocationPickerModal';
+
+const MapLocationPickerModal = MapLocationPickerModalDefault || MapLocationPickerModalNamed;
 
 interface SelectLocationScreenProps {
   onClose: () => void;
@@ -201,6 +205,17 @@ export const SelectLocationScreen: React.FC<SelectLocationScreenProps> = ({ onCl
         setUnserviceableLocation(loc);
       } else {
         onClose();
+      }
+    } else {
+      if (gpsState === 'PERMANENTLY_DENIED' || gpsState === 'PERMISSION_DENIED') {
+        Alert.alert(
+          'Location Permission Needed',
+          'Please allow location access in your device settings to use your current location.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Open Settings', onPress: () => Linking.openSettings() },
+          ]
+        );
       }
     }
   };
@@ -1267,3 +1282,5 @@ const styles = StyleSheet.create({
     color: '#1E4B29',
   },
 });
+
+export default SelectLocationScreen;

@@ -51,6 +51,15 @@ ALTER TABLE public.service_subcategories ADD COLUMN IF NOT EXISTS description TE
 ALTER TABLE public.service_subcategories ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE public.service_subcategories ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE;
 
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'uq_subcat_category_slug'
+  ) THEN
+    ALTER TABLE public.service_subcategories ADD CONSTRAINT uq_subcat_category_slug UNIQUE(category_id, slug);
+  END IF;
+END $$;
+
 CREATE INDEX IF NOT EXISTS idx_service_subcategories_cat_active ON public.service_subcategories(category_id, is_active, sort_order);
 
 -- 3. SERVICES TABLE
@@ -335,34 +344,57 @@ ON CONFLICT (slug) DO UPDATE SET
 -- ==============================================================================
 -- 9. SEED DATA: 13 MASTER CATEGORIES
 -- ==============================================================================
-INSERT INTO public.service_categories (id, slug, name, description, icon_name, sort_order, is_active)
-VALUES
-  ('c1000000-0000-0000-0000-000000000001', 'ac-appliances', 'AC & Appliance Services', 'Certified technicians for air conditioners, refrigerators, washing machines, microwaves, and household appliances.', 'AirVent', 1, TRUE),
-  ('c1000000-0000-0000-0000-000000000002', 'electrician', 'Electrician', 'Licensed electricians for switches, fans, lighting, MCB protection, and wiring.', 'Zap', 2, TRUE),
-  ('c1000000-0000-0000-0000-000000000003', 'plumbing', 'Plumbing', 'Expert plumbers for taps, wash basins, toilets, drainage blockages, and water motors.', 'Droplets', 3, TRUE),
-  ('c1000000-0000-0000-0000-000000000004', 'home-cleaning', 'Home Cleaning', 'Hospital-grade deep cleaning, sofa shampooing, bathroom scrubbing, and kitchen degreasing.', 'Sparkles', 4, TRUE),
-  ('c1000000-0000-0000-0000-000000000005', 'painting', 'Painting', 'Interior, exterior, texture, and wood finish painting services.', 'Paintbrush', 5, TRUE),
-  ('c1000000-0000-0000-0000-000000000006', 'ro-water', 'RO & Water Purification', 'Purifier servicing, filter replacements, RO membranes, and TDS testing.', 'Waves', 6, TRUE),
-  ('c1000000-0000-0000-0000-000000000007', 'carpentry', 'Carpentry', 'Furniture repair, door alignments, locks, and custom woodwork.', 'Hammer', 7, TRUE),
-  ('c1000000-0000-0000-0000-000000000008', 'pest-control', 'Pest Control', 'Certified chemical sprays, gel baiting, and termite barrier treatments.', 'Bug', 8, TRUE),
-  ('c1000000-0000-0000-0000-000000000009', 'home-decor', 'Home Decor & Installation', 'False ceilings, wallpaper, curtains, and lighting setups.', 'Lamp', 9, TRUE),
-  ('c1000000-0000-0000-0000-000000000010', 'laundry', 'Laundry', 'Wash & fold, steam pressing, and premium dry cleaning.', 'WashingMachine', 10, TRUE),
-  ('c1000000-0000-0000-0000-000000000011', 'moving-shifting', 'Moving & Shifting', 'Local and intercity packers and movers.', 'Truck', 11, FALSE),
-  ('c1000000-0000-0000-0000-000000000012', 'appliance-repair', 'Appliance Repair', 'Consolidated under AC & Appliance Services.', 'Cpu', 12, FALSE),
-  ('c1000000-0000-0000-0000-000000000013', 'other-services', 'Other Home Services', 'Specialized and on-demand home tasks.', 'Grid', 13, FALSE)
-ON CONFLICT (id) DO UPDATE SET
-  slug = EXCLUDED.slug,
-  name = EXCLUDED.name,
-  description = EXCLUDED.description,
-  icon_name = EXCLUDED.icon_name,
-  sort_order = EXCLUDED.sort_order,
-  is_active = EXCLUDED.is_active;
+DO $$
+DECLARE
+  cat RECORD;
+BEGIN
+  FOR cat IN 
+    SELECT * FROM (VALUES
+      ('c1000000-0000-0000-0000-000000000001'::uuid, 'ac-appliances', 'AC & Appliance Services', 'Certified technicians for air conditioners, refrigerators, washing machines, microwaves, and household appliances.', 'AirVent', 1, TRUE),
+      ('c1000000-0000-0000-0000-000000000002'::uuid, 'electrician', 'Electrician', 'Licensed electricians for switches, fans, lighting, MCB protection, and wiring.', 'Zap', 2, TRUE),
+      ('c1000000-0000-0000-0000-000000000003'::uuid, 'plumbing', 'Plumbing', 'Expert plumbers for taps, wash basins, toilets, drainage blockages, and water motors.', 'Droplets', 3, TRUE),
+      ('c1000000-0000-0000-0000-000000000004'::uuid, 'home-cleaning', 'Home Cleaning', 'Hospital-grade deep cleaning, sofa shampooing, bathroom scrubbing, and kitchen degreasing.', 'Sparkles', 4, TRUE),
+      ('c1000000-0000-0000-0000-000000000005'::uuid, 'painting', 'Painting', 'Interior, exterior, texture, and wood finish painting services.', 'Paintbrush', 5, TRUE),
+      ('c1000000-0000-0000-0000-000000000006'::uuid, 'ro-water', 'RO & Water Purification', 'Purifier servicing, filter replacements, RO membranes, and TDS testing.', 'Waves', 6, TRUE),
+      ('c1000000-0000-0000-0000-000000000007'::uuid, 'carpentry', 'Carpentry', 'Furniture repair, door alignments, locks, and custom woodwork.', 'Hammer', 7, TRUE),
+      ('c1000000-0000-0000-0000-000000000008'::uuid, 'pest-control', 'Pest Control', 'Certified chemical sprays, gel baiting, and termite barrier treatments.', 'Bug', 8, TRUE),
+      ('c1000000-0000-0000-0000-000000000009'::uuid, 'home-decor', 'Home Decor & Installation', 'False ceilings, wallpaper, curtains, and lighting setups.', 'Lamp', 9, TRUE),
+      ('c1000000-0000-0000-0000-000000000010'::uuid, 'laundry', 'Laundry', 'Wash & fold, steam pressing, and premium dry cleaning.', 'WashingMachine', 10, TRUE),
+      ('c1000000-0000-0000-0000-000000000011'::uuid, 'moving-shifting', 'Moving & Shifting', 'Local and intercity packers and movers.', 'Truck', 11, FALSE),
+      ('c1000000-0000-0000-0000-000000000012'::uuid, 'appliance-repair', 'Appliance Repair', 'Consolidated under AC & Appliance Services.', 'Cpu', 12, FALSE),
+      ('c1000000-0000-0000-0000-000000000013'::uuid, 'other-services', 'Other Home Services', 'Specialized and on-demand home tasks.', 'Grid', 13, FALSE)
+    ) AS t(id, slug, name, description, icon_name, sort_order, is_active)
+  LOOP
+    IF EXISTS (SELECT 1 FROM public.service_categories WHERE slug = cat.slug) THEN
+      UPDATE public.service_categories SET
+        name = cat.name,
+        description = cat.description,
+        icon_name = cat.icon_name,
+        sort_order = cat.sort_order,
+        is_active = cat.is_active
+      WHERE slug = cat.slug;
+    ELSE
+      INSERT INTO public.service_categories (id, slug, name, description, icon_name, sort_order, is_active)
+      VALUES (cat.id, cat.slug, cat.name, cat.description, cat.icon_name, cat.sort_order, cat.is_active)
+      ON CONFLICT (id) DO UPDATE SET
+        slug = EXCLUDED.slug,
+        name = EXCLUDED.name,
+        description = EXCLUDED.description,
+        icon_name = EXCLUDED.icon_name,
+        sort_order = EXCLUDED.sort_order,
+        is_active = EXCLUDED.is_active;
+    END IF;
+  END LOOP;
+END $$;
 
 -- Drop any legacy foreign keys on services table and re-bind to canonical service_categories
 DO $$
 DECLARE
   r RECORD;
 BEGIN
+  -- Allow category_id to be nullable
+  ALTER TABLE public.services ALTER COLUMN category_id DROP NOT NULL;
+
   FOR r IN (
     SELECT conname
     FROM pg_constraint
@@ -372,6 +404,12 @@ BEGIN
   ) LOOP
     EXECUTE 'ALTER TABLE public.services DROP CONSTRAINT IF EXISTS ' || quote_ident(r.conname) || ' CASCADE';
   END LOOP;
+
+  -- Clean up or remap any orphan category_id references on services
+  UPDATE public.services
+  SET category_id = NULL
+  WHERE category_id IS NOT NULL 
+    AND category_id NOT IN (SELECT id FROM public.service_categories);
 
   ALTER TABLE public.services ADD CONSTRAINT services_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.service_categories(id) ON DELETE SET NULL;
 END $$;
@@ -390,6 +428,47 @@ END $$;
 -- ==============================================================================
 -- 10. SEED DATA: CANONICAL SUBCATEGORIES
 -- ==============================================================================
+DO $$
+BEGIN
+  -- Clear dependent catalog tables if present before re-seeding canonical dataset
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'service_faqs') THEN
+    DELETE FROM public.service_faqs;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'service_reviews') THEN
+    DELETE FROM public.service_reviews;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'service_addons') THEN
+    DELETE FROM public.service_addons;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'service_variants') THEN
+    DELETE FROM public.service_variants;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'service_media') THEN
+    DELETE FROM public.service_media;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'service_specifications') THEN
+    DELETE FROM public.service_specifications;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'service_inclusions') THEN
+    DELETE FROM public.service_inclusions;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'service_exclusions') THEN
+    DELETE FROM public.service_exclusions;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'service_prices') THEN
+    DELETE FROM public.service_prices;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'service_city_availability') THEN
+    DELETE FROM public.service_city_availability;
+  END IF;
+
+  UPDATE public.services SET subcategory_id = NULL;
+  DELETE FROM public.service_subcategories;
+  DELETE FROM public.services;
+EXCEPTION WHEN OTHERS THEN
+  NULL;
+END $$;
+
 INSERT INTO public.service_subcategories (id, category_id, slug, name, description, sort_order, is_active)
 VALUES
   ('a2000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000001', 'ac-cleaning-maintenance', 'AC Cleaning & Maintenance', 'Power foam jet, outdoor condenser, and deep cleaning', 1, TRUE),

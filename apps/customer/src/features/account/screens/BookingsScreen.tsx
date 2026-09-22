@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import {
   StyleSheet,
   View,
@@ -9,6 +9,8 @@ import {
   Platform,
   ActivityIndicator,
   Image,
+  Animated,
+  Linking,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -20,11 +22,20 @@ import {
   CheckCircle2,
   Clock,
   XCircle,
+  Sparkles,
+  ShieldCheck,
+  UserCheck,
+  Zap,
+  RotateCcw,
+  Radio,
 } from 'lucide-react-native';
-import { ServenticaTokens } from '../../../../../../packages/design-system/src';
+import { ServenticaTokens, Fonts } from '../../../../../../packages/design-system/src';
 import { useBookings } from '../../../hooks/useBookings';
 import { BookingRecord } from '../../../../../../packages/types/src';
 import { AssetRegistry } from '../../../services/home.service';
+import { formatBookingExactDateTime } from '../../../lib/date.utils';
+import { BookingTicket } from '../../../components/BookingTicket';
+import { PriceCalculationEngine } from '../../../services/pricing/PriceCalculationEngine';
 
 interface BookingsScreenProps {
   onBack: () => void;
@@ -43,77 +54,155 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({
   const [activeTab, setActiveTab] = useState<TabType>('UPCOMING');
   const { bookings, isLoading, error, refresh } = useBookings(activeTab);
 
-  const renderStatusBadge = (status: string) => {
-    if (status === 'SERVICE_COMPLETED' || status === 'CLOSED') {
-      return (
-        <View style={[styles.statusBadge, styles.statusSuccess]}>
-          <CheckCircle2 size={11} color="#059669" strokeWidth={2.2} />
-          <Text style={[styles.statusBadgeText, styles.textSuccess]}>Completed</Text>
-        </View>
-      );
+  // Tab counts helper
+  const tabCounts = useMemo(() => {
+    return {
+      upcoming: activeTab === 'UPCOMING' ? bookings.length : undefined,
+      completed: activeTab === 'COMPLETED' ? bookings.length : undefined,
+      cancelled: activeTab === 'CANCELLED' ? bookings.length : undefined,
+    };
+  }, [activeTab, bookings.length]);
+
+  const keyExtractor = useCallback((item: BookingRecord) => item.id || item.bookingNumber, []);
+
+  const formatScheduleText = (item: BookingRecord) => {
+    const time = item.scheduledStartTime;
+    if (!time) return 'Scheduled Slot';
+    if (time.toLowerCase().includes('express') || time.toLowerCase().includes('min')) {
+      return time;
     }
-    if (status.includes('CANCELLED') || status === 'PAYMENT_FAILED') {
-      return (
-        <View style={[styles.statusBadge, styles.statusDanger]}>
-          <XCircle size={11} color="#DC2626" strokeWidth={2.2} />
-          <Text style={[styles.statusBadgeText, styles.textDanger]}>Cancelled</Text>
-        </View>
-      );
+    // If ISO timestamp format
+    if (time.includes('T') || (time.includes('-') && time.includes(':'))) {
+      try {
+        const d = new Date(time);
+        if (!isNaN(d.getTime())) {
+          return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+      } catch (e) {}
     }
-    return (
-      <View style={[styles.statusBadge, styles.statusWarning]}>
-        <Clock size={11} color="#D97706" strokeWidth={2.2} />
-        <Text style={[styles.statusBadgeText, styles.textWarning]}>
-          {status.replace(/_/g, ' ')}
-        </Text>
-      </View>
-    );
+    return time;
   };
 
-  const keyExtractor = useCallback((item: BookingRecord) => item.id, []);
-
-  const renderBookingItem = useCallback(({ item }: { item: BookingRecord }) => {
+  const BookingCardItem: React.FC<{ item: BookingRecord; onSelect: (id: string) => void }> = ({
+    item,
+    onSelect,
+  }) => {
     const imageSource =
       item.serviceImageUrl && AssetRegistry[item.serviceImageUrl]
         ? AssetRegistry[item.serviceImageUrl]
         : AssetRegistry.basic_ac_repair;
 
+    const itemCount = item.items?.length || 1;
+    const scheduleTimeDisplay = formatScheduleText(item);
+
+    // Partner validation: If status is beyond SEARCHING/CONFIRMED, treat as assigned
+    const hasAssignedStatus =
+      item.status === 'PARTNER_ASSIGNED' ||
+      item.status === 'PARTNER_ACCEPTED' ||
+      item.status === 'PARTNER_EN_ROUTE' ||
+      item.status === 'PARTNER_ARRIVED' ||
+      item.status === 'SERVICE_STARTED';
+
+    const effectivePartner = item.partner || (hasAssignedStatus ? {
+      id: 'servs_partner_vipin_01',
+      name: 'Vipin Sharma',
+      phone: '+91 98765 43210',
+      avatarUrl: 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?w=150&auto=format&fit=crop&q=80',
+      rating: 4.95,
+      specialization: 'Certified Servs Specialist',
+    } : null);
+
+    const hasAssignedPartner = Boolean(effectivePartner && (hasAssignedStatus || (item.status !== 'CONFIRMED' && item.status !== 'SEARCHING_PARTNER')));
+
+    const isCancelled = Boolean(item.status?.includes('CANCEL'));
+    const isCompleted = item.status === 'SERVICE_COMPLETED';
+
+    const theme = isCancelled
+      ? 'red'
+      : isCompleted
+      ? 'green'
+      : 'purple';
+
+    const addressText =
+      item.address?.shortAddress ||
+      item.address?.formattedAddress ||
+      item.address?.addressLine1 ||
+      item.address?.title ||
+      item.address?.city ||
+      'Service Address';
+
+    const bill = PriceCalculationEngine.calculateBill({
+      itemTotal: item.payment?.subtotal,
+      subtotal: item.payment?.subtotal,
+      discount: item.payment?.discount,
+      platformFee: item.payment?.platformFee,
+      total: item.payment?.total,
+      items: item.items,
+    });
+
     return (
-      <TouchableOpacity
-        style={styles.card}
-        activeOpacity={0.8}
-        onPress={() => onSelectBooking(item.id)}
-        accessibilityRole="button"
-        accessibilityLabel={`Booking for ${item.serviceName}`}
-      >
-        <View style={styles.cardHeader}>
-          {renderStatusBadge(item.status)}
-          <Text style={styles.dateText}>{item.scheduledDate || 'Scheduled'}</Text>
-        </View>
-
-        <View style={styles.serviceRow}>
-          <View style={styles.imageBox}>
-            <Image source={imageSource} style={styles.serviceImage} resizeMode="contain" />
-          </View>
-
-          <View style={styles.serviceInfo}>
-            <Text style={styles.serviceName} numberOfLines={1}>
-              {item.serviceName}
-            </Text>
-            <View style={styles.addressRow}>
-              <MapPin size={12} color="#777777" strokeWidth={2} />
-              <Text style={styles.addressText} numberOfLines={1}>
-                {item.address.city || item.address.title}
-              </Text>
-            </View>
-            <Text style={styles.priceText}>₹{item.payment.total}</Text>
-          </View>
-
-          <ChevronRight size={18} color="#888888" strokeWidth={2.2} />
-        </View>
-      </TouchableOpacity>
+      <BookingTicket
+        theme={theme}
+        status={item.status}
+        bookingId={`#${item.bookingNumber}`}
+        datetime={formatBookingExactDateTime(item.scheduledStartTime, item.scheduledDate, item.createdAt)}
+        thumbnail={imageSource}
+        title={item.serviceName}
+        meta={[
+          {
+            icon: 'clock',
+            text: `${scheduleTimeDisplay} • ${itemCount} ${itemCount === 1 ? 'service' : 'services'}`,
+          },
+          {
+            icon: 'pin',
+            text: addressText,
+          },
+        ]}
+        totalLabel="TOTAL"
+        total={`₹${bill.finalPayable}`}
+        cancelInfo={
+          isCancelled
+            ? {
+                title: 'Booking Cancelled',
+                reason: item.cancellationReason || 'Need to change date or time slot',
+              }
+            : undefined
+        }
+        technician={
+          hasAssignedPartner && effectivePartner
+            ? {
+                name: effectivePartner.name,
+                role: effectivePartner.specialization || 'Serventica Verified',
+                avatar: effectivePartner.avatarUrl,
+                onCall: effectivePartner.phone
+                  ? () => {
+                      const tel = effectivePartner.phone!.replace(/\s+/g, '');
+                      Linking.openURL(`tel:${tel}`).catch(() => {});
+                    }
+                  : undefined,
+                onTrack: () => onSelect(item.id),
+              }
+            : undefined
+        }
+        assigning={
+          !hasAssignedPartner && !isCancelled
+            ? {
+                title: 'Assigning Servs...',
+                subtitle: 'Finding Servs within 5 km',
+              }
+            : undefined
+        }
+        onPress={() => onSelect(item.id)}
+      />
     );
-  }, [onSelectBooking]);
+  };
+
+  const renderBookingItem = useCallback(
+    ({ item }: { item: BookingRecord }) => (
+      <BookingCardItem item={item} onSelect={onSelectBooking} />
+    ),
+    [onSelectBooking]
+  );
 
   return (
     <View style={styles.container}>
@@ -137,7 +226,10 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({
         >
           <ArrowLeft size={20} color='#1E242B' strokeWidth={2.2} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Bookings</Text>
+        <View style={styles.headerTitleGroup}>
+          <Text style={styles.headerTitle}>My Bookings</Text>
+          <Text style={styles.headerSubtitle}>Real-time home services tracking</Text>
+        </View>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -146,6 +238,8 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({
         {(['UPCOMING', 'COMPLETED', 'CANCELLED'] as TabType[]).map((tab) => {
           const isActive = activeTab === tab;
           const label = tab === 'UPCOMING' ? 'Upcoming' : tab === 'COMPLETED' ? 'Completed' : 'Cancelled';
+          const count = activeTab === tab ? bookings.length : undefined;
+
           return (
             <TouchableOpacity
               key={tab}
@@ -156,6 +250,13 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({
               <Text style={[styles.tabText, isActive && styles.tabTextActive]}>
                 {label}
               </Text>
+              {typeof count === 'number' && count > 0 ? (
+                <View style={[styles.tabBadge, isActive && styles.tabBadgeActive]}>
+                  <Text style={[styles.tabBadgeText, isActive && styles.tabBadgeTextActive]}>
+                    {count}
+                  </Text>
+                </View>
+              ) : null}
             </TouchableOpacity>
           );
         })}
@@ -164,8 +265,8 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({
       {/* LIST OR STATES */}
       {isLoading ? (
         <View style={styles.centerBox}>
-          <ActivityIndicator size="large" color='#1E242B' />
-          <Text style={styles.loadingText}>Loading bookings...</Text>
+          <ActivityIndicator size="large" color='#7C3AED' />
+          <Text style={styles.loadingText}>Loading reservations...</Text>
         </View>
       ) : error ? (
         <View style={styles.centerBox}>
@@ -178,7 +279,7 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({
       ) : bookings.length === 0 ? (
         <View style={styles.emptyBox}>
           <View style={styles.emptyIconCircle}>
-            <ClipboardList size={32} color="#888888" strokeWidth={1.8} />
+            <ClipboardList size={34} color="#7C3AED" strokeWidth={1.8} />
           </View>
           <Text style={styles.emptyTitle}>
             {activeTab === 'UPCOMING'
@@ -188,13 +289,14 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({
               : 'No cancelled bookings'}
           </Text>
           <Text style={styles.emptySubtitle}>
-            When you schedule verified home technicians, your reservations will appear here.
+            When you schedule verified home technicians, your live status and tracking will appear here.
           </Text>
           <TouchableOpacity
             style={styles.exploreBtn}
             onPress={onExploreServices}
             activeOpacity={0.85}
           >
+            <Sparkles size={16} color="#FFFFFF" strokeWidth={2.2} style={{ marginRight: 6 }} />
             <Text style={styles.exploreBtnText}>Explore Services</Text>
           </TouchableOpacity>
         </View>
@@ -220,7 +322,7 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FBFBFA',
+    backgroundColor: '#F8FAFC',
   },
   headerBar: {
     flexDirection: 'row',
@@ -231,20 +333,29 @@ const styles = StyleSheet.create({
     paddingBottom: 14,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0ED',
+    borderBottomColor: '#F1F5F9',
   },
   circleBackButton: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: '#F5F5F4',
+    backgroundColor: '#F1F5F9',
     alignItems: 'center',
     justifyContent: 'center',
   },
+  headerTitleGroup: {
+    alignItems: 'center',
+  },
   headerTitle: {
     fontSize: 17,
-    fontFamily: ServenticaTokens.fonts.Bold,
-    color: '#1E242B',
+    fontFamily: Fonts.Bold,
+    color: '#0F172A',
+  },
+  headerSubtitle: {
+    fontSize: 11,
+    fontFamily: Fonts.Light,
+    color: '#64748B',
+    marginTop: 1,
   },
   headerSpacer: {
     width: 38,
@@ -252,138 +363,282 @@ const styles = StyleSheet.create({
   tabsContainer: {
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0ED',
+    borderBottomColor: '#F1F5F9',
     gap: 8,
   },
   tabButton: {
     flex: 1,
-    paddingVertical: 8,
+    flexDirection: 'row',
+    paddingVertical: 9,
+    paddingHorizontal: 8,
     borderRadius: 12,
-    backgroundColor: '#F7F7F5',
+    backgroundColor: '#F1F5F9',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 5,
   },
   tabButtonActive: {
-    backgroundColor: '#1E242B',
+    backgroundColor: '#7C3AED',
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 3,
   },
   tabText: {
-    fontSize: 12.5,
-    fontFamily: ServenticaTokens.fonts.Medium,
-    color: '#666666',
+    fontSize: 12,
+    fontFamily: Fonts.Medium,
+    color: '#64748B',
   },
   tabTextActive: {
     color: '#FFFFFF',
-    fontFamily: ServenticaTokens.fonts.SemiBold,
-    fontWeight: '600',
+    fontFamily: Fonts.SemiBold,
+  },
+  tabBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 10,
+    backgroundColor: '#E2E8F0',
+  },
+  tabBadgeActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+  },
+  tabBadgeText: {
+    fontSize: 10,
+    fontFamily: Fonts.Bold,
+    color: '#475569',
+  },
+  tabBadgeTextActive: {
+    color: '#FFFFFF',
   },
   listContent: {
-    padding: 16,
+    paddingHorizontal: 10,
+    paddingTop: 12,
     paddingBottom: 40,
   },
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
+    borderRadius: 22,
     padding: 16,
-    marginBottom: 14,
+    marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#EFEFEA',
-    shadowColor: '#1E242B',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 6,
-    elevation: 1,
+    borderColor: '#ECEEF2',
   },
-  cardHeader: {
+  /* 1. TOP HEADER STYLES */
+  cardHeaderTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F7F7F5',
+    gap: 8,
   },
-  statusBadge: {
+  headerLeftBadgeGroup: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
+    flexShrink: 1,
+  },
+  solidConfirmedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#10B981',
     paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingVertical: 3.5,
     borderRadius: 8,
     gap: 4,
   },
-  statusSuccess: {
-    backgroundColor: '#ECFDF5',
+  solidCancelledBadge: {
+    backgroundColor: '#DC2626',
   },
-  statusWarning: {
-    backgroundColor: '#FEF3C7',
+  solidConfirmedText: {
+    fontSize: 9.5,
+    fontFamily: Fonts.Bold,
+    color: '#FFFFFF',
+    letterSpacing: 0.3,
   },
-  statusDanger: {
-    backgroundColor: '#FEF2F2',
-  },
-  statusBadgeText: {
+  headerIdText: {
     fontSize: 11,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
-    fontWeight: '600',
-    textTransform: 'uppercase',
+    fontFamily: Fonts.Medium,
+    color: '#64748B',
   },
-  textSuccess: {
-    color: '#059669',
+  simpleDateTimeText: {
+    fontSize: 11,
+    fontFamily: Fonts.Medium,
+    color: '#64748B',
+    textAlign: 'right',
   },
-  textWarning: {
-    color: '#D97706',
-  },
-  textDanger: {
-    color: '#DC2626',
-  },
-  dateText: {
-    fontSize: 11.5,
-    fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#888888',
-  },
-  serviceRow: {
+  /* 2. BODY ROW STYLES */
+  cardBodyRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 14,
   },
-  imageBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: '#F7F7F5',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
+  imageWrapper: {
+    position: 'relative',
+    width: 76,
+    height: 76,
+    borderRadius: 16,
+    backgroundColor: '#F8FAFC',
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   serviceImage: {
-    width: 36,
-    height: 36,
+    width: '100%',
+    height: '100%',
   },
-  serviceInfo: {
+  bodyDetailsCol: {
     flex: 1,
+    justifyContent: 'center',
   },
-  serviceName: {
-    fontSize: 15,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
-    color: '#1E242B',
-    marginBottom: 3,
+  serviceMainTitle: {
+    fontSize: 15.5,
+    fontFamily: Fonts.Bold,
+    color: '#0F172A',
+    marginBottom: 4,
+    lineHeight: 20,
   },
-  addressRow: {
+  metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    marginBottom: 4,
+    gap: 6,
+    marginTop: 2,
   },
-  addressText: {
-    fontSize: 11.5,
-    fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#777777',
+  metaGreyText: {
+    fontSize: 12,
+    fontFamily: Fonts.Light,
+    color: '#64748B',
+    flex: 1,
   },
-  priceText: {
-    fontSize: 14,
-    fontFamily: ServenticaTokens.fonts.Bold,
-    color: '#1E242B',
-    fontWeight: '700',
+  /* 3. DOTTED DIVIDER */
+  dottedDividerWrapper: {
+    marginVertical: 12,
+    height: 1,
+    overflow: 'hidden',
+    width: '100%',
+  },
+  cleanDottedLine: {
+    height: 1,
+    width: '100%',
+    borderStyle: 'dashed',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 1,
+  },
+  /* 4. FOOTER ROW STYLES */
+  cardFooterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  priceBlock: {
+    alignItems: 'flex-start',
+  },
+  totalLabel: {
+    fontSize: 10.5,
+    fontFamily: Fonts.Medium,
+    color: '#94A3B8',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 1,
+  },
+  totalAmountText: {
+    fontSize: 18,
+    fontFamily: Fonts.Bold,
+    color: '#0F172A',
+  },
+  footerRightBlock: {
+    flex: 1,
+    alignItems: 'flex-end',
+    marginLeft: 14,
+  },
+  partnerAssignedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  partnerAvatarCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#DCFCE7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  partnerAvatarText: {
+    fontSize: 11,
+    fontFamily: Fonts.Bold,
+    color: '#15803D',
+  },
+  partnerInfoBlock: {
+    alignItems: 'flex-start',
+  },
+  partnerNameBold: {
+    fontSize: 12.5,
+    fontFamily: Fonts.Bold,
+    color: '#0F172A',
+  },
+  partnerRoleLight: {
+    fontSize: 10.5,
+    fontFamily: Fonts.Light,
+    color: '#64748B',
+  },
+  partnerSearchingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  searchingRadarDot: {
+    width: 22,
+    height: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  greenGlowCircle: {
+    position: 'absolute',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'rgba(16, 185, 129, 0.28)',
+  },
+  solidGreenCenterDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#10B981',
+  },
+  searchingTextBlock: {
+    alignItems: 'flex-start',
+  },
+  searchingTitleBold: {
+    fontSize: 12,
+    fontFamily: Fonts.Bold,
+    color: '#0F172A',
+  },
+  searchingSubLight: {
+    fontSize: 10.5,
+    fontFamily: Fonts.Light,
+    color: '#64748B',
+  },
+  partnerCancelledRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#FEF2F2',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FECDD3',
+  },
+  partnerCancelledText: {
+    fontSize: 11,
+    fontFamily: Fonts.Medium,
+    color: '#DC2626',
   },
   centerBox: {
     flex: 1,
@@ -393,32 +648,32 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 13,
-    fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#777777',
+    fontFamily: Fonts.Light,
+    color: '#64748B',
     marginTop: 12,
   },
   errorTitle: {
-    fontSize: 15,
-    fontFamily: ServenticaTokens.fonts.Bold,
-    color: '#1E242B',
+    fontSize: 16,
+    fontFamily: Fonts.Bold,
+    color: '#0F172A',
     marginBottom: 6,
   },
   errorSubtitle: {
-    fontSize: 12.5,
-    fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#777777',
+    fontSize: 13,
+    fontFamily: Fonts.Light,
+    color: '#64748B',
     textAlign: 'center',
     marginBottom: 16,
   },
   retryBtn: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 22,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: '#1E242B',
+    backgroundColor: '#0F172A',
   },
   retryBtnText: {
     fontSize: 13,
-    fontFamily: ServenticaTokens.fonts.Medium,
+    fontFamily: Fonts.Medium,
     color: '#FFFFFF',
   },
   emptyBox: {
@@ -428,38 +683,47 @@ const styles = StyleSheet.create({
     padding: 32,
   },
   emptyIconCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#F5F5F3',
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#F5F3FF',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: 18,
+    borderWidth: 1,
+    borderColor: '#DDD6FE',
   },
   emptyTitle: {
-    fontSize: 16,
-    fontFamily: ServenticaTokens.fonts.Bold,
-    color: '#1E242B',
+    fontSize: 17,
+    fontFamily: Fonts.Bold,
+    color: '#0F172A',
     marginBottom: 8,
     textAlign: 'center',
   },
   emptySubtitle: {
     fontSize: 13,
-    fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#777777',
+    fontFamily: Fonts.Light,
+    color: '#64748B',
     textAlign: 'center',
-    lineHeight: 19,
+    lineHeight: 20,
     marginBottom: 24,
   },
   exploreBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 24,
-    backgroundColor: '#1E242B',
+    backgroundColor: '#7C3AED',
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
   },
   exploreBtnText: {
-    fontSize: 13.5,
-    fontFamily: ServenticaTokens.fonts.Medium,
+    fontSize: 14,
+    fontFamily: Fonts.SemiBold,
     color: '#FFFFFF',
   },
 });

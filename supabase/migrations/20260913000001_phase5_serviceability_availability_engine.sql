@@ -174,12 +174,20 @@ ALTER TABLE public.availability_blackouts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.booking_reservations ENABLE ROW LEVEL SECURITY;
 
 -- Customer can read active public business hours and holiday definitions
+DROP POLICY IF EXISTS "Public can view active business hours" ON public.business_hours;
 CREATE POLICY "Public can view active business hours" ON public.business_hours FOR SELECT USING (is_active = TRUE);
+
+DROP POLICY IF EXISTS "Public can view active holidays" ON public.business_holidays;
 CREATE POLICY "Public can view active holidays" ON public.business_holidays FOR SELECT USING (is_active = TRUE);
 
 -- Customer can manage their own booking reservations
+DROP POLICY IF EXISTS "Users can view own reservations" ON public.booking_reservations;
 CREATE POLICY "Users can view own reservations" ON public.booking_reservations FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can create own reservations" ON public.booking_reservations;
 CREATE POLICY "Users can create own reservations" ON public.booking_reservations FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can update own reservations" ON public.booking_reservations;
 CREATE POLICY "Users can update own reservations" ON public.booking_reservations FOR UPDATE USING (auth.uid() = user_id);
 
 -- 11. RPC FUNCTION: RESOLVE SERVICEABILITY

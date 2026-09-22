@@ -5,6 +5,7 @@ import { authService, AuthActionResult } from '../services/auth.service';
 import { AuthState, CustomerProfile, UserRole } from '../../../../packages/types/src';
 import { supabase } from '../lib/supabase/client';
 import { NormalizedAuthError } from '../../../../packages/utils/src';
+import { bookingRepository } from '../repositories/booking.repository';
 
 interface AuthContextType {
   authState: AuthState;
@@ -107,6 +108,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       setAuthState('AUTHENTICATED');
       setError(null);
+
+      // Auto-initialize real-time booking channel across all logged in devices
+      if (currentUser?.id) {
+        bookingRepository.subscribeToUserBookings(currentUser.id);
+      }
     } catch (err: any) {
       console.warn('[AuthContext] Bootstrap profile notice:', err?.message);
       // Retain authenticated session even if profile fetch has network blip

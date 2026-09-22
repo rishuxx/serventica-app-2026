@@ -10,16 +10,11 @@ export function useBookings(filter: 'UPCOMING' | 'COMPLETED' | 'CANCELLED' = 'UP
   const [error, setError] = useState<string | null>(null);
 
   const loadBookings = useCallback(async () => {
-    if (!user?.id) {
-      setBookings([]);
-      setIsLoading(false);
-      return;
-    }
-
+    const effectiveUserId = user?.id || 'guest_user';
     setIsLoading(true);
     setError(null);
     try {
-      const data = await bookingRepository.getBookings(user.id, filter);
+      const data = await bookingRepository.getBookings(effectiveUserId, filter);
       setBookings(data);
     } catch (err: any) {
       setError(err.message || 'Failed to load bookings');
@@ -30,7 +25,24 @@ export function useBookings(filter: 'UPCOMING' | 'COMPLETED' | 'CANCELLED' = 'UP
 
   useEffect(() => {
     loadBookings();
-  }, [loadBookings]);
+    
+    // 1. Local event listener (intra-app)
+    const unsubscribeLocal = bookingRepository.subscribe(() => {
+      loadBookings();
+    });
+
+    // 2. Supabase Realtime database listener (inter-device / multi-device instant sync)
+    const unsubscribeRealtime = user?.id
+      ? bookingRepository.subscribeToUserBookings(user.id, () => {
+          loadBookings();
+        })
+      : () => {};
+
+    return () => {
+      unsubscribeLocal();
+      unsubscribeRealtime();
+    };
+  }, [loadBookings, user?.id]);
 
   return {
     bookings,
@@ -41,6 +53,7 @@ export function useBookings(filter: 'UPCOMING' | 'COMPLETED' | 'CANCELLED' = 'UP
 }
 
 export function useBookingDetail(bookingId?: string) {
+  const { user } = useAuth();
   const [booking, setBooking] = useState<BookingRecord | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -71,7 +84,24 @@ export function useBookingDetail(bookingId?: string) {
 
   useEffect(() => {
     loadDetail();
-  }, [loadDetail]);
+
+    // Local subscription
+    const unsubscribeLocal = bookingRepository.subscribe(() => {
+      loadDetail();
+    });
+
+    // Realtime subscription for multi-device sync
+    const unsubscribeRealtime = user?.id
+      ? bookingRepository.subscribeToUserBookings(user.id, () => {
+          loadDetail();
+        })
+      : () => {};
+
+    return () => {
+      unsubscribeLocal();
+      unsubscribeRealtime();
+    };
+  }, [loadDetail, user?.id]);
 
   const cancel = async (reason: string) => {
     if (!bookingId) return { success: false, error: 'No booking selected' };

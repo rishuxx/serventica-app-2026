@@ -46,6 +46,18 @@ export class ServiceabilityService {
       // 2. Client-side verified serviceable pilot cities and regions
       const activeCities = [
         'dehradun',
+        'vikas nagar',
+        'vikasnagar',
+        'sudhowala',
+        'prem nagar',
+        'premnagar',
+        'selaqui',
+        'selakui',
+        'herbertpur',
+        'rishikesh',
+        'haridwar',
+        'roorkee',
+        'mussoorie',
         'prayagraj',
         'allahabad',
         'delhi',

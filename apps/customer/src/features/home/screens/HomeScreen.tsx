@@ -36,7 +36,7 @@ import { useHomeExperience } from '../../../hooks/useHomeExperience';
 import { useServiceETA } from '../../../hooks/useServiceETA';
 import { DynamicCatalogSection } from '../components/DynamicCatalogSection';
 import { HomeBasicServiceItem } from '../../../types/home.types';
-import { CategoryItem } from '../../../types/category.types';
+import { useAuth } from '../../../context/AuthContext';
 import { ServenticaTokens } from '../../../../../../packages/design-system/src';
 import { MapPin, ChevronDown, User, Search } from 'lucide-react-native';
 import Svg, { Defs, RadialGradient as SvgRadialGradient, LinearGradient as SvgLinearGradient, Stop, Rect } from 'react-native-svg';
@@ -51,6 +51,7 @@ import { SupportScreen } from '../../account/screens/SupportScreen';
 import { NotificationsScreen } from '../../account/screens/NotificationsScreen';
 import { ReviewsScreen } from '../../account/screens/ReviewsScreen';
 import { ServiceCardShowcaseScreen } from '../../showcase/ServiceCardShowcaseScreen';
+import { PartnerAppSimulatorScreen } from '../../account/screens/PartnerAppSimulatorScreen';
 
 import {
   FulfillmentMode,
@@ -81,9 +82,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   initialShowcase = false,
 }) => {
   const insets = useSafeAreaInsets();
+  const { user, authState } = useAuth();
   const { data, isLoading: isHomeLoading, refresh: refreshHome } = useHome();
   const location = useLocation();
   const search = useHomeSearch();
+
+  const isAuthenticated = Boolean(user && authState === 'AUTHENTICATED');
 
   const userCoordinates = React.useMemo(() => {
     if (location.activeLocation?.latitude != null && location.activeLocation?.longitude != null) {
@@ -141,12 +145,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         }).start();
       } else if (value < 160 && stickyActiveRef.current) {
         stickyActiveRef.current = false;
-        setIsStickyActive(false);
-        Animated.timing(stickyAnim, {
+        Animated.spring(stickyAnim, {
           toValue: 0,
-          duration: 220,
+          damping: 20,
+          mass: 0.8,
+          stiffness: 160,
           useNativeDriver: true,
-        }).start();
+        }).start(() => {
+          setIsStickyActive(false);
+        });
       }
     });
     return () => {
@@ -187,14 +194,21 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
     const backSubscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
     return () => backSubscription.remove();
-  }, [activeFulfillmentScreen, activeServiceTarget, activeAccountRoute, search]);
+  }, [activeAccountRoute, activeFulfillmentScreen, activeServiceTarget]);
 
   const isSearchActive = search.query.trim().length > 0 || search.isSearchActive;
 
-  // Handle category selection — Persistent Home context switch without page navigation
-  const handleCategoryPress = React.useCallback((category: CategoryItem) => {
-    selectCategory(category.id);
-  }, [selectCategory]);
+  // Handle category tile / tab selection with smart routing
+  const handleCategoryPress = React.useCallback(
+    (target: any) => {
+      const targetId = typeof target === 'string' ? target : target?.id;
+      if (!targetId) return;
+
+      // Select category in home experience
+      selectCategory(targetId);
+    },
+    [selectCategory]
+  );
 
   const [stickyLayout, setStickyLayout] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
 
@@ -240,17 +254,28 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   });
 
   const handleTabSwitch = React.useCallback((tab: BottomNavTab) => {
-    setActiveTab(tab);
     if (tab === 'PROFILE') {
+      if (!isAuthenticated) {
+        onOpenAccount?.();
+        return;
+      }
+      setActiveTab('PROFILE');
       setActiveAccountRoute('PROFILE');
     } else if (tab === 'ORDERS') {
+      if (!isAuthenticated) {
+        onOpenAccount?.();
+        return;
+      }
+      setActiveTab('ORDERS');
       setActiveAccountRoute('BOOKINGS');
     } else if (tab === 'SAVED') {
+      setActiveTab('SAVED');
       setActiveAccountRoute('SAVED');
     } else if (tab === 'CATEGORIES' || tab === 'HOME') {
+      setActiveTab(tab);
       setActiveAccountRoute(null);
     }
-  }, []);
+  }, [isAuthenticated, onOpenAccount]);
 
   // 1.5. If activeFulfillmentScreen is set, navigate to dedicated Instant or Schedule screen
   if (activeFulfillmentScreen === 'INSTANT') {
@@ -304,10 +329,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
   if (activeAccountRoute === 'SANDBOX') {
     return (
-      <ServiceCardShowcaseScreen
+      <PartnerAppSimulatorScreen
         onBack={() => {
           setActiveAccountRoute(null);
           setActiveTab('HOME');
+        }}
+        onNavigateToBookingDetail={(bookingId: string) => {
+          setSelectedBookingId(bookingId);
+          setActiveAccountRoute('BOOKING_DETAIL');
         }}
       />
     );
@@ -409,6 +438,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             setActiveAccountRoute(null);
             setActiveTab('HOME');
           }}
+          onRequireLogin={onOpenAccount}
           onNavigateEditProfile={() => setActiveAccountRoute('EDIT_PROFILE')}
           onNavigateBookings={() => {
             setActiveAccountRoute('BOOKINGS');
@@ -532,9 +562,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             shortAddress={location.activeLocation.shortAddress}
             onPressLocation={location.openSelectLocation}
             onPressProfile={() => {
+              if (!isAuthenticated) {
+                onOpenAccount?.();
+                return;
+              }
               setActiveAccountRoute('PROFILE');
               setActiveTab('PROFILE');
-              onOpenAccount?.();
             }}
             searchQuery={search.query}
             onChangeSearchQuery={search.setQuery}
@@ -727,9 +760,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 ]}
                 activeOpacity={0.8}
                 onPress={() => {
+                  if (!isAuthenticated) {
+                    onOpenAccount?.();
+                    return;
+                  }
                   setActiveAccountRoute('PROFILE');
                   setActiveTab('PROFILE');
-                  onOpenAccount?.();
                 }}
               >
                 <User size={15} color={stickyIconColor} strokeWidth={2} />
@@ -762,6 +798,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       <CartDrawerModal
         onProceedToBooking={(bookingData) => {
           console.log('[Serventica Quick Booking Submitted]:', bookingData);
+          setActiveTab('ORDERS');
+          setActiveAccountRoute('BOOKINGS');
         }}
         onSelectService={(service) => {
           setActiveServiceTarget({

@@ -25,6 +25,7 @@ import {
   Heart,
   ChevronRight,
   FlaskConical,
+  Trash2,
 } from 'lucide-react-native';
 import { ServenticaTokens } from '../../../../../../packages/design-system/src';
 import { useAuth } from '../../../context/AuthContext';
@@ -32,6 +33,7 @@ import { useProfile } from '../../../hooks/useProfile';
 import { useBookings } from '../../../hooks/useBookings';
 import { useSavedServices } from '../../../hooks/useSavedServices';
 import { useNotifications } from '../../../hooks/useNotifications';
+import { bookingRepository } from '../../../repositories/booking.repository';
 import { ProfileHeader } from '../components/ProfileHeader';
 import { QuickActions } from '../components/QuickActions';
 import { UpcomingBookingCard } from '../components/UpcomingBookingCard';
@@ -40,6 +42,7 @@ import { LogoutConfirmationModal } from '../components/LogoutConfirmationModal';
 
 export interface ProfileScreenProps {
   onBack?: () => void;
+  onRequireLogin?: () => void;
   onNavigateEditProfile: () => void;
   onNavigateBookings: () => void;
   onNavigateBookingDetail: (bookingId: string) => void;
@@ -53,6 +56,7 @@ export interface ProfileScreenProps {
 
 export const ProfileScreen: React.FC<ProfileScreenProps> = ({
   onBack,
+  onRequireLogin,
   onNavigateEditProfile,
   onNavigateBookings,
   onNavigateBookingDetail,
@@ -120,13 +124,36 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* 1. PROFILE IDENTITY HEADER */}
-        <ProfileHeader
-          profile={profile}
-          phone={user?.phone || '+91 63886 93472'}
-          email={user?.email || (profile as any)?.email || ''}
-          onEditPress={onNavigateEditProfile}
-        />
+        {/* GUEST MODE CARD OR AUTHENTICATED USER PROFILE HEADER */}
+        {!user ? (
+          <View style={styles.guestCard}>
+            <View style={styles.guestAvatar}>
+              <User size={28} color="#7C3AED" strokeWidth={2} />
+            </View>
+            <View style={styles.guestInfo}>
+              <Text style={styles.guestTitle}>Welcome to Serventica</Text>
+              <Text style={styles.guestSubtitle}>
+                Log in to manage your bookings, saved addresses, and profile details.
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.loginCtaButton}
+              activeOpacity={0.85}
+              onPress={onRequireLogin}
+              accessibilityRole="button"
+              accessibilityLabel="Log In or Sign Up"
+            >
+              <Text style={styles.loginCtaText}>Log In / Sign Up</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <ProfileHeader
+            profile={profile}
+            phone={user?.phone || ''}
+            email={user?.email || (profile as any)?.email || ''}
+            onEditPress={onNavigateEditProfile}
+          />
+        )}
 
         {/* 2. OPERATIONAL QUICK ACTIONS */}
         <QuickActions
@@ -226,27 +253,64 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
         </ProfileSection>
 
         {/* 7. DEVELOPER SANDBOX (TESTING & PREVIEW) */}
-        {onNavigateSandbox ? (
-          <ProfileSection title="Developer Tools (Testing)">
+        <ProfileSection title="Testing & Data Reset">
+          {onNavigateSandbox ? (
             <ProfileMenuItem
-              label="UI Card System Sandbox"
+              label="Servs Partner Simulator"
               Icon={FlaskConical}
-              badge="Preview"
+              badge="Accept Orders"
               onPress={onNavigateSandbox}
             />
-          </ProfileSection>
-        ) : null}
-
-        {/* 8. ACCOUNT ACTION (LOGOUT) */}
-        <ProfileSection>
+          ) : null}
           <ProfileMenuItem
-            label="Log Out"
-            Icon={LogOut}
+            label="Reset / Delete Order History"
+            Icon={Trash2}
             isDestructive
-            hideChevron
-            onPress={() => setIsLogoutModalVisible(true)}
+            badge="Fresh Test"
+            onPress={() => {
+              Alert.alert(
+                'Delete Order History',
+                'This will clear all booking history for this account from both the server and local cache so you can start a clean test. Proceed?',
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  {
+                    text: 'Delete All',
+                    style: 'destructive',
+                    onPress: async () => {
+                      const res = await bookingRepository.clearAllUserBookings(user?.id);
+                      if (res.success) {
+                        Alert.alert('History Cleared', 'All previous orders have been completely removed. You can now test freshly.');
+                      } else {
+                        Alert.alert('Notice', res.error || 'Failed to clear history');
+                      }
+                    },
+                  },
+                ]
+              );
+            }}
           />
         </ProfileSection>
+
+        {/* 8. ACCOUNT ACTION (LOGOUT OR LOGIN) */}
+        {user ? (
+          <ProfileSection>
+            <ProfileMenuItem
+              label="Log Out"
+              Icon={LogOut}
+              isDestructive
+              hideChevron
+              onPress={() => setIsLogoutModalVisible(true)}
+            />
+          </ProfileSection>
+        ) : (
+          <ProfileSection>
+            <ProfileMenuItem
+              label="Log In / Sign Up"
+              Icon={User}
+              onPress={onRequireLogin || (() => {})}
+            />
+          </ProfileSection>
+        )}
 
         <View style={styles.appFooter}>
           <Text style={styles.appVersionText}>Serventica Customer v1.0.0 (Production)</Text>
@@ -293,6 +357,63 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 100,
+  },
+  guestCard: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ECECE8',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  guestAvatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#F3E8FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  guestInfo: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  guestTitle: {
+    fontSize: 18,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
+    color: '#1E242B',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  guestSubtitle: {
+    fontSize: 13,
+    fontFamily: ServenticaTokens.fonts.Regular,
+    color: '#666666',
+    textAlign: 'center',
+    lineHeight: 18,
+    paddingHorizontal: 8,
+  },
+  loginCtaButton: {
+    backgroundColor: '#7C3AED',
+    paddingVertical: 12,
+    paddingHorizontal: 28,
+    borderRadius: 12,
+    width: '100%',
+    alignItems: 'center',
+  },
+  loginCtaText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
   },
   upcomingWrapper: {
     marginBottom: 4,

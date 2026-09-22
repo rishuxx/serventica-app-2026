@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   cartCapsule: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fac420', // Luxury golden Serventica yellow
+    backgroundColor: '#7C3AED', // Royal purple matching login page
     borderRadius: 36,
     paddingLeft: 7,
     paddingRight: 7,
@@ -176,7 +176,12 @@ const styles = StyleSheet.create({
     width: 204, // Slightly reduced horizontal width
     minHeight: 56, // Slightly increased vertical height
     borderWidth: 1.2,
-    borderColor: 'rgba(255, 255, 255, 0.65)',
+    borderColor: 'rgba(255, 255, 255, 0.4)',
+    shadowColor: '#6D28D9',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 8,
   },
   thumbnailCircle: {
     width: 42,
@@ -201,14 +206,14 @@ const styles = StyleSheet.create({
   viewCartTitle: {
     fontSize: 14,
     fontFamily: ServenticaTokens.fonts.Bold,
-    color: '#0F172A',
+    color: '#FFFFFF',
     letterSpacing: -0.2,
     lineHeight: 18,
   },
   itemCountSubtitle: {
     fontSize: 11.5,
     fontFamily: ServenticaTokens.fonts.Medium,
-    color: '#334155',
+    color: 'rgba(255, 255, 255, 0.85)',
     marginTop: 1,
     lineHeight: 14,
   },
@@ -216,7 +221,7 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: '#0F172A',
+    backgroundColor: '#5B21B6',
     justifyContent: 'center',
     alignItems: 'center',
   },

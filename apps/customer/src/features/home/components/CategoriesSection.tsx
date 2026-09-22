@@ -26,10 +26,11 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = React.memo(({
   return (
     <View style={styles.container}>
       <View style={styles.row}>
-        {categories.slice(0, 3).map((category) => {
+        {categories.slice(0, 3).map((category, index) => {
           const imageSource = AssetRegistry[category.image_url] || AssetRegistry.category_services;
+          const key = category.id ? `home_cat_sec_${category.id}` : `home_cat_sec_${index}`;
           return (
-            <View key={category.id} style={styles.cardWrapper}>
+            <View key={key} style={styles.cardWrapper}>
               <TouchableOpacity
                 style={styles.card}
                 activeOpacity={0.85}

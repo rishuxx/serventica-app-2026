@@ -39,10 +39,16 @@ import { ServenticaTokens } from '../../../../../../packages/design-system/src';
 import { PaymentMethodIcon, PaymentBrandType } from './PaymentMethodIcon';
 import { paymentOrchestrator, OrchestratedPaymentResult } from '../../../services/payment/PaymentOrchestrator';
 import { upiAppDetectionService, InstalledUpiApp } from '../../../services/payment/UpiAppDetectionService';
-import { PaymentLifecycleStatus } from '../../../../../../packages/types/src';
+import { PaymentLifecycleStatus, BookingRecord, BookingStatus } from '../../../../../../packages/types/src';
+import { bookingRepository } from '../../../repositories/booking.repository';
 import { DateSelector } from '../../booking/components/DateSelector';
 import { TimeSlotPicker } from '../../booking/components/TimeSlotPicker';
 import { useServiceAvailability } from '../../../hooks/useServiceAvailability';
+import { TicketContainer } from '../../../components/TicketContainer';
+import { BookingSuccessSheet } from './BookingSuccessSheet';
+import { ensureUuid, isUuid } from '../../../lib/uuid.utils';
+import { SelectLocationScreen } from '../../location/screens/SelectLocationScreen';
+import { DispatchService } from '../../../services/DispatchService';
 
 interface CartDrawerModalProps {
   onProceedToBooking?: (bookingData: any) => void;
@@ -215,6 +221,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
   const [selectedDurationId, setSelectedDurationId] = useState<string>('1hr');
   const [selectedPaymentKey, setSelectedPaymentKey] = useState<PaymentMethodKey>('RAZORPAY_ONLINE');
   const [isPaymentPickerOpen, setIsPaymentPickerOpen] = useState<boolean>(false);
+  const [isLocationPickerOpen, setIsLocationPickerOpen] = useState<boolean>(false);
   const [paymentStatus, setPaymentStatus] = useState<PaymentFlowStatus>('IDLE');
   const [paymentErrorMessage, setPaymentErrorMessage] = useState<string | null>(null);
   const [transactionResult, setTransactionResult] = useState<OrchestratedPaymentResult | null>(null);
@@ -384,6 +391,10 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
       const targetUpiApp = installedUpiApps.find((app) => app.brand === selectedPaymentKey);
 
       if (targetUpiApp) {
+        const resolvedAddressId = (activeLocation as any)?.id && isUuid((activeLocation as any).id)
+          ? (activeLocation as any).id
+          : ensureUuid();
+
         // Direct UPI App Flow with real session and return verification
         const session = await paymentOrchestrator.createPaymentSession({
           userId: user?.id,
@@ -393,7 +404,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
           serviceId: primaryItem.serviceId,
           serviceName: primaryItem.name,
           variantId: null,
-          addressId: 'a1000000-0000-0000-0000-000000000001',
+          addressId: resolvedAddressId,
           serviceAreaId: serviceability?.serviceAreaId || 'e1111111-0000-0000-0000-000000000001',
           shortAddress: activeLocation?.shortAddress || 'Home Address',
           formattedAddress: activeLocation?.formattedAddress || 'Dehradun, India',
@@ -404,6 +415,10 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
           paymentMethod: 'UPI',
           preferredOrchestrator: 'RAZORPAY',
           idempotencyKey: `upi_direct_${Date.now()}_${primaryItem.serviceId}`,
+          amountRupees: fees.finalPayable,
+          subtotal: fees.itemTotal,
+          discount: fees.discountAmount,
+          platformFee: fees.convenienceFee,
         });
 
         if (!session.success) {
@@ -449,6 +464,15 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
           status: 'CAPTURED',
         };
 
+        // Persist booking record into repository so it appears immediately in Orders / Bookings screen
+        await persistConfirmedBooking(
+          session.bookingId,
+          session.bookingNumber,
+          `${targetUpiApp.name} UPI`,
+          session.amountRupees,
+          successRes.transactionId!
+        );
+
         setPaymentStatus('SUCCESS');
         setTransactionResult(successRes);
         clearCart();
@@ -463,6 +487,10 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
         return;
       }
 
+      const resolvedAddressId = (activeLocation as any)?.id && isUuid((activeLocation as any).id)
+        ? (activeLocation as any).id
+        : ensureUuid();
+
       // Standard Razorpay Sheet Checkout Flow
       const res = await paymentOrchestrator.executePayment({
         userId: user?.id,
@@ -472,7 +500,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
         serviceId: primaryItem.serviceId,
         serviceName: primaryItem.name,
         variantId: null,
-        addressId: 'a1000000-0000-0000-0000-000000000001',
+        addressId: resolvedAddressId,
         serviceAreaId: serviceability?.serviceAreaId || 'e1111111-0000-0000-0000-000000000001',
         shortAddress: activeLocation?.shortAddress || 'Home Address',
         formattedAddress: activeLocation?.formattedAddress || 'Dehradun, India',
@@ -483,16 +511,32 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
         paymentMethod: mappedMethod,
         preferredOrchestrator: 'RAZORPAY',
         idempotencyKey: `pay_attempt_${Date.now()}_${primaryItem.serviceId}`,
+        amountRupees: fees.finalPayable,
+        subtotal: fees.itemTotal,
+        discount: fees.discountAmount,
+        platformFee: fees.convenienceFee,
       });
 
       if (res.success) {
+        const safeBookingId = ensureUuid(res.bookingId);
+        const safeBookingNumber = res.bookingNumber || `SRV-${Math.floor(100000 + Math.random() * 900000)}`;
+
+        // Persist booking record into repository so it appears immediately in Orders / Bookings screen
+        await persistConfirmedBooking(
+          safeBookingId,
+          safeBookingNumber,
+          res.paymentMethod,
+          res.amount,
+          res.transactionId || `TXN-${Date.now()}`
+        );
+
         setPaymentStatus('SUCCESS');
-        setTransactionResult(res);
+        setTransactionResult({ ...res, bookingId: safeBookingId, bookingNumber: safeBookingNumber });
         clearCart();
 
         onProceedToBooking?.({
-          bookingId: res.bookingId,
-          bookingNumber: res.bookingNumber,
+          bookingId: safeBookingId,
+          bookingNumber: safeBookingNumber,
           transactionId: res.transactionId,
           paymentMethod: res.paymentMethod,
           amount: res.amount,
@@ -513,10 +557,108 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
     }
   };
 
+  const persistConfirmedBooking = async (
+    bookingId: string,
+    bookingNumber: string,
+    paymentMethodName: string,
+    amount: number,
+    transactionId: string
+  ) => {
+    try {
+      const itemList = Object.values(items);
+      const primary = itemList[0];
+      if (!primary) return;
+
+      const combinedServiceName = itemList.length > 1
+        ? `${primary.name} + ${itemList.length - 1} more`
+        : primary.name;
+
+      const finalBookingId = ensureUuid(bookingId);
+      const bookingAddressId = (activeLocation as any)?.id && isUuid((activeLocation as any).id)
+        ? (activeLocation as any).id
+        : ensureUuid();
+
+      const newBooking: BookingRecord = {
+        id: finalBookingId,
+        bookingNumber,
+        customerId: user?.id || 'guest_user',
+        partnerId: null,
+        addressId: bookingAddressId,
+        status: 'CONFIRMED' as BookingStatus,
+        scheduledDate: selectedDate || (bookingMode === 'EXPRESS' ? 'Today' : new Date().toISOString().split('T')[0]),
+        scheduledStartTime: selectedSlot?.startAt || new Date().toISOString(),
+        serviceId: primary.serviceId,
+        serviceName: combinedServiceName,
+        serviceSlug: primary.slug,
+        serviceImageUrl: primary.imageUrl,
+        address: {
+          title: (activeLocation as any)?.title || activeLocation?.shortAddress || activeLocation?.city || 'Service Address',
+          shortAddress: activeLocation?.shortAddress || activeLocation?.city || 'Service Location',
+          addressLine1: (activeLocation as any)?.addressLine1 || activeLocation?.formattedAddress || activeLocation?.road || 'Selected Location',
+          addressLine2: (activeLocation as any)?.addressLine2 || null,
+          landmark: (activeLocation as any)?.landmark || null,
+          city: activeLocation?.city || 'Dehradun',
+          state: (activeLocation as any)?.state || 'Uttarakhand',
+          pincode: (activeLocation as any)?.pincode || (activeLocation as any)?.postalCode || '248007',
+          formattedAddress: activeLocation?.formattedAddress || `${activeLocation?.shortAddress || 'Dehradun'}, India`,
+          latitude: activeLocation?.latitude != null ? activeLocation.latitude : undefined,
+          longitude: activeLocation?.longitude != null ? activeLocation.longitude : undefined,
+        } as any,
+        partner: null,
+        payment: {
+          subtotal: fees.itemTotal,
+          tax: 0,
+          discount: fees.discountAmount,
+          platformFee: fees.convenienceFee + fees.partnerSafetyFee,
+          total: amount,
+          currency: 'INR',
+          paymentStatus: 'PAID',
+        },
+        items: itemList.map((it) => ({
+          id: ensureUuid(),
+          bookingId: finalBookingId,
+          serviceId: it.serviceId,
+          serviceName: it.name,
+          serviceSlug: it.slug,
+          serviceImageUrl: it.imageUrl,
+          unitPrice: it.basePrice,
+          quantity: it.quantity,
+          totalPrice: it.basePrice * it.quantity,
+        })),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      await bookingRepository.saveBooking(newBooking);
+
+      // Trigger Instant Dispatch Wave for eligible partners
+      if (bookingMode === 'EXPRESS' || !selectedDate || selectedDate === 'Today') {
+        const pickupLat = activeLocation?.latitude || 30.3342;
+        const pickupLng = activeLocation?.longitude || 77.9629;
+        DispatchService.triggerInstantDispatch({
+          bookingId: finalBookingId,
+          serviceId: primary.serviceId,
+          pickupLatitude: pickupLat,
+          pickupLongitude: pickupLng,
+          maxCandidates: 5,
+          timeoutSeconds: 45,
+        }).catch((dispErr) => {
+          console.warn('[CartDrawerModal] Instant dispatch wave trigger notice:', dispErr);
+        });
+      }
+    } catch (e) {
+      console.warn('[CartDrawerModal] Failed to persist booking:', e);
+    }
+  };
+
   const handleDismissSuccess = () => {
+    const lastResult = transactionResult;
     setTransactionResult(null);
     setPaymentStatus('IDLE');
     closeCartDrawer();
+    if (lastResult) {
+      onProceedToBooking?.(lastResult);
+    }
   };
 
   return (
@@ -529,60 +671,34 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
       <View style={styles.backdrop}>
         <TouchableOpacity style={styles.dismissOverlay} activeOpacity={1} onPress={closeCartDrawer} />
 
-        <View style={styles.sheetContainer}>
-          {/* Header */}
-          <View style={styles.headerRow}>
-            <View>
-              <Text style={styles.headerTitle}>Review Booking</Text>
-              <Text style={styles.headerSubtitle}>
-                {itemCount} {itemCount === 1 ? 'service' : 'services'} • Serventica Certified
-              </Text>
-            </View>
-            <TouchableOpacity style={styles.closeBtn} onPress={closeCartDrawer} activeOpacity={0.7}>
-              <X size={17} color="#475569" strokeWidth={2.4} />
-            </TouchableOpacity>
-          </View>
-
-          {transactionResult ? (
-            <View style={styles.successState}>
-              <View style={styles.successIconCircle}>
-                <CheckCircle2 size={44} color="#059669" strokeWidth={2.2} />
+        {transactionResult ? (
+          <BookingSuccessSheet
+            transactionResult={transactionResult}
+            customerName={
+              profile?.first_name
+                ? `${profile.first_name}${profile.last_name ? ` ${profile.last_name}` : ''}`
+                : user?.user_metadata?.full_name || 'Rishu'
+            }
+            itemCount={itemCount}
+            selectedDate={selectedDate}
+            bookingMode={bookingMode}
+            onClose={closeCartDrawer}
+            onViewBooking={handleDismissSuccess}
+          />
+        ) : (
+          <View style={styles.sheetContainer}>
+            {/* Header */}
+            <View style={styles.headerRow}>
+              <View>
+                <Text style={styles.headerTitle}>Review Booking</Text>
+                <Text style={styles.headerSubtitle}>
+                  {itemCount} {itemCount === 1 ? 'service' : 'services'} • Serventica Certified
+                </Text>
               </View>
-              <Text style={styles.successTitle}>Booking Confirmed!</Text>
-              <Text style={styles.bookingNumberBadge}>
-                Booking ID: {transactionResult.bookingNumber}
-              </Text>
-              <Text style={styles.successDesc}>
-                {bookingMode === 'EXPRESS'
-                  ? 'Your verified pro is dispatched and arriving in ~20 minutes.'
-                  : `Your appointment is confirmed for ${selectedDate || 'the selected date'} (${selectedSlot?.displayTime || 'Scheduled slot'}).`}
-              </Text>
-
-              <View style={styles.successReceiptCard}>
-                <View style={styles.receiptRow}>
-                  <Text style={styles.receiptLabel}>Payment Mode</Text>
-                  <Text style={styles.receiptValue}>{transactionResult.paymentMethod}</Text>
-                </View>
-                <View style={styles.receiptRow}>
-                  <Text style={styles.receiptLabel}>Amount Paid</Text>
-                  <Text style={styles.receiptValueBold}>₹{transactionResult.amount}</Text>
-                </View>
-                <View style={styles.receiptRow}>
-                  <Text style={styles.receiptLabel}>Transaction Ref</Text>
-                  <Text style={styles.receiptValue}>{transactionResult.transactionId}</Text>
-                </View>
-              </View>
-
-              <TouchableOpacity
-                style={styles.viewOrdersBtn}
-                onPress={handleDismissSuccess}
-                activeOpacity={0.85}
-              >
-                <Text style={styles.viewOrdersBtnText}>Done</Text>
-                <ArrowRight size={18} color="#FFFFFF" strokeWidth={2.4} />
+              <TouchableOpacity style={styles.closeBtn} onPress={closeCartDrawer} activeOpacity={0.7}>
+                <X size={17} color="#475569" strokeWidth={2.4} />
               </TouchableOpacity>
             </View>
-          ) : (
             <>
               <ScrollView
                 showsVerticalScrollIndicator={false}
@@ -611,7 +727,7 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                   </View>
                   <TouchableOpacity
                     style={styles.changeLocBtn}
-                    onPress={openSelectLocation}
+                    onPress={() => setIsLocationPickerOpen(true)}
                     activeOpacity={0.7}
                   >
                     <Text style={styles.changeLocText}>Change</Text>
@@ -923,48 +1039,51 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                   </View>
                 )}
 
-                {/* 4. Dotted Rate List & Bill Summary */}
-                <View style={styles.billContainer}>
-                  <Text style={styles.billHeading}>Bill Summary</Text>
+                {/* 4. Ticket-Styled Bill Summary */}
+                <TicketContainer
+                  style={{ marginBottom: 14 }}
+                  top={
+                    <View>
+                      <Text style={styles.billHeading}>Bill Summary</Text>
 
-                  {/* Item Total */}
-                  <View style={styles.dottedBillRow}>
-                    <Text style={styles.billLabel}>Item Total</Text>
-                    <View style={styles.dotFiller} />
-                    <Text style={styles.billValue}>₹{fees.itemTotal}</Text>
-                  </View>
+                      {/* Item Total */}
+                      <View style={styles.dottedBillRow}>
+                        <Text style={styles.billLabel}>Item Total</Text>
+                        <View style={styles.dotFiller} />
+                        <Text style={styles.billValue}>₹{fees.itemTotal}</Text>
+                      </View>
 
-                  {/* Convenience Fee */}
-                  <View style={styles.dottedBillRow}>
-                    <Text style={styles.billLabel}>Convenience Fee</Text>
-                    <View style={styles.dotFiller} />
-                    <Text style={styles.billValue}>₹{fees.convenienceFee}</Text>
-                  </View>
+                      {/* Convenience Fee */}
+                      <View style={styles.dottedBillRow}>
+                        <Text style={styles.billLabel}>Convenience Fee</Text>
+                        <View style={styles.dotFiller} />
+                        <Text style={styles.billValue}>₹{fees.convenienceFee}</Text>
+                      </View>
 
-                  {/* Partner Safety */}
-                  <View style={styles.dottedBillRow}>
-                    <Text style={styles.billLabel}>Partner Safety & Insurance</Text>
-                    <View style={styles.dotFiller} />
-                    <Text style={styles.billValue}>₹{fees.partnerSafetyFee}</Text>
-                  </View>
+                      {/* Partner Safety */}
+                      <View style={styles.dottedBillRow}>
+                        <Text style={styles.billLabel}>Partner Safety & Insurance</Text>
+                        <View style={styles.dotFiller} />
+                        <Text style={styles.billValue}>₹{fees.partnerSafetyFee}</Text>
+                      </View>
 
-                  {/* Promo Discount if any */}
-                  {fees.discountAmount > 0 ? (
-                    <View style={styles.dottedBillRow}>
-                      <Text style={[styles.billLabel, styles.discountGreen]}>Special Promotion</Text>
-                      <View style={styles.dotFiller} />
-                      <Text style={[styles.billValue, styles.discountGreen]}>-₹{fees.discountAmount}</Text>
+                      {/* Promo Discount if any */}
+                      {fees.discountAmount > 0 ? (
+                        <View style={styles.dottedBillRow}>
+                          <Text style={[styles.billLabel, styles.discountGreen]}>Special Promotion</Text>
+                          <View style={styles.dotFiller} />
+                          <Text style={[styles.billValue, styles.discountGreen]}>-₹{fees.discountAmount}</Text>
+                        </View>
+                      ) : null}
                     </View>
-                  ) : null}
-
-                  <View style={styles.solidDivider} />
-
-                  {/* To Pay */}
-                  <View style={styles.toPayRow}>
-                    <Text style={styles.toPayLabel}>To Pay</Text>
-                    <Text style={styles.toPayValue}>₹{fees.finalPayable}</Text>
-                  </View>
-                </View>
+                  }
+                  bottom={
+                    <View style={styles.toPayRow}>
+                      <Text style={styles.toPayLabel}>To Pay</Text>
+                      <Text style={styles.toPayValue}>₹{fees.finalPayable}</Text>
+                    </View>
+                  }
+                />
 
                 {/* Guarantee Banner */}
                 <View style={styles.trustBanner}>
@@ -1106,9 +1225,18 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                   </View>
                 </View>
               )}
+              {/* Direct In-Cart Select Location Modal (Works seamlessly across Android and iOS) */}
+              <Modal
+                visible={isLocationPickerOpen}
+                animationType="slide"
+                presentationStyle="fullScreen"
+                onRequestClose={() => setIsLocationPickerOpen(false)}
+              >
+                <SelectLocationScreen onClose={() => setIsLocationPickerOpen(false)} />
+              </Modal>
             </>
-          )}
-        </View>
+          </View>
+        )}
       </View>
     </Modal>
   );
@@ -1701,37 +1829,32 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   successTitle: {
-    fontSize: 20,
+    fontSize: 21,
     fontFamily: ServenticaTokens.fonts.Bold,
-    color: '#0F172A',
-  },
-  bookingNumberBadge: {
-    fontSize: 13,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
     color: '#059669',
-    backgroundColor: '#ECFDF5',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 8,
-    marginTop: 6,
   },
   successDesc: {
     fontSize: 13.5,
     fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#64748B',
+    color: '#475569',
     textAlign: 'center',
-    marginTop: 10,
-    lineHeight: 20,
+    marginTop: 12,
+    lineHeight: 22,
+    paddingHorizontal: 8,
+  },
+  successDescBold: {
+    fontFamily: ServenticaTokens.fonts.Bold,
+    color: '#0F172A',
   },
   successReceiptCard: {
     width: '100%',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F8FAFC',
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#ECEEF2',
+    borderColor: '#E2E8F0',
     marginTop: 20,
-    gap: 10,
+    gap: 12,
   },
   receiptRow: {
     flexDirection: 'row',
@@ -1744,25 +1867,23 @@ const styles = StyleSheet.create({
     color: '#64748B',
   },
   receiptValue: {
-    fontSize: 13,
+    fontSize: 13.5,
     fontFamily: ServenticaTokens.fonts.SemiBold,
     color: '#0F172A',
   },
-  receiptValueBold: {
-    fontSize: 15,
+  receiptValueSuccess: {
+    fontSize: 13,
     fontFamily: ServenticaTokens.fonts.Bold,
     color: '#059669',
   },
   viewOrdersBtn: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1E242B',
+    backgroundColor: '#273469',
     width: '100%',
     paddingVertical: 14,
-    borderRadius: 14,
+    borderRadius: 12,
     marginTop: 24,
-    gap: 8,
   },
   viewOrdersBtnText: {
     fontSize: 15,

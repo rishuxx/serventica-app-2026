@@ -27,7 +27,7 @@ export const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ onBack }) 
   const [firstName, setFirstName] = useState(profile?.first_name || '');
   const [lastName, setLastName] = useState(profile?.last_name || '');
   const [email, setEmail] = useState(user?.email || '');
-  const [phone] = useState(user?.phone || '+91 63886 93472');
+  const [phone] = useState(user?.phone || '');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleSave = async () => {

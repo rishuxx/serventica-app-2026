@@ -133,7 +133,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
                 accessibilityRole="button"
                 accessibilityLabel="Decrease quantity"
               >
-                <Minus size={11} color="#1E242B" strokeWidth={2.6} />
+                <Minus size={11} color="#FFFFFF" strokeWidth={2.6} />
               </TouchableOpacity>
               <Text style={styles.stepperQtyText}>{quantity}</Text>
               <TouchableOpacity
@@ -147,7 +147,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = React.memo(({
                 accessibilityRole="button"
                 accessibilityLabel="Increase quantity"
               >
-                <Plus size={11} color="#1E242B" strokeWidth={2.6} />
+                <Plus size={11} color="#FFFFFF" strokeWidth={2.6} />
               </TouchableOpacity>
             </View>
           ) : (
@@ -276,36 +276,36 @@ const styles = StyleSheet.create({
     color: '#64748B',
   },
   addButton: {
-    backgroundColor: '#fac420',
+    backgroundColor: '#7C3AED',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-    shadowColor: '#B45309',
+    borderColor: 'rgba(255, 255, 255, 0.4)',
+    shadowColor: '#6D28D9',
     shadowOffset: { width: 0, height: 1.5 },
-    shadowOpacity: 0.18,
+    shadowOpacity: 0.28,
     shadowRadius: 3,
     elevation: 2,
   },
   addButtonText: {
     fontSize: 11,
     fontFamily: ServenticaTokens.fonts.Bold,
-    color: '#1E242B',
+    color: '#FFFFFF',
     letterSpacing: 0.3,
   },
   stepperContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fac420',
+    backgroundColor: '#7C3AED',
     borderRadius: 8,
     paddingHorizontal: 5,
     paddingVertical: 3,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-    shadowColor: '#B45309',
+    borderColor: 'rgba(255, 255, 255, 0.4)',
+    shadowColor: '#6D28D9',
     shadowOffset: { width: 0, height: 1.5 },
-    shadowOpacity: 0.18,
+    shadowOpacity: 0.28,
     shadowRadius: 3,
     elevation: 2,
   },
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
   stepperQtyText: {
     fontSize: 11,
     fontFamily: ServenticaTokens.fonts.Bold,
-    color: '#1E242B',
+    color: '#FFFFFF',
     marginHorizontal: 4,
   },
   detailsContainer: {

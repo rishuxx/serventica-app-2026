@@ -8,11 +8,16 @@ import {
   PaymentProviderName,
   PaymentSessionDTO,
   PaymentLifecycleStatus,
+  BookingRecord,
+  BookingStatus,
 } from '../../../../../packages/types/src';
+import { bookingRepository } from '../../repositories/booking.repository';
+import { ensureUuid, isUuid } from '../../lib/uuid.utils';
 import { IPaymentProviderAdapter } from './PaymentProvider.interface';
 import { JuspayPaymentAdapter } from './JuspayAdapter';
 import { RazorpayPaymentAdapter } from './RazorpayAdapter';
 import { CashfreePaymentAdapter } from './CashfreeAdapter';
+import { PriceCalculationEngine } from '../pricing/PriceCalculationEngine';
 
 export interface InitiatePaymentParams {
   userId?: string;
@@ -35,6 +40,10 @@ export interface InitiatePaymentParams {
   preferredOrchestrator?: PaymentProviderName;
   idempotencyKey: string;
   reservationId?: string;
+  amountRupees?: number;
+  subtotal?: number;
+  discount?: number;
+  platformFee?: number;
 }
 
 export interface OrchestratedPaymentResult {
@@ -66,6 +75,26 @@ export class PaymentOrchestratorService {
   async createPaymentSession(params: InitiatePaymentParams): Promise<PaymentSessionDTO> {
     const userId = params.userId || '00000000-0000-0000-0000-000000000001';
     const orchestratorName: PaymentProviderName = params.preferredOrchestrator || 'RAZORPAY';
+
+    // Pre-insert / upsert selected address into public.addresses so foreign key constraint succeeds and database has real address details
+    try {
+      if (params.addressId && isUuid(params.addressId)) {
+        await supabase.from('addresses').upsert({
+          id: params.addressId,
+          user_id: isUuid(userId) ? userId : null,
+          title: params.shortAddress || 'Service Address',
+          address_line1: params.formattedAddress || 'Main Service Location',
+          city: params.city || 'Dehradun',
+          state: 'Uttarakhand',
+          pincode: '248007',
+          formatted_address: params.formattedAddress,
+          is_default: true,
+          updated_at: new Date().toISOString(),
+        });
+      }
+    } catch (e) {
+      console.warn('[PaymentOrchestrator] Address pre-sync note:', e);
+    }
 
     try {
       const { data, error } = await supabase.rpc('orchestrate_booking_payment_session', {
@@ -154,6 +183,8 @@ export class PaymentOrchestratorService {
         paymentMethod: 'Cash on Delivery',
       });
 
+      await this.persistLocalBooking(session.bookingId, session.bookingNumber, params, 'Cash on Delivery', session.amountRupees);
+
       return {
         success: true,
         bookingId: session.bookingId,
@@ -182,6 +213,8 @@ export class PaymentOrchestratorService {
       });
 
       if (serverConfirm.success) {
+        await this.persistLocalBooking(session.bookingId, session.bookingNumber, params, params.paymentMethod, session.amountRupees);
+
         return {
           success: true,
           bookingId: session.bookingId,
@@ -254,10 +287,20 @@ export class PaymentOrchestratorService {
     params: InitiatePaymentParams,
     orchestrator: PaymentProviderName
   ): PaymentSessionDTO {
-    const bookingId = `b_${Date.now()}`;
+    const bookingId = ensureUuid();
     const bookingNumber = `SRV-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-    const paymentId = `p_${Date.now()}`;
+    const paymentId = ensureUuid();
     const internalPaymentId = `PAY_${Date.now()}`;
+
+    const bill = PriceCalculationEngine.calculateBill({
+      itemTotal: params.subtotal,
+      subtotal: params.subtotal,
+      discount: params.discount,
+      platformFee: params.platformFee,
+      total: params.amountRupees,
+    });
+
+    const calculatedRupees = bill.finalPayable;
 
     return {
       success: true,
@@ -267,8 +310,8 @@ export class PaymentOrchestratorService {
       bookingNumber,
       orchestrator,
       processor: 'RAZORPAY',
-      amountRupees: 597,
-      amountMinor: 59700,
+      amountRupees: calculatedRupees,
+      amountMinor: Math.round(calculatedRupees * 100),
       currency: 'INR',
       checkoutSessionId: `order_${internalPaymentId}`,
       customer: {
@@ -279,6 +322,73 @@ export class PaymentOrchestratorService {
       status: 'CHECKOUT_INITIALIZED',
       expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
     };
+  }
+
+  private async persistLocalBooking(
+    bookingId: string,
+    bookingNumber: string,
+    params: InitiatePaymentParams,
+    paymentMethodText: string,
+    amountRupees: number
+  ) {
+    try {
+      const finalBookingId = ensureUuid(bookingId);
+      const bill = PriceCalculationEngine.calculateBill({
+        itemTotal: params.subtotal,
+        subtotal: params.subtotal,
+        discount: params.discount,
+        platformFee: params.platformFee,
+        total: amountRupees,
+      });
+
+      const newBooking: BookingRecord = {
+        id: finalBookingId,
+        bookingNumber,
+        customerId: params.userId || 'guest_user',
+        partnerId: null,
+        addressId: params.addressId,
+        status: 'CONFIRMED' as BookingStatus,
+        scheduledDate: params.startAt ? params.startAt.split('T')[0] : 'Today',
+        scheduledStartTime: params.startAt || new Date().toISOString(),
+        serviceId: params.serviceId,
+        serviceName: params.serviceName,
+        address: {
+          title: params.shortAddress || 'Service Address',
+          addressLine1: params.shortAddress,
+          city: params.city || 'Dehradun',
+          state: 'Uttarakhand',
+          pincode: '248007',
+          formattedAddress: params.formattedAddress || 'Dehradun, Uttarakhand, India',
+        },
+        partner: null,
+        payment: {
+          subtotal: bill.itemTotal,
+          tax: 0,
+          discount: bill.discountAmount,
+          platformFee: bill.deliveryOrSafetyFee,
+          total: bill.finalPayable,
+          currency: 'INR',
+          paymentStatus: 'PAID',
+        },
+        items: [
+          {
+            id: ensureUuid(),
+            bookingId: finalBookingId,
+            serviceId: params.serviceId,
+            serviceName: params.serviceName,
+            unitPrice: bill.itemTotal,
+            quantity: 1,
+            totalPrice: bill.itemTotal,
+          },
+        ],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      await bookingRepository.saveBooking(newBooking);
+    } catch (e) {
+      console.warn('[PaymentOrchestrator] Error persisting local booking:', e);
+    }
   }
 }
 

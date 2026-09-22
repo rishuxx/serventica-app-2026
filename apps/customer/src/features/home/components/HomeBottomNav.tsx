@@ -30,32 +30,32 @@ const TAB_CONFIGS: Record<BottomNavTab, TabThemeConfig> = {
   HOME: {
     id: 'HOME',
     label: 'Home',
-    activeStroke: '#1E242B',
-    activeFill: '#FAC420', // Serventica warm gold
+    activeStroke: '#7C3AED',
+    activeFill: '#EDE9FE', // Soft purple tint
   },
   ORDERS: {
     id: 'ORDERS',
     label: 'Orders',
-    activeStroke: '#1E242B',
-    activeFill: '#FAC420',
+    activeStroke: '#7C3AED',
+    activeFill: '#EDE9FE',
   },
   CATEGORIES: {
     id: 'CATEGORIES',
     label: 'Categories',
-    activeStroke: '#1E242B',
-    activeFill: '#FAC420',
+    activeStroke: '#7C3AED',
+    activeFill: '#EDE9FE',
   },
   SAVED: {
     id: 'SAVED',
     label: 'Saved',
-    activeStroke: '#1E242B',
-    activeFill: '#FAC420',
+    activeStroke: '#7C3AED',
+    activeFill: '#EDE9FE',
   },
   PROFILE: {
     id: 'PROFILE',
     label: 'Profile',
-    activeStroke: '#1E242B',
-    activeFill: '#FAC420',
+    activeStroke: '#7C3AED',
+    activeFill: '#EDE9FE',
   },
 };
 
@@ -72,9 +72,9 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean }> = ({
   tab,
   isActive,
 }) => {
-  const stroke = isActive ? '#1E242B' : '#64748B';
+  const stroke = isActive ? '#7C3AED' : '#64748B';
   const strokeWidth = isActive ? 2.2 : 1.8;
-  const fill = isActive ? '#FAC420' : 'none';
+  const fill = isActive ? '#EDE9FE' : 'none';
 
   switch (tab) {
     case 'HOME':
@@ -90,7 +90,7 @@ const TabSvgIcon: React.FC<{ tab: BottomNavTab; isActive: boolean }> = ({
           />
           <Path
             d="M9 21.5V12h6v9.5"
-            fill={isActive ? '#1E242B' : 'none'}
+            fill={isActive ? '#7C3AED' : 'none'}
             stroke={stroke}
             strokeWidth={strokeWidth}
             strokeLinecap="round"
@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 2,
     bottom: 2,
-    backgroundColor: '#F1F5F9', // Very light soft grey
+    backgroundColor: '#F3E8FF', // Soft lavender purple pill
     borderRadius: 24, // Symmetrical oval pill
     zIndex: 1,
   },
@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
     fontFamily: ServenticaTokens.fonts.Medium,
   },
   tabLabelActive: {
-    color: '#0F172A',
+    color: '#7C3AED', // Royal purple active tab label
     fontFamily: ServenticaTokens.fonts.Bold,
   },
 });

@@ -36,171 +36,83 @@ CREATE POLICY "Public active packages are viewable by all"
   USING (is_active = TRUE);
 
 -- 4. SEED INITIAL TOP-LEVEL DISCOVERY CATEGORIES (TIER 1 CORE LAUNCH)
-INSERT INTO public.categories (id, name, short_name, slug, description, icon, sort_order, is_active, is_featured, show_on_home, tier)
-VALUES
-  (
-    'c1000000-0000-0000-0000-000000000001',
-    'AC & Appliances',
-    'AC & Appliances',
-    'ac-appliances',
-    'Expert AC cooling, refrigerator, washing machine and home appliance repair',
-    'AirVent',
-    1,
-    TRUE,
-    TRUE,
-    TRUE,
-    1
-  ),
-  (
-    'c1000000-0000-0000-0000-000000000002',
-    'Cleaning',
-    'Cleaning',
-    'cleaning',
-    'Professional deep cleaning, sofa shampoo, bathroom scrub, and kitchen care',
-    'Sparkles',
-    2,
-    TRUE,
-    TRUE,
-    TRUE,
-    1
-  ),
-  (
-    'c1000000-0000-0000-0000-000000000003',
-    'Electrical',
-    'Electrical',
-    'electrical',
-    'Licensed electricians for wiring, MCB tripping, fan installation, and fixtures',
-    'Zap',
-    3,
-    TRUE,
-    TRUE,
-    TRUE,
-    1
-  ),
-  (
-    'c1000000-0000-0000-0000-000000000004',
-    'Plumbing',
-    'Plumbing',
-    'plumbing',
-    'Leak resolution, tap and sanitary fitting, pipeline unclogging, and pump repair',
-    'Droplets',
-    4,
-    TRUE,
-    TRUE,
-    TRUE,
-    1
-  ),
-  (
-    'c1000000-0000-0000-0000-000000000005',
-    'Painting',
-    'Painting',
-    'painting',
-    'Interior, exterior, waterproof wall coats, and festival room repaints',
-    'Paintbrush',
-    5,
-    TRUE,
-    TRUE,
-    TRUE,
-    1
-  ),
-  (
-    'c1000000-0000-0000-0000-000000000006',
-    'RO & Water',
-    'RO & Water',
-    'ro-water',
-    'Purifier maintenance, membrane replacement, filter change, and TDS balancing',
-    'Waves',
-    6,
-    TRUE,
-    TRUE,
-    TRUE,
-    1
-  ),
-  (
-    'c1000000-0000-0000-0000-000000000007',
-    'Home Decor',
-    'Home Decor',
-    'home-decor',
-    'Occasional lighting, balloon arch decoration, flower setups, and festivity staging',
-    'Lamp',
-    7,
-    TRUE,
-    TRUE,
-    TRUE,
-    1
-  ),
-  (
-    'c1000000-0000-0000-0000-000000000008',
-    'Carpentry',
-    'Carpentry',
-    'carpentry',
-    'Furniture repair, lock replacement, door hinges, and custom woodwork',
-    'Hammer',
-    8,
-    TRUE,
-    TRUE,
-    TRUE,
-    2
-  ),
-  (
-    'c1000000-0000-0000-0000-000000000009',
-    'Pest Control',
-    'Pest Control',
-    'pest-control',
-    'Termite, cockroach, and bed bug treatment using odorless certified sprays',
-    'Bug',
-    9,
-    TRUE,
-    TRUE,
-    TRUE,
-    2
-  ),
-  (
-    'c1000000-0000-0000-0000-000000000010',
-    'Laundry',
-    'Laundry',
-    'laundry',
-    'Wash & fold, dry cleaning, ironing, and fabric sanitization',
-    'WashingMachine',
-    10,
-    TRUE,
-    TRUE,
-    TRUE,
-    3
-  ),
-  (
-    'c1000000-0000-0000-0000-000000000011',
-    'Home Moving',
-    'Moving',
-    'home-moving',
-    'Packers & movers, household relocation, and heavy loading assistance',
-    'Truck',
-    11,
-    TRUE,
-    TRUE,
-    TRUE,
-    3
-  )
-ON CONFLICT (id) DO UPDATE SET
-  name = EXCLUDED.name,
-  short_name = EXCLUDED.short_name,
-  slug = EXCLUDED.slug,
-  description = EXCLUDED.description,
-  icon = EXCLUDED.icon,
-  sort_order = EXCLUDED.sort_order,
-  is_active = EXCLUDED.is_active,
-  is_featured = EXCLUDED.is_featured,
-  show_on_home = EXCLUDED.show_on_home,
-  tier = EXCLUDED.tier;
+DO $$
+DECLARE
+  cat RECORD;
+  sub RECORD;
+BEGIN
+  -- Top level categories
+  FOR cat IN 
+    SELECT * FROM (VALUES
+      ('c1000000-0000-0000-0000-000000000001'::uuid, 'AC & Appliances', 'AC & Appliances', 'ac-appliances', 'Expert AC cooling, refrigerator, washing machine and home appliance repair', 'AirVent', 1, TRUE, TRUE, TRUE, 1),
+      ('c1000000-0000-0000-0000-000000000002'::uuid, 'Cleaning', 'Cleaning', 'cleaning', 'Professional deep cleaning, sofa shampoo, bathroom scrub, and kitchen care', 'Sparkles', 2, TRUE, TRUE, TRUE, 1),
+      ('c1000000-0000-0000-0000-000000000003'::uuid, 'Electrical', 'Electrical', 'electrical', 'Licensed electricians for wiring, MCB tripping, fan installation, and fixtures', 'Zap', 3, TRUE, TRUE, TRUE, 1),
+      ('c1000000-0000-0000-0000-000000000004'::uuid, 'Plumbing', 'Plumbing', 'plumbing', 'Leak resolution, tap and sanitary fitting, pipeline unclogging, and pump repair', 'Droplets', 4, TRUE, TRUE, TRUE, 1),
+      ('c1000000-0000-0000-0000-000000000005'::uuid, 'Painting', 'Painting', 'painting', 'Interior, exterior, waterproof wall coats, and festival room repaints', 'Paintbrush', 5, TRUE, TRUE, TRUE, 1),
+      ('c1000000-0000-0000-0000-000000000006'::uuid, 'RO & Water', 'RO & Water', 'ro-water', 'Purifier maintenance, membrane replacement, filter change, and TDS balancing', 'Waves', 6, TRUE, TRUE, TRUE, 1),
+      ('c1000000-0000-0000-0000-000000000007'::uuid, 'Home Decor', 'Home Decor', 'home-decor', 'Occasional lighting, balloon arch decoration, flower setups, and festivity staging', 'Lamp', 7, TRUE, TRUE, TRUE, 1),
+      ('c1000000-0000-0000-0000-000000000008'::uuid, 'Carpentry', 'Carpentry', 'carpentry', 'Furniture repair, lock replacement, door hinges, and custom woodwork', 'Hammer', 8, TRUE, TRUE, TRUE, 2),
+      ('c1000000-0000-0000-0000-000000000009'::uuid, 'Pest Control', 'Pest Control', 'pest-control', 'Termite, cockroach, and bed bug treatment using odorless certified sprays', 'Bug', 9, TRUE, TRUE, TRUE, 2),
+      ('c1000000-0000-0000-0000-000000000010'::uuid, 'Laundry', 'Laundry', 'laundry', 'Wash & fold, dry cleaning, ironing, and fabric sanitization', 'WashingMachine', 10, TRUE, TRUE, TRUE, 3),
+      ('c1000000-0000-0000-0000-000000000011'::uuid, 'Home Moving', 'Moving', 'home-moving', 'Packers & movers, household relocation, and heavy loading assistance', 'Truck', 11, TRUE, TRUE, TRUE, 3)
+    ) AS t(id, name, short_name, slug, description, icon, sort_order, is_active, is_featured, show_on_home, tier)
+  LOOP
+    IF EXISTS (SELECT 1 FROM public.categories WHERE slug = cat.slug) THEN
+      UPDATE public.categories SET
+        name = cat.name,
+        short_name = cat.short_name,
+        description = cat.description,
+        icon = cat.icon,
+        sort_order = cat.sort_order,
+        is_active = cat.is_active,
+        is_featured = cat.is_featured,
+        show_on_home = cat.show_on_home,
+        tier = cat.tier
+      WHERE slug = cat.slug;
+    ELSE
+      INSERT INTO public.categories (id, name, short_name, slug, description, icon, sort_order, is_active, is_featured, show_on_home, tier)
+      VALUES (cat.id, cat.name, cat.short_name, cat.slug, cat.description, cat.icon, cat.sort_order, cat.is_active, cat.is_featured, cat.show_on_home, cat.tier)
+      ON CONFLICT (id) DO UPDATE SET
+        name = EXCLUDED.name,
+        short_name = EXCLUDED.short_name,
+        slug = EXCLUDED.slug,
+        description = EXCLUDED.description,
+        icon = EXCLUDED.icon,
+        sort_order = EXCLUDED.sort_order,
+        is_active = EXCLUDED.is_active,
+        is_featured = EXCLUDED.is_featured,
+        show_on_home = EXCLUDED.show_on_home,
+        tier = EXCLUDED.tier;
+    END IF;
+  END LOOP;
 
--- 5. SEED SUBCATEGORIES FOR 'AC & Appliances'
-INSERT INTO public.categories (id, name, short_name, slug, parent_id, sort_order, is_active, show_on_home, tier)
-VALUES
-  ('c1000000-0000-0000-0001-000000000001', 'AC', 'AC', 'ac-sub', 'c1000000-0000-0000-0000-000000000001', 1, TRUE, FALSE, 1),
-  ('c1000000-0000-0000-0001-000000000002', 'Refrigerator', 'Fridge', 'refrigerator-sub', 'c1000000-0000-0000-0000-000000000001', 2, TRUE, FALSE, 1),
-  ('c1000000-0000-0000-0001-000000000003', 'Washing Machine', 'Washing', 'washing-machine-sub', 'c1000000-0000-0000-0000-000000000001', 3, TRUE, FALSE, 1),
-  ('c1000000-0000-0000-0001-000000000004', 'Television', 'TV', 'tv-sub', 'c1000000-0000-0000-0000-000000000001', 4, TRUE, FALSE, 1)
-ON CONFLICT (id) DO UPDATE SET
-  name = EXCLUDED.name,
-  short_name = EXCLUDED.short_name,
-  parent_id = EXCLUDED.parent_id;
+  -- Subcategories for AC & Appliances
+  FOR sub IN
+    SELECT * FROM (VALUES
+      ('c1000000-0000-0001-0000-000000000001'::uuid, 'AC', 'AC', 'ac-sub', 'c1000000-0000-0000-0000-000000000001'::uuid, 1, TRUE, FALSE, 1),
+      ('c1000000-0000-0001-0000-000000000002'::uuid, 'Refrigerator', 'Fridge', 'refrigerator-sub', 'c1000000-0000-0000-0000-000000000001'::uuid, 2, TRUE, FALSE, 1),
+      ('c1000000-0000-0001-0000-000000000003'::uuid, 'Washing Machine', 'Washing', 'washing-machine-sub', 'c1000000-0000-0000-0000-000000000001'::uuid, 3, TRUE, FALSE, 1),
+      ('c1000000-0000-0001-0000-000000000004'::uuid, 'Television', 'TV', 'tv-sub', 'c1000000-0000-0000-0000-000000000001'::uuid, 4, TRUE, FALSE, 1)
+    ) AS t(id, name, short_name, slug, parent_id, sort_order, is_active, show_on_home, tier)
+  LOOP
+    IF EXISTS (SELECT 1 FROM public.categories WHERE slug = sub.slug) THEN
+      UPDATE public.categories SET
+        name = sub.name,
+        short_name = sub.short_name,
+        parent_id = sub.parent_id,
+        sort_order = sub.sort_order,
+        is_active = sub.is_active,
+        show_on_home = sub.show_on_home,
+        tier = sub.tier
+      WHERE slug = sub.slug;
+    ELSE
+      INSERT INTO public.categories (id, name, short_name, slug, parent_id, sort_order, is_active, show_on_home, tier)
+      VALUES (sub.id, sub.name, sub.short_name, sub.slug, sub.parent_id, sub.sort_order, sub.is_active, sub.show_on_home, sub.tier)
+      ON CONFLICT (id) DO UPDATE SET
+        name = EXCLUDED.name,
+        short_name = EXCLUDED.short_name,
+        slug = EXCLUDED.slug,
+        parent_id = EXCLUDED.parent_id;
+    END IF;
+  END LOOP;
+END $$;

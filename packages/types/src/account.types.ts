@@ -2,6 +2,7 @@ import { BookingStatus, ServicePricingType } from './index';
 
 export interface BookingAddressSnapshot {
   title: string;
+  shortAddress?: string;
   addressLine1: string;
   addressLine2?: string | null;
   landmark?: string | null;
@@ -9,6 +10,8 @@ export interface BookingAddressSnapshot {
   state: string;
   pincode: string;
   formattedAddress: string;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface BookingPartnerSnapshot {
@@ -19,6 +22,8 @@ export interface BookingPartnerSnapshot {
   phone?: string;
   specialization?: string;
 }
+
+export type BookingPartner = BookingPartnerSnapshot;
 
 export interface BookingPaymentSummary {
   subtotal: number;
@@ -61,6 +66,9 @@ export interface BookingRecord {
   partner?: BookingPartnerSnapshot | null;
   payment: BookingPaymentSummary;
   items: BookingItemDetail[];
+  cancellationReason?: string;
+  cancelledAt?: string;
+  refundStatus?: 'NOT_APPLICABLE' | 'REFUND_INITIATED' | 'REFUNDED';
   createdAt: string;
   updatedAt: string;
 }

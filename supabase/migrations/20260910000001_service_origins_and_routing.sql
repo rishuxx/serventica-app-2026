@@ -35,12 +35,14 @@ create index if not exists idx_service_origins_city
 alter table public.service_origins enable row level security;
 
 -- Allow public read access to active service origins
+drop policy if exists "Allow public read access to active origins" on public.service_origins;
 create policy "Allow public read access to active origins"
   on public.service_origins
   for select
   using (is_active = true);
 
 -- Allow authenticated service role full access
+drop policy if exists "Allow service role full access to origins" on public.service_origins;
 create policy "Allow service role full access to origins"
   on public.service_origins
   for all

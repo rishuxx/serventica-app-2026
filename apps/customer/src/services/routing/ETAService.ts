@@ -109,6 +109,7 @@ export class ETAService {
       etaQuality,
       formattedETA: this.formatETA(durationSeconds, true),
       formattedDistance: this.formatDistance(distanceMeters),
+      coordinates: route.coordinates,
     };
   }
 }

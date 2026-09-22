@@ -28,6 +28,23 @@ ALTER TABLE public.services ADD COLUMN IF NOT EXISTS short_tagline TEXT;
 ALTER TABLE public.services ADD COLUMN IF NOT EXISTS image_url TEXT;
 ALTER TABLE public.services ADD COLUMN IF NOT EXISTS search_vector TSVECTOR;
 
+-- Ensure foreign key constraint on services table correctly points to categories table
+DO $$
+DECLARE
+  r RECORD;
+BEGIN
+  FOR r IN (
+    SELECT conname
+    FROM pg_constraint
+    WHERE conrelid = 'public.services'::regclass
+      AND contype = 'f'
+      AND conname LIKE '%category%'
+  ) LOOP
+    EXECUTE 'ALTER TABLE public.services DROP CONSTRAINT IF EXISTS ' || quote_ident(r.conname) || ' CASCADE';
+  END LOOP;
+  ALTER TABLE public.services ADD CONSTRAINT services_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.categories(id) ON DELETE CASCADE;
+END $$;
+
 -- 3. FULL-TEXT SEARCH FUNCTION & TRIGGER FOR SERVICES
 CREATE OR REPLACE FUNCTION public.services_search_vector_update() RETURNS trigger AS $$
 BEGIN
@@ -49,6 +66,7 @@ CREATE INDEX IF NOT EXISTS idx_services_search_vector ON public.services USING G
 -- 4. ROW LEVEL SECURITY (RLS) FOR HOME & BANNERS
 ALTER TABLE public.home_banners ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Public active home banners are viewable by all" ON public.home_banners;
 CREATE POLICY "Public active home banners are viewable by all"
   ON public.home_banners FOR SELECT
   USING (is_active = TRUE);
@@ -123,7 +141,7 @@ ON CONFLICT (id) DO UPDATE SET
 INSERT INTO public.services (id, category_id, name, slug, description, short_tagline, base_price, duration_minutes, image_url, pricing_type, rating, reviews_count, is_active)
 VALUES
   (
-    's0000000-0000-0000-0000-000000000011',
+    'e0000000-0000-0000-0000-000000000011',
     'c0000000-0000-0000-0000-000000000012',
     'AC Repair',
     'ac-repair',
@@ -138,7 +156,7 @@ VALUES
     TRUE
   ),
   (
-    's0000000-0000-0000-0000-000000000012',
+    'e0000000-0000-0000-0000-000000000012',
     'c0000000-0000-0000-0000-000000000012',
     'Fan/Cooler',
     'fan-cooler',
@@ -153,7 +171,7 @@ VALUES
     TRUE
   ),
   (
-    's0000000-0000-0000-0000-000000000013',
+    'e0000000-0000-0000-0000-000000000013',
     'c0000000-0000-0000-0000-000000000012',
     'RO/Filter',
     'ro-filter',
@@ -168,7 +186,7 @@ VALUES
     TRUE
   ),
   (
-    's0000000-0000-0000-0000-000000000014',
+    'e0000000-0000-0000-0000-000000000014',
     'c0000000-0000-0000-0000-000000000012',
     'Invertor',
     'invertor-repair',
@@ -183,7 +201,7 @@ VALUES
     TRUE
   ),
   (
-    's0000000-0000-0000-0000-000000000015',
+    'e0000000-0000-0000-0000-000000000015',
     'c0000000-0000-0000-0000-000000000012',
     'Electric',
     'electric-service',
@@ -198,7 +216,7 @@ VALUES
     TRUE
   ),
   (
-    's0000000-0000-0000-0000-000000000016',
+    'e0000000-0000-0000-0000-000000000016',
     'c0000000-0000-0000-0000-000000000011',
     'Cleaning',
     'home-cleaning',
@@ -213,7 +231,7 @@ VALUES
     TRUE
   ),
   (
-    's0000000-0000-0000-0000-000000000017',
+    'e0000000-0000-0000-0000-000000000017',
     'c0000000-0000-0000-0000-000000000012',
     'Plumbing',
     'plumbing-service',
@@ -228,7 +246,7 @@ VALUES
     TRUE
   ),
   (
-    's0000000-0000-0000-0000-000000000018',
+    'e0000000-0000-0000-0000-000000000018',
     'c0000000-0000-0000-0000-000000000011',
     'Washing Machine',
     'washing-machine-service',

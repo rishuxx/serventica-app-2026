@@ -33,6 +33,11 @@ const CAMPAIGN_SLIDES = [
     image: require('../../../../src/assets/images/LoginPageImages/moverPacker.webp'),
     alt: 'Packaging or Shifting? Do with Instant',
   },
+  {
+    id: 'dishes',
+    image: require('../../../../src/assets/images/LoginPageImages/dishes.webp'),
+    alt: 'Dishes and Kitchen Cleaning by Serventica',
+  },
 ];
 
 interface CustomerLoginScreenProps {

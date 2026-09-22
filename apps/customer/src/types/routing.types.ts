@@ -54,6 +54,7 @@ export interface RouteResult {
   calculatedAt: string;
   routeId?: string;
   geometry?: unknown;
+  coordinates?: GeoPoint[];
   confidence?: 'HIGH' | 'MEDIUM' | 'LOW';
 }
 
@@ -88,6 +89,7 @@ export interface ETAResult {
   etaQuality: ETAQuality;
   formattedETA: string;
   formattedDistance?: string;
+  coordinates?: GeoPoint[];
 }
 
 export type RoutingErrorType =

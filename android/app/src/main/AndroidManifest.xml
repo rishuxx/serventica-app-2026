@@ -70,5 +70,11 @@
             <data android:scheme="serventica" android:host="auth" />
         </intent-filter>
       </activity>
+
+      <!-- Google Maps SDK API Key -->
+      <meta-data
+        android:name="com.google.android.geo.API_KEY"
+        android:value="AIzaSyAasVoqGTlhp66ydhb7sLMBLHRr36awF6g" />
     </application>
 </manifest>
+

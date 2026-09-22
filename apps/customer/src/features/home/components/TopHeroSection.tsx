@@ -366,7 +366,7 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
 
       {/* ========================================================================= */}
       {/* 2. LOWER HERO IMAGE SECTION — SUPABASE / DELIVERED HERO IMAGE ONLY        */}
-      {/* Contains: Dynamic Crossfade Image + Category Marketing Copy + Context CTA */}
+      {/* Clean, edge-to-edge promotional/category hero image banner               */}
       {/* ========================================================================= */}
       <View style={styles.lowerImageHeroSection}>
         <Animated.Image
@@ -374,51 +374,6 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
           style={[styles.lowerHeroBackgroundImage, { opacity: fadeAnim }]}
           resizeMode="cover"
         />
-
-        {/* Animated Marketing Copy + Context CTA */}
-        <Animated.View
-          style={[
-            styles.lowerHeroContentBox,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }],
-            },
-          ]}
-        >
-          <Text style={styles.heroTitle} numberOfLines={2}>
-            {activeTitle}
-          </Text>
-
-          {activeSubtitle ? (
-            <Text style={styles.heroDescription} numberOfLines={2}>
-              {activeSubtitle}
-            </Text>
-          ) : null}
-
-          <TouchableOpacity
-            style={[
-              styles.shopNowButton,
-              categoryExperience?.theme?.buttonColor
-                ? { backgroundColor: categoryExperience.theme.buttonColor }
-                : null,
-            ]}
-            activeOpacity={0.85}
-            onPress={onPressCTA}
-            accessibilityRole="button"
-            accessibilityLabel={activeCTA}
-          >
-            <Text
-              style={[
-                styles.shopNowText,
-                categoryExperience?.theme?.buttonTextColor
-                  ? { color: categoryExperience.theme.buttonTextColor }
-                  : null,
-              ]}
-            >
-              {activeCTA}
-            </Text>
-          </TouchableOpacity>
-        </Animated.View>
       </View>
     </View>
   );
@@ -566,13 +521,12 @@ const styles = StyleSheet.create({
   },
   lowerImageHeroSection: {
     width: '100%',
-    height: 310,
+    height: 300,
     position: 'relative',
-    justifyContent: 'flex-end',
     borderBottomLeftRadius: 36,
     borderBottomRightRadius: 36,
     overflow: 'hidden',
-    backgroundColor: '#0a1622',
+    backgroundColor: 'transparent',
   },
   lowerHeroBackgroundImage: {
     ...StyleSheet.absoluteFill,

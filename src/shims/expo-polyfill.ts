@@ -151,28 +151,42 @@ const createModuleProxy = () => {
 };
 
 const setupExpoGlobal = () => {
-  const existingExpo = (globalThis as any).expo || {};
-  const mergedExpo = {
-    EventEmitter: existingExpo.EventEmitter || EventEmitter,
-    NativeModule: existingExpo.NativeModule || NativeModule,
-    SharedObject: existingExpo.SharedObject || SharedObject,
-    SharedRef: existingExpo.SharedRef || SharedRef,
-    modules: existingExpo.modules || createModuleProxy(),
-    uuidv4:
-      existingExpo.uuidv4 ||
-      (() =>
+  const existingExpo = (globalThis as any).expo;
+
+  // If native Expo runtime is already loaded with its JSI host objects, do NOT overwrite it!
+  if (existingExpo && existingExpo.modules && typeof existingExpo.modules === 'object') {
+    if (!existingExpo.EventEmitter) existingExpo.EventEmitter = EventEmitter;
+    if (!existingExpo.NativeModule) existingExpo.NativeModule = NativeModule;
+    if (!existingExpo.SharedObject) existingExpo.SharedObject = SharedObject;
+    if (!existingExpo.SharedRef) existingExpo.SharedRef = SharedRef;
+    return;
+  }
+
+  if (!existingExpo) {
+    (globalThis as any).expo = {
+      EventEmitter,
+      NativeModule,
+      SharedObject,
+      SharedRef,
+      modules: createModuleProxy(),
+      uuidv4: () =>
         'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
           const r = (Math.random() * 16) | 0;
           const v = c === 'x' ? r : (r & 0x3) | 0x8;
           return v.toString(16);
-        })),
-    uuidv5: existingExpo.uuidv5 || (() => '00000000-0000-0000-0000-000000000000'),
-    getViewConfig: existingExpo.getViewConfig || (() => ({})),
-    reloadAppAsync: existingExpo.reloadAppAsync || (async () => {}),
-    expoModulesCoreVersion: existingExpo.expoModulesCoreVersion || '57.0.18',
-  };
-
-  (globalThis as any).expo = mergedExpo;
+        }),
+      uuidv5: () => '00000000-0000-0000-0000-000000000000',
+      getViewConfig: () => ({}),
+      reloadAppAsync: async () => {},
+      expoModulesCoreVersion: '57.0.18',
+    };
+  } else {
+    if (!existingExpo.EventEmitter) existingExpo.EventEmitter = EventEmitter;
+    if (!existingExpo.NativeModule) existingExpo.NativeModule = NativeModule;
+    if (!existingExpo.SharedObject) existingExpo.SharedObject = SharedObject;
+    if (!existingExpo.SharedRef) existingExpo.SharedRef = SharedRef;
+    if (!existingExpo.modules) existingExpo.modules = createModuleProxy();
+  }
   
   // Ensure React Native native fetch is used rather than expo/src/winter/fetch mock
   (process.env as any).EXPO_PUBLIC_USE_RN_FETCH = 'true';

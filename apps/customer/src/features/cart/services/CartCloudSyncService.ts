@@ -83,15 +83,15 @@ export class CartCloudSyncService {
       }
 
       // 2. Persist to customer_profiles table if available
-      supabase
-        .from('customer_profiles')
-        .update({
-          synced_cart: items,
-          updated_at: new Date().toISOString(),
-        } as any)
-        .eq('user_id', this.currentUserId)
-        .then(() => {})
-        .catch(() => {});
+      Promise.resolve(
+        supabase
+          .from('customer_profiles')
+          .update({
+            synced_cart: items,
+            updated_at: new Date().toISOString(),
+          } as any)
+          .eq('user_id', this.currentUserId)
+      ).catch(() => {});
     } catch (err) {
       console.warn('[CartCloudSyncService] broadcast error:', err);
     }

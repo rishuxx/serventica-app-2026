@@ -13,7 +13,7 @@ CREATE EXTENSION IF NOT EXISTS "btree_gist";
 CREATE TABLE IF NOT EXISTS public.service_fulfillment_policies (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   service_id UUID REFERENCES public.services(id) ON DELETE CASCADE,
-  category_id UUID REFERENCES public.categories(id) ON DELETE CASCADE,
+  category_id UUID REFERENCES public.service_categories(id) ON DELETE CASCADE,
   instant_enabled BOOLEAN NOT NULL DEFAULT TRUE,
   scheduled_enabled BOOLEAN NOT NULL DEFAULT TRUE,
   instant_radius_km NUMERIC(5, 2) NOT NULL DEFAULT 15.00,
@@ -133,29 +133,32 @@ CREATE TABLE IF NOT EXISTS public.booking_events (
 
 CREATE INDEX IF NOT EXISTS idx_booking_events_booking ON public.booking_events(booking_id, created_at DESC);
 
--- Enable RLS
-ALTER TABLE public.service_fulfillment_policies ENABLE ROW LEVEL SECURITY;
+-- 6. ROW LEVEL SECURITY (RLS)
+ALTER TABLE public.professionals ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.professional_service_skills ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.partner_presence_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.partner_locations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.dispatch_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.dispatch_offers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.booking_events ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies
-CREATE POLICY "Public can view active fulfillment policies" ON public.service_fulfillment_policies FOR SELECT USING (is_active = TRUE);
+DROP POLICY IF EXISTS "Public can view active professionals" ON public.professionals;
+CREATE POLICY "Public can view active professionals" ON public.professionals
+  FOR SELECT USING (is_active = TRUE AND is_verified = TRUE);
 
-CREATE POLICY "Partners can view own presence sessions" ON public.partner_presence_sessions
-  FOR SELECT USING (EXISTS (SELECT 1 FROM public.professionals p WHERE p.id = partner_presence_sessions.partner_id AND p.user_id = auth.uid()));
-
+DROP POLICY IF EXISTS "Partners can manage own presence" ON public.partner_presence_sessions;
 CREATE POLICY "Partners can manage own presence" ON public.partner_presence_sessions
   FOR ALL USING (EXISTS (SELECT 1 FROM public.professionals p WHERE p.id = partner_presence_sessions.partner_id AND p.user_id = auth.uid()));
 
+DROP POLICY IF EXISTS "Partners can insert own locations" ON public.partner_locations;
 CREATE POLICY "Partners can insert own locations" ON public.partner_locations
   FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM public.professionals p WHERE p.id = partner_locations.partner_id AND p.user_id = auth.uid()));
 
+DROP POLICY IF EXISTS "Partners can view assigned offers" ON public.dispatch_offers;
 CREATE POLICY "Partners can view assigned offers" ON public.dispatch_offers
   FOR SELECT USING (EXISTS (SELECT 1 FROM public.professionals p WHERE p.id = dispatch_offers.partner_id AND p.user_id = auth.uid()));
 
+DROP POLICY IF EXISTS "Customers can view own booking events" ON public.booking_events;
 CREATE POLICY "Customers can view own booking events" ON public.booking_events
   FOR SELECT USING (EXISTS (SELECT 1 FROM public.bookings b WHERE b.id = booking_events.booking_id AND b.customer_id = auth.uid()));
 

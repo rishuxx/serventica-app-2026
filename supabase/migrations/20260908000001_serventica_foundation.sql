@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS public.users (
 CREATE INDEX IF NOT EXISTS idx_users_phone ON public.users(phone);
 CREATE INDEX IF NOT EXISTS idx_users_email ON public.users(email);
 
+DROP TRIGGER IF EXISTS set_users_updated_at ON public.users;
 CREATE TRIGGER set_users_updated_at
   BEFORE UPDATE ON public.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
@@ -110,6 +111,7 @@ CREATE TABLE IF NOT EXISTS public.customer_profiles (
 
 CREATE INDEX IF NOT EXISTS idx_customer_profiles_user ON public.customer_profiles(user_id);
 
+DROP TRIGGER IF EXISTS set_customer_profiles_updated_at ON public.customer_profiles;
 CREATE TRIGGER set_customer_profiles_updated_at
   BEFORE UPDATE ON public.customer_profiles
   FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
@@ -255,55 +257,70 @@ ALTER TABLE public.booking_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
 
 -- USERS POLICIES
+DROP POLICY IF EXISTS "Users can read own record" ON public.users;
 CREATE POLICY "Users can read own record" ON public.users
   FOR SELECT USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Users can update own record" ON public.users;
 CREATE POLICY "Users can update own record" ON public.users
   FOR UPDATE USING (auth.uid() = id);
 
 -- CUSTOMER PROFILES POLICIES
+DROP POLICY IF EXISTS "Customers can view own profile" ON public.customer_profiles;
 CREATE POLICY "Customers can view own profile" ON public.customer_profiles
   FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Customers can insert own profile" ON public.customer_profiles;
 CREATE POLICY "Customers can insert own profile" ON public.customer_profiles
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Customers can update own profile" ON public.customer_profiles;
 CREATE POLICY "Customers can update own profile" ON public.customer_profiles
   FOR UPDATE USING (auth.uid() = user_id);
 
 -- ADDRESSES POLICIES
+DROP POLICY IF EXISTS "Users can view own addresses" ON public.addresses;
 CREATE POLICY "Users can view own addresses" ON public.addresses
   FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can manage own addresses" ON public.addresses;
 CREATE POLICY "Users can manage own addresses" ON public.addresses
   FOR ALL USING (auth.uid() = user_id);
 
 -- PUBLIC CATALOG READ POLICIES
+DROP POLICY IF EXISTS "Public read active categories" ON public.categories;
 CREATE POLICY "Public read active categories" ON public.categories
   FOR SELECT USING (is_active = TRUE);
 
+DROP POLICY IF EXISTS "Public read active services" ON public.services;
 CREATE POLICY "Public read active services" ON public.services
   FOR SELECT USING (is_active = TRUE);
 
+DROP POLICY IF EXISTS "Public read active variants" ON public.service_variants;
 CREATE POLICY "Public read active variants" ON public.service_variants
   FOR SELECT USING (is_active = TRUE);
 
+DROP POLICY IF EXISTS "Public read active addons" ON public.service_addons;
 CREATE POLICY "Public read active addons" ON public.service_addons
   FOR SELECT USING (is_active = TRUE);
 
+DROP POLICY IF EXISTS "Public read active service zones" ON public.service_zones;
 CREATE POLICY "Public read active service zones" ON public.service_zones
   FOR SELECT USING (is_active = TRUE);
 
 -- BOOKINGS POLICIES (Customers read/insert own; backend privileged for mutations)
+DROP POLICY IF EXISTS "Customers can view own bookings" ON public.bookings;
 CREATE POLICY "Customers can view own bookings" ON public.bookings
   FOR SELECT USING (auth.uid() = customer_id);
 
+DROP POLICY IF EXISTS "Customers can view own booking items" ON public.booking_items;
 CREATE POLICY "Customers can view own booking items" ON public.booking_items
   FOR SELECT USING (
     EXISTS (SELECT 1 FROM public.bookings WHERE id = booking_items.booking_id AND customer_id = auth.uid())
   );
 
 -- USER ROLES POLICIES
+DROP POLICY IF EXISTS "Users can read own roles" ON public.user_roles;
 CREATE POLICY "Users can read own roles" ON public.user_roles
   FOR SELECT USING (auth.uid() = user_id);
 

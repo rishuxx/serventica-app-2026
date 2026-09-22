@@ -51,7 +51,39 @@ export const CategoryRail: React.FC<CategoryRailProps> = React.memo(({
       );
     };
 
-    return categories.filter((cat) => !isSeparateAppliance(cat));
+    const seenKeys = new Set<string>();
+    const seenNames = new Set<string>();
+    const unique: CategoryItem[] = [];
+
+    // Canonical slug aliases for deduplication
+    const normalizeSlug = (slug: string) => {
+      const s = slug.toLowerCase().trim();
+      if (s === 'electrical') return 'electrician';
+      if (s === 'cleaning') return 'home-cleaning';
+      if (s === 'moving-shifting' || s === 'home-moving') return 'shifting';
+      return s;
+    };
+
+    for (const cat of categories) {
+      if (!cat) continue;
+      const rawSlug = (cat.slug || '').toLowerCase().trim();
+      const normSlug = normalizeSlug(rawSlug);
+      const normName = (cat.name || '').toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+      const idKey = (cat.id || '').toLowerCase().trim();
+
+      if (
+        !isSeparateAppliance(cat) &&
+        !seenKeys.has(idKey) &&
+        !seenKeys.has(normSlug) &&
+        !seenNames.has(normName)
+      ) {
+        if (idKey) seenKeys.add(idKey);
+        if (normSlug) seenKeys.add(normSlug);
+        if (normName) seenNames.add(normName);
+        unique.push(cat);
+      }
+    }
+    return unique;
   }, [categories]);
 
   // Smoothly center the active category in the viewport when selectedCategoryId changes
@@ -97,7 +129,9 @@ export const CategoryRail: React.FC<CategoryRailProps> = React.memo(({
     />
   ), [selectedCategoryId, handleItemPress, variant, isDarkBackground]);
 
-  const keyExtractor = useCallback((item: CategoryItem) => item.id, []);
+  const keyExtractor = useCallback((item: CategoryItem, index: number) => {
+    return item.id ? `${variant}_cat_${item.id}` : `${variant}_cat_idx_${index}`;
+  }, [variant]);
 
   return (
     <View style={[styles.wrapper, variant === 'sticky' && styles.stickyWrapper]}>

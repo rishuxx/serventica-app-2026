@@ -129,22 +129,26 @@ export class CatalogService {
    * Retrieves active categories from database with offline resilience and guaranteed core coverage
    */
   async getCategories(): Promise<ServiceCategory[]> {
-    const categories = await this.repository.getCategories();
-    if (categories && categories.length > 0) {
-      // Ensure all standard initial discovery categories (e.g. Painting) are present even if omitted in DB
-      const existingSlugs = new Set(categories.map((c) => (c.slug || '').toLowerCase().trim()));
-      const missingInitial = INITIAL_DISCOVERY_CATEGORIES.filter(
-        (initCat) => !existingSlugs.has((initCat.slug || '').toLowerCase().trim())
-      );
+    const rawCategories = await this.repository.getCategories();
+    const source = rawCategories && rawCategories.length > 0 ? rawCategories : INITIAL_DISCOVERY_CATEGORIES;
 
-      if (missingInitial.length > 0) {
-        return [...categories, ...missingInitial].sort(
-          (a, b) => (Number(a.sort_order) || 0) - (Number(b.sort_order) || 0)
-        );
+    // Strictly deduplicate by ID and Slug to prevent React duplicate key collisions
+    const seenIds = new Set<string>();
+    const seenSlugs = new Set<string>();
+    const result: ServiceCategory[] = [];
+
+    for (const cat of [...source, ...INITIAL_DISCOVERY_CATEGORIES]) {
+      const id = (cat.id || '').trim();
+      const slug = (cat.slug || '').toLowerCase().trim();
+      if (!id || seenIds.has(id) || (slug && seenSlugs.has(slug))) {
+        continue;
       }
-      return categories;
+      seenIds.add(id);
+      if (slug) seenSlugs.add(slug);
+      result.push(cat);
     }
-    return INITIAL_DISCOVERY_CATEGORIES;
+
+    return result.sort((a, b) => (Number(a.sort_order) || 0) - (Number(b.sort_order) || 0));
   }
 
   /**

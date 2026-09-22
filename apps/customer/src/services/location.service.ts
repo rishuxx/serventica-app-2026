@@ -1,8 +1,9 @@
 import { NativeModules, PermissionsAndroid, Platform } from 'react-native';
 import { LocationItem, LocationCoordinates } from '../types/location.types';
+import { ServenticaEnvironment } from '../../../../packages/config/src';
 
 export interface GeocodingProvider {
-  search(query: string): Promise<LocationItem[]>;
+  search(query: string, biasCoords?: { lat: number; lon: number }): Promise<LocationItem[]>;
   reverseGeocode(lat: number, lon: number): Promise<LocationItem | null>;
 }
 
@@ -11,7 +12,12 @@ export class GoogleGeocodingProvider implements GeocodingProvider {
   private fallbackProvider: GeocodingProvider;
 
   constructor(apiKey?: string) {
-    this.apiKey = apiKey || process.env.GOOGLE_MAPS_API_KEY || '';
+    this.apiKey =
+      apiKey ||
+      process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY ||
+      process.env.GOOGLE_MAPS_API_KEY ||
+      ServenticaEnvironment?.googleMaps?.apiKey ||
+      'AIzaSyAasVoqGTlhp66ydhb7sLMBLHRr36awF6g';
     this.fallbackProvider = new NominatimGeocodingProvider();
   }
 
@@ -19,70 +25,113 @@ export class GoogleGeocodingProvider implements GeocodingProvider {
     this.apiKey = key;
   }
 
-  async search(query: string): Promise<LocationItem[]> {
+  async search(query: string, biasCoords?: { lat: number; lon: number }): Promise<LocationItem[]> {
     if (!query || query.trim().length < 2) return [];
 
     if (!this.apiKey) {
-      return this.fallbackProvider.search(query);
+      return this.fallbackProvider.search(query, biasCoords);
     }
 
     try {
-      const encoded = encodeURIComponent(query.trim());
-      // Google Places Autocomplete & Geocoding API
-      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encoded}&key=${this.apiKey}&region=in`;
-      const res = await fetch(url);
-      const data: any = await res.json();
+      const centerLat = biasCoords?.lat ?? 30.3165;
+      const centerLon = biasCoords?.lon ?? 78.0322;
 
-      if (data.status === 'OK' && Array.isArray(data.results) && data.results.length > 0) {
-        return data.results.map((result: any) => {
-          const lat = result.geometry?.location?.lat;
-          const lon = result.geometry?.location?.lng;
+      // 1. Google Places API (New) Autocomplete with Local Proximity Bias
+      const autocompleteRes = await fetch('https://places.googleapis.com/v1/places:autocomplete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': this.apiKey,
+        },
+        body: JSON.stringify({
+          input: query.trim(),
+          includedRegionCodes: ['IN'],
+          locationBias: {
+            circle: {
+              center: {
+                latitude: centerLat,
+                longitude: centerLon,
+              },
+              radius: 50000.0,
+            },
+          },
+        }),
+      });
 
-          let road = '';
-          let city = 'Nearby';
-          let state = '';
-          let postalCode = '';
-          let country = 'India';
-          let houseNumber = '';
-          let suburb = '';
+      const autoData: any = await autocompleteRes.json();
 
-          for (const comp of result.address_components || []) {
-            const types: string[] = comp.types || [];
-            if (types.includes('street_number')) houseNumber = comp.long_name;
-            if (types.includes('route')) road = comp.long_name;
-            if (types.includes('sublocality') || types.includes('neighborhood')) suburb = comp.long_name;
-            if (types.includes('locality')) city = comp.long_name;
-            if (types.includes('administrative_area_level_1')) state = comp.long_name;
-            if (types.includes('postal_code')) postalCode = comp.long_name;
-            if (types.includes('country')) country = comp.long_name;
-          }
+      if (autoData && Array.isArray(autoData.suggestions) && autoData.suggestions.length > 0) {
+        const topSuggestions = autoData.suggestions
+          .filter((s: any) => s?.placePrediction?.placeId)
+          .slice(0, 6);
 
-          const short = road && road !== city
-            ? `${road}, ${city}`
-            : (suburb && suburb !== city ? `${suburb}, ${city}` : (city || result.formatted_address.split(',')[0]));
+        const detailedResults = await Promise.all(
+          topSuggestions.map(async (s: any) => {
+            const pred = s.placePrediction;
+            const placeId = pred.placeId;
+            try {
+              const detailUrl = `https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}?fields=id,displayName,formattedAddress,location,addressComponents&key=${this.apiKey}`;
+              const dRes = await fetch(detailUrl);
+              const dData: any = await dRes.json();
 
-          return {
-            latitude: lat,
-            longitude: lon,
-            shortAddress: short,
-            formattedAddress: result.formatted_address,
-            city,
-            state,
-            postalCode,
-            country,
-            road: road || suburb,
-            suburb,
-            houseNumber,
-          };
-        });
+              if (dData && dData.location) {
+                const lat = dData.location.latitude;
+                const lon = dData.location.longitude;
+
+                let city = 'Dehradun';
+                let state = '';
+                let postalCode = '';
+                let road = '';
+                let suburb = '';
+
+                for (const comp of dData.addressComponents || []) {
+                  const types: string[] = comp.types || [];
+                  if (types.includes('route')) road = comp.longText || comp.shortText;
+                  if (types.includes('sublocality') || types.includes('sublocality_level_1') || types.includes('sublocality_level_2')) {
+                    suburb = comp.longText || comp.shortText;
+                  }
+                  if (types.includes('locality')) city = comp.longText || comp.shortText;
+                  if (types.includes('administrative_area_level_1')) state = comp.longText || comp.shortText;
+                  if (types.includes('postal_code')) postalCode = comp.longText || comp.shortText;
+                }
+
+                const mainText = pred.structuredFormat?.mainText?.text || dData.displayName?.text || road || suburb || city;
+                const formattedAddress = dData.formattedAddress || pred.text?.text;
+
+                return {
+                  latitude: lat,
+                  longitude: lon,
+                  shortAddress: mainText,
+                  formattedAddress: formattedAddress,
+                  city,
+                  state,
+                  postalCode,
+                  country: 'India',
+                  road: road || suburb,
+                  suburb,
+                };
+              }
+            } catch (dErr) {
+              console.warn('Place detail fetch notice:', dErr);
+            }
+            return null;
+          })
+        );
+
+        const validResults = detailedResults.filter((r): r is LocationItem => r !== null);
+        if (validResults.length > 0) {
+          return validResults;
+        }
       }
 
+      // 2. Seamless high-accuracy fallback to Nominatim & OpenStreetMap for any local colonies
       return this.fallbackProvider.search(query);
     } catch (err) {
-      console.warn('Google search places error, falling back:', err);
+      console.warn('Google Places API (New) search error, falling back:', err);
       return this.fallbackProvider.search(query);
     }
   }
+
 
   async reverseGeocode(lat: number, lon: number): Promise<LocationItem | null> {
     if (!this.apiKey) {
@@ -327,8 +376,8 @@ class LocationService {
     this.geocoder = provider;
   }
 
-  async searchPlaces(query: string): Promise<LocationItem[]> {
-    return this.geocoder.search(query);
+  async searchPlaces(query: string, biasCoords?: { lat: number; lon: number }): Promise<LocationItem[]> {
+    return this.geocoder.search(query, biasCoords);
   }
 
   async reverseGeocode(latitude: number, longitude: number): Promise<LocationItem | null> {

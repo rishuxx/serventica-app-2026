@@ -7,49 +7,95 @@ import {
   ActivityIndicator,
   Modal,
   TextInput,
-  PanResponder,
   Dimensions,
-  Image,
   Animated,
+  Platform,
+  Image,
+  PanResponder,
 } from 'react-native';
 import {
   ArrowLeft,
   Search,
   X,
-  LocateFixed,
   MapPin,
   Plus,
   Minus,
-  Navigation2,
+  Home,
+  Briefcase,
+  ChevronRight,
+  Check,
+  Navigation,
 } from 'lucide-react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { LocationItem } from '../../../types/location.types';
 import { locationService } from '../../../services/location.service';
 import { ServenticaTokens } from '../../../../../../packages/design-system/src';
+import { ServenticaEnvironment } from '../../../../../../packages/config/src';
+
+// Safe dynamic loader for react-native-maps to prevent binary link crashes in unlinked environments
+let NativeMapView: any = null;
+let PROVIDER_GOOGLE_REF: any = undefined;
+
+try {
+  const { TurboModuleRegistry, NativeModules } = require('react-native');
+  const hasTurbo = TurboModuleRegistry?.get?.('RNMapsAirModule') != null;
+  const hasLegacy = Boolean(NativeModules?.RNMapsAirModule || NativeModules?.AirMapModule);
+  if (hasTurbo || hasLegacy) {
+    const RNM = require('react-native-maps');
+    if (RNM && (RNM.default || RNM.MapView)) {
+      NativeMapView = RNM.default || RNM.MapView;
+      PROVIDER_GOOGLE_REF = RNM.PROVIDER_GOOGLE;
+    }
+  }
+} catch (e) {
+  NativeMapView = null;
+}
+
+const GOOGLE_MAPS_KEY =
+  process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY ||
+  process.env.GOOGLE_MAPS_API_KEY ||
+  ServenticaEnvironment?.googleMaps?.apiKey ||
+  'AIzaSyAasVoqGTlhp66ydhb7sLMBLHRr36awF6g';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const TILE_SIZE = 256;
 
-// Slippy map coordinate conversions
-function lon2tile(lon: number, zoom: number): number {
-  return ((lon + 180) / 360) * Math.pow(2, zoom);
+function metersPerPixel(latitude: number, zoom: number): number {
+  return (156543.03392 * Math.cos((latitude * Math.PI) / 180)) / Math.pow(2, zoom);
 }
 
-function lat2tile(lat: number, zoom: number): number {
-  const rad = (lat * Math.PI) / 180;
-  return (
-    ((1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2) *
-    Math.pow(2, zoom)
-  );
+function offsetToCoords(
+  centerLat: number,
+  centerLon: number,
+  dxPixels: number,
+  dyPixels: number,
+  zoom: number
+): { lat: number; lon: number } {
+  const mPerPx = metersPerPixel(centerLat, zoom);
+  const dxMeters = -dxPixels * mPerPx;
+  const dyMeters = dyPixels * mPerPx;
+
+  const latDelta = dyMeters / 111132.954;
+  const lonDelta = dxMeters / (111132.954 * Math.cos((centerLat * Math.PI) / 180));
+
+  return {
+    lat: centerLat + latDelta,
+    lon: centerLon + lonDelta,
+  };
 }
 
-function tile2lon(x: number, zoom: number): number {
-  return (x / Math.pow(2, zoom)) * 360 - 180;
-}
+function calculateDistanceMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371e3;
+  const p1 = (lat1 * Math.PI) / 180;
+  const p2 = (lat2 * Math.PI) / 180;
+  const dp = ((lat2 - lat1) * Math.PI) / 180;
+  const dl = ((lon2 - lon1) * Math.PI) / 180;
 
-function tile2lat(y: number, zoom: number): number {
-  const n = Math.PI - (2 * Math.PI * y) / Math.pow(2, zoom);
-  return (180 / Math.PI) * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n)));
+  const a =
+    Math.sin(dp / 2) * Math.sin(dp / 2) +
+    Math.cos(p1) * Math.cos(p2) * Math.sin(dl / 2) * Math.sin(dl / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return Math.round(R * c);
 }
 
 interface MapLocationPickerModalProps {
@@ -59,24 +105,39 @@ interface MapLocationPickerModalProps {
   onConfirmLocation: (location: LocationItem) => void;
 }
 
+const ADDRESS_TAGS = [
+  { id: 'home', label: 'Home', icon: Home },
+  { id: 'work', label: 'Work', icon: Briefcase },
+  { id: 'other', label: 'Other', icon: MapPin },
+];
+
 export const MapLocationPickerModal: React.FC<MapLocationPickerModalProps> = ({
   visible,
   initialLocation,
   onClose,
   onConfirmLocation,
 }) => {
-  // Default coordinates: initialLocation -> Dehradun / Delhi fallback
-  const defaultLat = initialLocation?.latitude ?? 30.3342;
-  const defaultLon = initialLocation?.longitude ?? 77.9629;
+  const defaultLat = initialLocation?.latitude ?? 30.3541;
+  const defaultLon = initialLocation?.longitude ?? 77.9452;
 
-  const [centerLat, setCenterLat] = useState<number>(defaultLat);
-  const [centerLon, setCenterLon] = useState<number>(defaultLon);
-  const [zoom, setZoom] = useState<number>(16);
+  const mapRef = useRef<any>(null);
+  const [nativeMapAvailable, setNativeMapAvailable] = useState<boolean>(Boolean(NativeMapView));
+
+  const [currentCoords, setCurrentCoords] = useState<{ lat: number; lon: number }>({
+    lat: defaultLat,
+    lon: defaultLon,
+  });
+  const [zoom, setZoom] = useState<number>(18);
+
+  // User's live device GPS position
+  const [userGps, setUserGps] = useState<{ lat: number; lon: number } | null>(null);
 
   // Address resolution state
   const [resolvedLocation, setResolvedLocation] = useState<LocationItem | null>(null);
   const [isResolving, setIsResolving] = useState<boolean>(false);
-  const [isPanning, setIsPanning] = useState<boolean>(false);
+  const [isMoving, setIsMoving] = useState<boolean>(false);
+  const [isLocatingGps, setIsLocatingGps] = useState<boolean>(false);
+  const [selectedTag, setSelectedTag] = useState<string>('home');
 
   // Search state within Map
   const [mapSearchQuery, setMapSearchQuery] = useState<string>('');
@@ -86,34 +147,15 @@ export const MapLocationPickerModal: React.FC<MapLocationPickerModalProps> = ({
 
   const debounceTimerRef = useRef<any>(null);
   const searchDebounceRef = useRef<any>(null);
-
-  // Smooth Hardware-Accelerated Pan Offset
+  const pinBounceAnim = useRef(new Animated.Value(0)).current;
   const panOffset = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
 
-  // Pin animation
-  const pinBounceAnim = useRef(new Animated.Value(0)).current;
-
-  // Track latest coordinates in ref for PanResponder
-  const coordsRef = useRef({ lat: defaultLat, lon: defaultLon, zoom: 16 });
+  const coordsRef = useRef({ lat: defaultLat, lon: defaultLon, zoom: 18 });
   useEffect(() => {
-    coordsRef.current = { lat: centerLat, lon: centerLon, zoom };
-  }, [centerLat, centerLon, zoom]);
+    coordsRef.current = { lat: currentCoords.lat, lon: currentCoords.lon, zoom };
+  }, [currentCoords, zoom]);
 
-  // Sync initial location when modal becomes visible
-  useEffect(() => {
-    if (visible) {
-      const lat = initialLocation?.latitude ?? 30.3342;
-      const lon = initialLocation?.longitude ?? 77.9629;
-      setCenterLat(lat);
-      setCenterLon(lon);
-      setZoom(16);
-      panOffset.setValue({ x: 0, y: 0 });
-      coordsRef.current = { lat, lon, zoom: 16 };
-      reverseGeocodeCoords(lat, lon);
-    }
-  }, [visible, initialLocation]);
-
-  // Reverse Geocoding Function
+  // Reverse Geocode handler
   const reverseGeocodeCoords = useCallback(async (lat: number, lon: number) => {
     setIsResolving(true);
     try {
@@ -126,7 +168,7 @@ export const MapLocationPickerModal: React.FC<MapLocationPickerModalProps> = ({
           longitude: lon,
           shortAddress: 'Selected Location',
           formattedAddress: `${lat.toFixed(5)}, ${lon.toFixed(5)}`,
-          city: 'Nearby',
+          city: 'Dehradun',
         });
       }
     } catch (e) {
@@ -136,9 +178,30 @@ export const MapLocationPickerModal: React.FC<MapLocationPickerModalProps> = ({
     }
   }, []);
 
-  // Pan gesture responder for fluid 60fps map dragging
-  const panStartCoords = useRef({ lat: defaultLat, lon: defaultLon });
+  // Sync initial location & fetch live GPS when modal opens
+  useEffect(() => {
+    if (visible) {
+      const lat = initialLocation?.latitude ?? 30.3541;
+      const lon = initialLocation?.longitude ?? 77.9452;
+      setCurrentCoords({ lat, lon });
+      setZoom(18);
+      panOffset.setValue({ x: 0, y: 0 });
+      coordsRef.current = { lat, lon, zoom: 18 };
+      reverseGeocodeCoords(lat, lon);
 
+      locationService
+        .getCurrentLocation()
+        .then((gps) => {
+          if (gps?.latitude && gps?.longitude) {
+            setUserGps({ lat: gps.latitude, lon: gps.longitude });
+          }
+        })
+        .catch(() => {});
+    }
+  }, [visible, initialLocation, reverseGeocodeCoords]);
+
+  // Pan Responder for smooth drag navigation when using fallback map renderer
+  const panStartCoords = useRef({ lat: defaultLat, lon: defaultLon });
   const panResponder = useMemo(
     () =>
       PanResponder.create({
@@ -146,46 +209,41 @@ export const MapLocationPickerModal: React.FC<MapLocationPickerModalProps> = ({
         onMoveShouldSetPanResponder: (_, gestureState) =>
           Math.abs(gestureState.dx) > 2 || Math.abs(gestureState.dy) > 2,
         onPanResponderGrant: () => {
-          setIsPanning(true);
+          setIsMoving(true);
           panStartCoords.current = {
             lat: coordsRef.current.lat,
             lon: coordsRef.current.lon,
           };
           Animated.spring(pinBounceAnim, {
-            toValue: -16,
+            toValue: -18,
             useNativeDriver: true,
-            speed: 30,
+            speed: 40,
             bounciness: 0,
           }).start();
         },
         onPanResponderMove: (_, gestureState) => {
-          // Move map directly via Animated.ValueXY without triggering React state re-renders
           panOffset.setValue({ x: gestureState.dx, y: gestureState.dy });
         },
         onPanResponderRelease: (_, gestureState) => {
-          setIsPanning(false);
+          setIsMoving(false);
           Animated.spring(pinBounceAnim, {
             toValue: 0,
-            friction: 5,
-            tension: 50,
+            friction: 6,
+            tension: 60,
             useNativeDriver: true,
           }).start();
 
           const { zoom: currentZoom } = coordsRef.current;
-          const startTileX = lon2tile(panStartCoords.current.lon, currentZoom);
-          const startTileY = lat2tile(panStartCoords.current.lat, currentZoom);
+          const { lat: newLat, lon: newLon } = offsetToCoords(
+            panStartCoords.current.lat,
+            panStartCoords.current.lon,
+            gestureState.dx,
+            gestureState.dy,
+            currentZoom
+          );
 
-          // Calculate new tile center from total drag delta
-          const newTileX = startTileX - gestureState.dx / TILE_SIZE;
-          const newTileY = startTileY - gestureState.dy / TILE_SIZE;
-
-          const newLon = tile2lon(newTileX, currentZoom);
-          const newLat = tile2lat(newTileY, currentZoom);
-
-          // Reset pan transform & update center coordinates
           panOffset.setValue({ x: 0, y: 0 });
-          setCenterLat(newLat);
-          setCenterLon(newLon);
+          setCurrentCoords({ lat: newLat, lon: newLon });
           coordsRef.current = { lat: newLat, lon: newLon, zoom: currentZoom };
 
           if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
@@ -197,7 +255,7 @@ export const MapLocationPickerModal: React.FC<MapLocationPickerModalProps> = ({
     [pinBounceAnim, panOffset, reverseGeocodeCoords]
   );
 
-  // In-Map Search Input Handler
+  // Search Places handler
   const handleMapSearch = (text: string) => {
     setMapSearchQuery(text);
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
@@ -211,33 +269,44 @@ export const MapLocationPickerModal: React.FC<MapLocationPickerModalProps> = ({
     setIsMapSearching(true);
     searchDebounceRef.current = setTimeout(async () => {
       try {
-        const results = await locationService.searchPlaces(text.trim());
+        const results = await locationService.searchPlaces(text.trim(), {
+          lat: currentCoords.lat,
+          lon: currentCoords.lon,
+        });
         setMapSearchResults(results);
       } catch (err) {
         console.warn('Map search error:', err);
       } finally {
         setIsMapSearching(false);
       }
-    }, 350);
+    }, 250);
   };
 
   const handleSelectSearchResult = (item: LocationItem) => {
     if (item.latitude != null && item.longitude != null) {
       panOffset.setValue({ x: 0, y: 0 });
-      setCenterLat(item.latitude);
-      setCenterLon(item.longitude);
-      setZoom(16);
-      coordsRef.current = { lat: item.latitude, lon: item.longitude, zoom: 16 };
+      setCurrentCoords({ lat: item.latitude, lon: item.longitude });
+      setZoom(18);
+      coordsRef.current = { lat: item.latitude, lon: item.longitude, zoom: 18 };
       setResolvedLocation(item);
       setMapSearchQuery('');
       setMapSearchResults([]);
       setIsSearchExpanded(false);
+
+      if (nativeMapAvailable && mapRef.current?.animateToRegion) {
+        mapRef.current.animateToRegion({
+          latitude: item.latitude,
+          longitude: item.longitude,
+          latitudeDelta: 0.0035,
+          longitudeDelta: 0.0035,
+        }, 500);
+      }
     }
   };
 
-  // Zoom controls
+  // Zoom buttons
   const handleZoomIn = () => {
-    if (zoom < 18) {
+    if (zoom < 20) {
       const nextZoom = zoom + 1;
       panOffset.setValue({ x: 0, y: 0 });
       setZoom(nextZoom);
@@ -246,7 +315,7 @@ export const MapLocationPickerModal: React.FC<MapLocationPickerModalProps> = ({
   };
 
   const handleZoomOut = () => {
-    if (zoom > 12) {
+    if (zoom > 13) {
       const nextZoom = zoom - 1;
       panOffset.setValue({ x: 0, y: 0 });
       setZoom(nextZoom);
@@ -254,128 +323,127 @@ export const MapLocationPickerModal: React.FC<MapLocationPickerModalProps> = ({
     }
   };
 
-  // Recenter to Current GPS
+  // Recenter GPS
   const handleRecenterGPS = async () => {
+    setIsLocatingGps(true);
     try {
+      await locationService.requestPermission();
       const gps = await locationService.getCurrentLocation();
       if (gps && gps.latitude != null && gps.longitude != null) {
         panOffset.setValue({ x: 0, y: 0 });
-        setCenterLat(gps.latitude);
-        setCenterLon(gps.longitude);
-        setZoom(16);
-        coordsRef.current = { lat: gps.latitude, lon: gps.longitude, zoom: 16 };
-        reverseGeocodeCoords(gps.latitude, gps.longitude);
+        setUserGps({ lat: gps.latitude, lon: gps.longitude });
+        setCurrentCoords({ lat: gps.latitude, lon: gps.longitude });
+        setZoom(18);
+        coordsRef.current = { lat: gps.latitude, lon: gps.longitude, zoom: 18 };
+        await reverseGeocodeCoords(gps.latitude, gps.longitude);
+
+        if (nativeMapAvailable && mapRef.current?.animateToRegion) {
+          mapRef.current.animateToRegion({
+            latitude: gps.latitude,
+            longitude: gps.longitude,
+            latitudeDelta: 0.0035,
+            longitudeDelta: 0.0035,
+          }, 500);
+        }
       }
     } catch (e) {
       console.warn('GPS recenter error:', e);
+    } finally {
+      setIsLocatingGps(false);
     }
   };
 
-  // Calculate expanded grid of tiles around center
-  const tiles = useMemo(() => {
-    const centerTileX = lon2tile(centerLon, zoom);
-    const centerTileY = lat2tile(centerLat, zoom);
+  const mapImageUrl = useMemo(() => {
+    const formattedLon = Number(currentCoords.lon.toFixed(5));
+    const formattedLat = Number(currentCoords.lat.toFixed(5));
+    const reqWidth = Math.min(640, Math.round(SCREEN_WIDTH));
+    const reqHeight = Math.min(640, Math.round(SCREEN_HEIGHT));
+    return `https://maps.googleapis.com/maps/api/staticmap?center=${formattedLat},${formattedLon}&zoom=${zoom}&size=${reqWidth}x${reqHeight}&scale=2&maptype=roadmap&key=${GOOGLE_MAPS_KEY}&language=en`;
+  }, [currentCoords.lat, currentCoords.lon, zoom]);
 
-    const intTileX = Math.floor(centerTileX);
-    const intTileY = Math.floor(centerTileY);
-
-    const offsetX = (centerTileX - intTileX) * TILE_SIZE;
-    const offsetY = (centerTileY - intTileY) * TILE_SIZE;
-
-    const mapCenterX = SCREEN_WIDTH / 2;
-    const mapCenterY = (SCREEN_HEIGHT - 220) / 2; // offset by bottom sheet
-
-    const tileList: Array<{
-      key: string;
-      url: string;
-      left: number;
-      top: number;
-    }> = [];
-
-    // 5x5 tile buffer around center to ensure zero gaps during fast pan
-    const radiusX = 3;
-    const radiusY = 4;
-
-    for (let dx = -radiusX; dx <= radiusX; dx++) {
-      for (let dy = -radiusY; dy <= radiusY; dy++) {
-        const tx = intTileX + dx;
-        const ty = intTileY + dy;
-        const maxTile = Math.pow(2, zoom);
-
-        if (tx >= 0 && tx < maxTile && ty >= 0 && ty < maxTile) {
-          const left = Math.round(mapCenterX - offsetX + dx * TILE_SIZE);
-          const top = Math.round(mapCenterY - offsetY + dy * TILE_SIZE);
-
-          // Google Maps standard tile source (with high-res satellite & street fallback)
-          const googleTileKey = process.env.GOOGLE_MAPS_API_KEY;
-          const url = googleTileKey
-            ? `https://maps.googleapis.com/maps/api/staticmap?center=${tile2lat(ty + 0.5, zoom)},${tile2lon(tx + 0.5, zoom)}&zoom=${zoom}&size=256x256&key=${googleTileKey}`
-            : `https://mt1.google.com/vt/lyrs=m&x=${tx}&y=${ty}&z=${zoom}`;
-
-          tileList.push({
-            key: `${zoom}_${tx}_${ty}`,
-            url,
-            left,
-            top,
-          });
-        }
-      }
-    }
-
-    return tileList;
-  }, [centerLat, centerLon, zoom]);
+  const distanceFromGps = useMemo(() => {
+    if (!userGps) return null;
+    return calculateDistanceMeters(userGps.lat, userGps.lon, currentCoords.lat, currentCoords.lon);
+  }, [userGps, currentCoords]);
 
   const handleConfirm = () => {
     if (resolvedLocation) {
       onConfirmLocation(resolvedLocation);
     } else {
       onConfirmLocation({
-        latitude: centerLat,
-        longitude: centerLon,
+        latitude: currentCoords.lat,
+        longitude: currentCoords.lon,
         shortAddress: 'Selected Pin Location',
-        formattedAddress: `${centerLat.toFixed(5)}, ${centerLon.toFixed(5)}`,
+        formattedAddress: `${currentCoords.lat.toFixed(5)}, ${currentCoords.lon.toFixed(5)}`,
         city: 'Dehradun',
       });
     }
   };
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent={false}
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={onClose}>
       <View style={styles.container}>
-        {/* 1. INTERACTIVE REAL MAP VIEWPORT (GPU Accelerated 60fps Pan) */}
-        <Animated.View
-          style={[
-            styles.mapCanvas,
-            {
-              transform: panOffset.getTranslateTransform(),
-            },
-          ]}
-          {...panResponder.panHandlers}
-        >
-          {tiles.map((tile) => (
-            <Image
-              key={tile.key}
-              source={{ uri: tile.url }}
+        {/* 1. GOOGLE MAPS INTERACTIVE ROADMAP CANVAS */}
+        {nativeMapAvailable && NativeMapView ? (
+          <NativeMapView
+            ref={mapRef}
+            provider={Platform.OS === 'android' ? PROVIDER_GOOGLE_REF : undefined}
+            style={styles.map}
+            initialRegion={{
+              latitude: currentCoords.lat,
+              longitude: currentCoords.lon,
+              latitudeDelta: 0.0035,
+              longitudeDelta: 0.0035,
+            }}
+            showsUserLocation={true}
+            showsMyLocationButton={false}
+            showsCompass={false}
+            onRegionChange={() => {
+              if (!isMoving) {
+                setIsMoving(true);
+                Animated.spring(pinBounceAnim, {
+                  toValue: -18,
+                  useNativeDriver: true,
+                  speed: 40,
+                }).start();
+              }
+            }}
+            onRegionChangeComplete={(r: any) => {
+              setIsMoving(false);
+              setCurrentCoords({ lat: r.latitude, lon: r.longitude });
+              Animated.spring(pinBounceAnim, {
+                toValue: 0,
+                friction: 6,
+                useNativeDriver: true,
+              }).start();
+              if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+              debounceTimerRef.current = setTimeout(() => {
+                reverseGeocodeCoords(r.latitude, r.longitude);
+              }, 200);
+            }}
+            onError={() => setNativeMapAvailable(false)}
+          />
+        ) : (
+          <View style={styles.canvasContainer} {...panResponder.panHandlers}>
+            <Animated.View
               style={[
-                styles.tileImage,
+                styles.mapTransformWrapper,
                 {
-                  left: tile.left,
-                  top: tile.top,
-                  width: TILE_SIZE,
-                  height: TILE_SIZE,
+                  transform: panOffset.getTranslateTransform(),
                 },
               ]}
-              resizeMode="cover"
-            />
-          ))}
-        </Animated.View>
+            >
+              <Image
+                source={{ uri: mapImageUrl }}
+                fadeDuration={0}
+                style={styles.mapImage}
+                resizeMode="cover"
+              />
+            </Animated.View>
+          </View>
+        )}
 
-        {/* 2. SIMPLE YELLOW DROPPER / PIN */}
+        {/* 2. STATIONARY CENTER PIN */}
         <View style={styles.centerPinContainer} pointerEvents="none">
           <Animated.View
             style={[
@@ -385,63 +453,59 @@ export const MapLocationPickerModal: React.FC<MapLocationPickerModalProps> = ({
               },
             ]}
           >
-            {/* Minimal Dropper Tooltip */}
             <View style={styles.pinTooltip}>
-              <Text style={styles.pinTooltipText}>
-                {isPanning ? 'Placing pin...' : 'Move to adjust your location'}
+              <Text style={styles.pinTooltipTitle}>
+                {isMoving ? 'Moving pin...' : 'Your order will be delivered here'}
               </Text>
+              <Text style={styles.pinTooltipSubtitle}>Move map to align pin accurately</Text>
             </View>
 
-            {/* Default Solid Google Maps-style Compact Yellow Pin */}
-            <View style={styles.dropperContainer}>
-              <View style={styles.dropperHead}>
-                <Svg width={26} height={32} viewBox="0 0 38 46" fill="none">
-                  {/* Solid Teardrop Pin */}
-                  <Path
-                    d="M19 0C8.50659 0 0 8.50659 0 19C0 30.5 16.5 44.5 18.2 45.85C18.67 46.23 19.33 46.23 19.8 45.85C21.5 44.5 38 30.5 38 19C38 8.50659 29.4934 0 19 0Z"
-                    fill="#FAC420"
-                  />
-                  {/* Clean Solid Center Dot */}
-                  <Circle cx="19" cy="18" r="6.5" fill="#1E242B" />
-                </Svg>
-              </View>
+            <View style={styles.dropperHead}>
+              <Svg width={36} height={44} viewBox="0 0 38 46" fill="none">
+                <Path
+                  d="M19 0C8.50659 0 0 8.50659 0 19C0 30.5 16.5 44.5 18.2 45.85C18.67 46.23 19.33 46.23 19.8 45.85C21.5 44.5 38 30.5 38 19C38 8.50659 29.4934 0 19 0Z"
+                  fill="#0F172A"
+                />
+                <Circle cx="19" cy="18" r="8" fill="#FFFFFF" />
+                <Circle cx="19" cy="18" r="4.5" fill="#15803D" />
+              </Svg>
             </View>
           </Animated.View>
           <View style={styles.pinShadow} />
         </View>
 
-        {/* 3. TOP SEARCH & CONTROLS OVERLAY (Yellow Accented) */}
+        {/* 3. TOP HEADER & PLACES SEARCH BAR */}
         <View style={styles.topOverlay} pointerEvents="box-none">
-          <View style={styles.searchBarRow}>
+          <View style={styles.headerBar}>
             <TouchableOpacity
-              style={styles.circleButton}
+              style={styles.backCircleBtn}
               activeOpacity={0.8}
               onPress={onClose}
-              accessibilityLabel="Close map"
+              accessibilityLabel="Back"
             >
-              <ArrowLeft size={20} color="#1E242B" strokeWidth={2.4} />
+              <ArrowLeft size={20} color="#0F172A" strokeWidth={2.4} />
             </TouchableOpacity>
+            <Text style={styles.headerBarTitle}>Confirm location</Text>
+            <View style={{ width: 40 }} />
+          </View>
 
-            <View style={styles.searchBox}>
-              <Search size={16} color="#B45309" strokeWidth={2.4} style={styles.searchIcon} />
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Search area, landmark, or street..."
-                placeholderTextColor="#94A3B8"
-                value={mapSearchQuery}
-                onChangeText={handleMapSearch}
-                onFocus={() => setIsSearchExpanded(true)}
-                autoCapitalize="none"
-              />
-              {mapSearchQuery.length > 0 && (
-                <TouchableOpacity
-                  onPress={() => handleMapSearch('')}
-                  style={styles.clearSearchBtn}
-                >
-                  <X size={15} color="#64748B" strokeWidth={2.2} />
-                </TouchableOpacity>
-              )}
-            </View>
+          {/* Search Box */}
+          <View style={styles.searchBox}>
+            <Search size={17} color="#64748B" strokeWidth={2.2} style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search for area, street name..."
+              placeholderTextColor="#94A3B8"
+              value={mapSearchQuery}
+              onChangeText={handleMapSearch}
+              onFocus={() => setIsSearchExpanded(true)}
+              autoCapitalize="none"
+            />
+            {mapSearchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => handleMapSearch('')} style={styles.clearSearchBtn}>
+                <X size={16} color="#64748B" strokeWidth={2.2} />
+              </TouchableOpacity>
+            )}
           </View>
 
           {/* Search Dropdown Results */}
@@ -449,8 +513,8 @@ export const MapLocationPickerModal: React.FC<MapLocationPickerModalProps> = ({
             <View style={styles.searchDropdownCard}>
               {isMapSearching ? (
                 <View style={styles.dropdownLoadingRow}>
-                  <ActivityIndicator size="small" color="#fac420" />
-                  <Text style={styles.dropdownLoadingText}>Finding places...</Text>
+                  <ActivityIndicator size="small" color="#16A34A" />
+                  <Text style={styles.dropdownLoadingText}>Searching locations...</Text>
                 </View>
               ) : mapSearchResults.length > 0 ? (
                 mapSearchResults.map((result, idx) => (
@@ -461,7 +525,7 @@ export const MapLocationPickerModal: React.FC<MapLocationPickerModalProps> = ({
                     onPress={() => handleSelectSearchResult(result)}
                   >
                     <View style={styles.dropdownIconBox}>
-                      <MapPin size={15} color="#B45309" strokeWidth={2.2} />
+                      <MapPin size={15} color="#16A34A" strokeWidth={2.2} />
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text style={styles.dropdownTitle} numberOfLines={1}>
@@ -482,19 +546,8 @@ export const MapLocationPickerModal: React.FC<MapLocationPickerModalProps> = ({
           )}
         </View>
 
-        {/* 4. FLOATING MAP ACTION BUTTONS (Yellow Themed Zoom + GPS) */}
+        {/* 4. ZOOM CONTROLS */}
         <View style={styles.floatingControls} pointerEvents="box-none">
-          {/* Recenter GPS Button */}
-          <TouchableOpacity
-            style={styles.fabButton}
-            activeOpacity={0.8}
-            onPress={handleRecenterGPS}
-            accessibilityLabel="Recenter to GPS"
-          >
-            <LocateFixed size={20} color="#1E242B" strokeWidth={2.4} />
-          </TouchableOpacity>
-
-          {/* Zoom Controls */}
           <View style={styles.zoomButtonGroup}>
             <TouchableOpacity
               style={styles.zoomBtn}
@@ -502,7 +555,7 @@ export const MapLocationPickerModal: React.FC<MapLocationPickerModalProps> = ({
               onPress={handleZoomIn}
               accessibilityLabel="Zoom in"
             >
-              <Plus size={18} color="#1E242B" strokeWidth={2.4} />
+              <Plus size={18} color="#1E293B" strokeWidth={2.4} />
             </TouchableOpacity>
             <View style={styles.zoomDivider} />
             <TouchableOpacity
@@ -511,49 +564,116 @@ export const MapLocationPickerModal: React.FC<MapLocationPickerModalProps> = ({
               onPress={handleZoomOut}
               accessibilityLabel="Zoom out"
             >
-              <Minus size={18} color="#1E242B" strokeWidth={2.4} />
+              <Minus size={18} color="#1E293B" strokeWidth={2.4} />
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* 5. BOTTOM DETAILS & CONFIRMATION CARD (Yellow Themed) */}
+        {/* 5. FLOATING "GO TO CURRENT LOCATION" BUTTON */}
+        <View style={styles.mapFooterRow} pointerEvents="box-none">
+          <View style={{ flex: 1 }} />
+          <TouchableOpacity
+            style={styles.goToLocationPill}
+            activeOpacity={0.85}
+            onPress={handleRecenterGPS}
+            disabled={isLocatingGps}
+          >
+            {isLocatingGps ? (
+              <ActivityIndicator size="small" color="#15803D" />
+            ) : (
+              <Navigation size={14} color="#15803D" strokeWidth={2.4} />
+            )}
+            <Text style={styles.goToLocationText}>
+              {isLocatingGps ? 'Locating...' : 'Go to current location'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* 6. BOTTOM DETAILS & CONFIRMATION CARD */}
         <View style={styles.bottomCard}>
           <View style={styles.dragHandleBar} />
 
-          <View style={styles.locationDetailRow}>
-            <View style={styles.locationIconBox}>
-              <MapPin size={22} color="#B45309" strokeWidth={2.4} />
+          <Text style={styles.deliveringToLabel}>Delivering your order to</Text>
+
+          {/* Address Details Card */}
+          <View style={styles.addressCard}>
+            <View style={styles.addressIconContainer}>
+              <MapPin size={22} color="#0F172A" strokeWidth={2.4} />
             </View>
 
-            <View style={styles.locationTextBox}>
+            <View style={styles.addressTextContainer}>
               {isResolving ? (
                 <View style={styles.resolvingRow}>
-                  <ActivityIndicator size="small" color="#fac420" />
-                  <Text style={styles.resolvingText}>Fetching address details...</Text>
+                  <ActivityIndicator size="small" color="#16A34A" />
+                  <Text style={styles.resolvingText}>Fetching exact address...</Text>
                 </View>
               ) : (
                 <>
-                  <Text style={styles.locationTitle} numberOfLines={1}>
-                    {resolvedLocation?.shortAddress || 'Selected Pin Location'}
+                  <Text style={styles.addressHeading} numberOfLines={1}>
+                    {resolvedLocation?.shortAddress || 'Selected Location'}
                   </Text>
-                  <Text style={styles.locationSubtitle} numberOfLines={2}>
+                  <Text style={styles.addressSubtext} numberOfLines={2}>
                     {resolvedLocation?.formattedAddress ||
-                      `${centerLat.toFixed(5)}, ${centerLon.toFixed(5)}`}
+                      `${currentCoords.lat.toFixed(5)}, ${currentCoords.lon.toFixed(5)}`}
                   </Text>
                 </>
               )}
             </View>
+
+            <TouchableOpacity
+              style={styles.changeBtn}
+              activeOpacity={0.7}
+              onPress={() => setIsSearchExpanded(true)}
+            >
+              <Text style={styles.changeBtnText}>Change</Text>
+            </TouchableOpacity>
           </View>
 
-          {/* Confirm Button in Serventica Yellow */}
+          {/* Distance Alert */}
+          {distanceFromGps != null && distanceFromGps > 50 && (
+            <Text style={styles.distanceWarningText}>
+              Pin location is {distanceFromGps >= 1000 ? `${(distanceFromGps / 1000).toFixed(1)}km` : `${distanceFromGps}m`} away from your current GPS
+            </Text>
+          )}
+
+          {/* Address Tag Chips */}
+          <View style={styles.tagChipsRow}>
+            {ADDRESS_TAGS.map((tag) => {
+              const IconComp = tag.icon;
+              const isSelected = selectedTag === tag.id;
+              return (
+                <TouchableOpacity
+                  key={tag.id}
+                  style={[styles.tagChip, isSelected && styles.tagChipSelected]}
+                  activeOpacity={0.7}
+                  onPress={() => setSelectedTag(tag.id)}
+                >
+                  <IconComp
+                    size={14}
+                    color={isSelected ? '#15803D' : '#64748B'}
+                    strokeWidth={isSelected ? 2.4 : 2}
+                  />
+                  <Text style={[styles.tagChipText, isSelected && styles.tagChipTextSelected]}>
+                    {tag.label}
+                  </Text>
+                  {isSelected && (
+                    <Check size={12} color="#15803D" strokeWidth={2.6} style={{ marginLeft: 2 }} />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Confirm Button */}
           <TouchableOpacity
             style={styles.confirmButton}
             activeOpacity={0.85}
             onPress={handleConfirm}
             accessibilityRole="button"
-            accessibilityLabel="Confirm this location"
+            accessibilityLabel="Confirm location"
           >
-            <Text style={styles.confirmButtonText}>CONFIRM LOCATION</Text>
+            <Text style={styles.confirmButtonText}>Confirm location</Text>
+            <ChevronRight size={18} color="#FFFFFF" strokeWidth={2.8} style={{ marginLeft: 4 }} />
           </TouchableOpacity>
         </View>
       </View>
@@ -564,102 +684,122 @@ export const MapLocationPickerModal: React.FC<MapLocationPickerModalProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#FFFFFF',
     position: 'relative',
   },
-  mapCanvas: {
+  map: {
+    ...StyleSheet.absoluteFill,
+  },
+  canvasContainer: {
     ...StyleSheet.absoluteFill,
     backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
     overflow: 'hidden',
   },
-  tileImage: {
-    position: 'absolute',
+  mapTransformWrapper: {
+    width: SCREEN_WIDTH + 80,
+    height: SCREEN_HEIGHT + 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  mapImage: {
+    width: '100%',
+    height: '100%',
     backgroundColor: '#F1F5F9',
   },
   centerPinContainer: {
     position: 'absolute',
-    top: (SCREEN_HEIGHT - 220) / 2 - 36,
-    left: SCREEN_WIDTH / 2 - 90,
-    width: 180,
+    top: '40%',
+    left: '50%',
+    marginLeft: -100,
+    marginTop: -44,
+    width: 200,
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 10,
   },
   pinWrapper: {
     alignItems: 'center',
   },
   pinTooltip: {
-    backgroundColor: '#1E242B',
-    paddingHorizontal: 11,
-    paddingVertical: 5,
-    borderRadius: 14,
-    marginBottom: 5,
+    backgroundColor: 'rgba(15, 23, 42, 0.92)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginBottom: 6,
+    alignItems: 'center',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 4,
+    shadowRadius: 4,
+    elevation: 5,
   },
-  pinTooltipText: {
+  pinTooltipTitle: {
     color: '#FFFFFF',
-    fontSize: 10.5,
-    fontFamily: ServenticaTokens.fonts.SemiBold,
-    letterSpacing: 0.1,
+    fontSize: 11,
+    fontFamily: ServenticaTokens.fonts.Bold,
   },
-  dropperContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+  pinTooltipSubtitle: {
+    color: '#CBD5E1',
+    fontSize: 9,
+    fontFamily: ServenticaTokens.fonts.Regular,
+    marginTop: 1,
   },
   dropperHead: {
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    elevation: 6,
   },
   pinShadow: {
-    width: 8,
-    height: 3,
-    borderRadius: 4,
-    backgroundColor: 'rgba(0, 0, 0, 0.25)',
-    marginTop: 1,
+    width: 14,
+    height: 4,
+    borderRadius: 7,
+    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+    marginTop: 2,
   },
   topOverlay: {
     position: 'absolute',
-    top: 50,
+    top: 44,
     left: 16,
     right: 16,
     zIndex: 20,
   },
-  searchBarRow: {
+  headerBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    justifyContent: 'space-between',
+    marginBottom: 10,
   },
-  circleButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+  backCircleBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(226, 232, 240, 0.8)',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,
     shadowRadius: 4,
     elevation: 3,
   },
+  headerBarTitle: {
+    fontSize: 16,
+    fontFamily: ServenticaTokens.fonts.Bold,
+    color: '#0F172A',
+  },
   searchBox: {
-    flex: 1,
-    height: 44,
+    height: 46,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 22,
-    paddingHorizontal: 14,
+    borderRadius: 23,
+    paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.08)',
+    borderColor: 'rgba(226, 232, 240, 0.9)',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
@@ -667,14 +807,14 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   searchIcon: {
-    marginRight: 8,
+    marginRight: 10,
   },
   searchInput: {
     flex: 1,
-    height: 40,
-    fontSize: 13,
+    height: 42,
+    fontSize: 13.5,
     fontFamily: ServenticaTokens.fonts.Regular,
-    color: '#1E242B',
+    color: '#0F172A',
     padding: 0,
   },
   clearSearchBtn: {
@@ -685,14 +825,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     paddingVertical: 6,
-    maxHeight: 220,
+    maxHeight: 230,
     borderWidth: 1,
-    borderColor: 'rgba(250, 196, 32, 0.3)',
+    borderColor: '#E2E8F0',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 6,
-    elevation: 5,
+    elevation: 6,
   },
   dropdownLoadingRow: {
     flexDirection: 'row',
@@ -723,7 +863,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#FEF3C7',
+    backgroundColor: '#DCFCE7',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
@@ -731,7 +871,7 @@ const styles = StyleSheet.create({
   dropdownTitle: {
     fontSize: 13,
     fontFamily: ServenticaTokens.fonts.SemiBold,
-    color: '#1E242B',
+    color: '#0F172A',
   },
   dropdownSubtitle: {
     fontSize: 11,
@@ -742,25 +882,10 @@ const styles = StyleSheet.create({
   floatingControls: {
     position: 'absolute',
     right: 16,
-    bottom: 230,
+    bottom: 345,
     alignItems: 'center',
     gap: 10,
-    zIndex: 15,
-  },
-  fabButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.08)',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 4,
-    elevation: 4,
+    zIndex: 25,
   },
   zoomButtonGroup: {
     backgroundColor: '#FFFFFF',
@@ -784,6 +909,37 @@ const styles = StyleSheet.create({
     height: StyleSheet.hairlineWidth,
     backgroundColor: 'rgba(0,0,0,0.1)',
   },
+  mapFooterRow: {
+    position: 'absolute',
+    bottom: 290,
+    left: 16,
+    right: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    zIndex: 25,
+  },
+  goToLocationPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1.2,
+    borderColor: '#16A34A',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  goToLocationText: {
+    fontSize: 12.5,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
+    color: '#15803D',
+  },
   bottomCard: {
     position: 'absolute',
     bottom: 0,
@@ -797,80 +953,133 @@ const styles = StyleSheet.create({
     paddingBottom: 28,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 6,
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    elevation: 8,
     zIndex: 20,
   },
   dragHandleBar: {
     width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: '#CBD5E1',
     alignSelf: 'center',
-    marginBottom: 14,
+    marginBottom: 12,
   },
-  locationDetailRow: {
+  deliveringToLabel: {
+    fontSize: 14,
+    fontFamily: ServenticaTokens.fonts.Bold,
+    color: '#0F172A',
+    marginBottom: 10,
+  },
+  addressCard: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-    marginBottom: 16,
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginBottom: 8,
   },
-  locationIconBox: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: '#FEF3C7',
+  addressIconContainer: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: '#E2E8F0',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 2,
-    borderWidth: 1,
-    borderColor: 'rgba(250, 196, 32, 0.4)',
+    marginRight: 10,
   },
-  locationTextBox: {
+  addressTextContainer: {
     flex: 1,
+    marginRight: 8,
   },
   resolvingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingVertical: 6,
+    gap: 6,
   },
   resolvingText: {
-    fontSize: 12.5,
+    fontSize: 12,
     fontFamily: ServenticaTokens.fonts.Medium,
-    color: '#B45309',
+    color: '#16A34A',
   },
-  locationTitle: {
-    fontSize: 15,
+  addressHeading: {
+    fontSize: 14,
     fontFamily: ServenticaTokens.fonts.Bold,
     color: '#0F172A',
-    marginBottom: 3,
   },
-  locationSubtitle: {
-    fontSize: 12,
+  addressSubtext: {
+    fontSize: 11.5,
     fontFamily: ServenticaTokens.fonts.Regular,
     color: '#64748B',
-    lineHeight: 16,
+    marginTop: 2,
+  },
+  changeBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#16A34A',
+  },
+  changeBtnText: {
+    fontSize: 12,
+    fontFamily: ServenticaTokens.fonts.SemiBold,
+    color: '#15803D',
+  },
+  distanceWarningText: {
+    fontSize: 11,
+    fontFamily: ServenticaTokens.fonts.Medium,
+    color: '#D97706',
+    marginBottom: 8,
+  },
+  tagChipsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 14,
+  },
+  tagChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: '#F1F5F9',
+    gap: 5,
+  },
+  tagChipSelected: {
+    backgroundColor: '#DCFCE7',
+    borderWidth: 1,
+    borderColor: '#16A34A',
+  },
+  tagChipText: {
+    fontSize: 12,
+    fontFamily: ServenticaTokens.fonts.Medium,
+    color: '#64748B',
+  },
+  tagChipTextSelected: {
+    color: '#15803D',
+    fontFamily: ServenticaTokens.fonts.Bold,
   },
   confirmButton: {
-    height: 46,
-    backgroundColor: '#fac420',
-    borderRadius: 12,
+    backgroundColor: '#16A34A',
+    borderRadius: 14,
+    paddingVertical: 14,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.45)',
-    shadowColor: '#B45309',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowColor: '#16A34A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 4,
   },
   confirmButtonText: {
-    fontSize: 13.5,
+    color: '#FFFFFF',
+    fontSize: 15,
     fontFamily: ServenticaTokens.fonts.Bold,
-    color: '#1E242B',
-    letterSpacing: 0.5,
   },
 });
+
+export default MapLocationPickerModal;

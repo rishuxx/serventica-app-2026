@@ -17,6 +17,9 @@ export interface ServenticaConfig {
   api: {
     baseUrl: string;
   };
+  googleMaps: {
+    apiKey: string;
+  };
   app: {
     environment: 'development' | 'staging' | 'production';
     isProduction: boolean;
@@ -35,6 +38,9 @@ export const ServenticaEnvironment: ServenticaConfig = {
     merchantName: 'Serventica Home Services',
     themeColor: '#FAC420',
   },
+  googleMaps: {
+    apiKey: 'AIzaSyAasVoqGTlhp66ydhb7sLMBLHRr36awF6g',
+  },
   api: {
     baseUrl: 'http://10.0.2.2:3000', // Android emulator localhost alias
   },
@@ -43,3 +49,5 @@ export const ServenticaEnvironment: ServenticaConfig = {
     isProduction: false,
   },
 };
+
+

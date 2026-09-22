@@ -177,7 +177,14 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setIsSearching(true);
     searchTimerRef.current = setTimeout(async () => {
       try {
-        const results = await locationService.searchPlaces(query);
+        const bias =
+          currentGpsLocation?.latitude && currentGpsLocation?.longitude
+            ? { lat: currentGpsLocation.latitude, lon: currentGpsLocation.longitude }
+            : activeLocation?.latitude && activeLocation?.longitude
+            ? { lat: activeLocation.latitude, lon: activeLocation.longitude }
+            : { lat: 30.3165, lon: 78.0322 };
+
+        const results = await locationService.searchPlaces(query, bias);
         setSearchResults(results);
       } catch (err) {
         console.warn('Place search error:', err);
@@ -185,8 +192,8 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       } finally {
         setIsSearching(false);
       }
-    }, 300) as any;
-  }, []);
+    }, 260) as any;
+  }, [currentGpsLocation, activeLocation]);
 
   const clearSearch = useCallback(() => {
     setSearchQueryState('');

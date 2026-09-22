@@ -51,14 +51,19 @@ export class SupabaseServiceRepository implements IServiceRepository {
    * Strictly consolidates separate appliance entries under the unified "AC & Appliances" category.
    */
   async getCategories(): Promise<ServiceCategory[]> {
-    const isSeparateAppliance = (cat: any) => {
+    const isLegacyOrDuplicateCategory = (cat: any) => {
       const slug = (cat.slug || '').toLowerCase().trim();
       const name = (cat.name || '').toLowerCase().trim();
       if (slug === 'ac-appliances' || slug === 'ac-and-appliances' || name.includes('& appliance') || name.includes('& appliances')) {
         return false;
       }
       return (
+        slug === 'electrical' ||
+        slug === 'cleaning' ||
+        slug === 'home-moving' ||
+        slug === 'moving-shifting' ||
         slug === 'appliance-repair' ||
+        slug === 'other-services' ||
         slug === 'appliances' ||
         slug === 'appliance' ||
         slug === 'ac' ||
@@ -88,6 +93,29 @@ export class SupabaseServiceRepository implements IServiceRepository {
       );
     };
 
+    const deduplicateCategories = (list: any[]): ServiceCategory[] => {
+      const seenSlugs = new Set<string>();
+      const seenNames = new Set<string>();
+      const seenIds = new Set<string>();
+      const result: ServiceCategory[] = [];
+
+      for (const item of list) {
+        if (!item) continue;
+        const slug = (item.slug || '').toLowerCase().trim();
+        const name = (item.name || '').toLowerCase().trim();
+        const id = (item.id || '').trim();
+
+        if (isLegacyOrDuplicateCategory(item)) continue;
+        if (seenSlugs.has(slug) || seenNames.has(name) || (id && seenIds.has(id))) continue;
+
+        seenSlugs.add(slug);
+        seenNames.add(name);
+        if (id) seenIds.add(id);
+        result.push(this.mapDbCategory(item));
+      }
+      return result;
+    };
+
     try {
       const { data, error } = await supabase
         .from('service_categories')
@@ -96,9 +124,8 @@ export class SupabaseServiceRepository implements IServiceRepository {
         .order('sort_order', { ascending: true });
 
       if (!error && data && data.length > 0) {
-        return data
-          .filter((cat) => !isSeparateAppliance(cat))
-          .map(this.mapDbCategory);
+        const cleaned = deduplicateCategories(data);
+        if (cleaned.length > 0) return cleaned;
       }
 
       // Fallback query from legacy categories table if service_categories view isn't populated
@@ -109,9 +136,7 @@ export class SupabaseServiceRepository implements IServiceRepository {
         .order('sort_order', { ascending: true });
 
       if (!legacyError && legacyData) {
-        return legacyData
-          .filter((cat) => !isSeparateAppliance(cat))
-          .map(this.mapDbCategory);
+        return deduplicateCategories(legacyData);
       }
     } catch (err) {
       console.warn('[SupabaseServiceRepository.getCategories] Error:', err);
