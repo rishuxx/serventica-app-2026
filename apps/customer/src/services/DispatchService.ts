@@ -125,4 +125,91 @@ export class DispatchService {
       return { success: false, error: err.message };
     }
   }
+
+  /**
+   * Authoritative Service Start via Phase 7 RPC
+   */
+  static async startService(params: {
+    bookingId: string;
+    partnerId: string;
+    verificationOtp?: string;
+  }): Promise<{ success: boolean; error?: string; status?: string }> {
+    try {
+      const { data, error } = await supabase.rpc('authoritative_start_service', {
+        p_booking_id: params.bookingId,
+        p_partner_id: params.partnerId,
+        p_verification_otp: params.verificationOtp || null,
+      });
+
+      if (error) {
+        // Fallback to legacy transition if new migration not applied yet
+        return this.transitionJobStatus({
+          bookingId: params.bookingId,
+          partnerId: params.partnerId,
+          nextStatus: 'SERVICE_STARTED',
+        });
+      }
+
+      if (!data?.success) return { success: false, error: data?.error };
+      return { success: true, status: data?.status };
+    } catch (err: any) {
+      return { success: false, error: err?.message };
+    }
+  }
+
+  /**
+   * Authoritative Service Completion with Financial Ledger Settlement via Phase 7 RPC
+   */
+  static async completeService(params: {
+    bookingId: string;
+    partnerId: string;
+    completionNotes?: string;
+  }): Promise<{ success: boolean; error?: string; status?: string; payout?: number }> {
+    try {
+      const { data, error } = await supabase.rpc('authoritative_complete_service', {
+        p_booking_id: params.bookingId,
+        p_partner_id: params.partnerId,
+        p_completion_notes: params.completionNotes || null,
+      });
+
+      if (error) {
+        // Fallback to legacy transition
+        return this.transitionJobStatus({
+          bookingId: params.bookingId,
+          partnerId: params.partnerId,
+          nextStatus: 'SERVICE_COMPLETED',
+        });
+      }
+
+      if (!data?.success) return { success: false, error: data?.error };
+      return { success: true, status: data?.status, payout: data?.payout };
+    } catch (err: any) {
+      return { success: false, error: err?.message };
+    }
+  }
+
+  /**
+   * Authoritative Partner Reassignment via Phase 7 RPC
+   */
+  static async reassignPartner(params: {
+    bookingId: string;
+    reason: string;
+    actorType: 'PARTNER' | 'SYSTEM' | 'ADMIN';
+    actorId: string;
+  }): Promise<{ success: boolean; error?: string; status?: string }> {
+    try {
+      const { data, error } = await supabase.rpc('authoritative_reassign_partner', {
+        p_booking_id: params.bookingId,
+        p_reason: params.reason,
+        p_actor_type: params.actorType,
+        p_actor_id: params.actorId,
+      });
+
+      if (error) return { success: false, error: error.message };
+      if (!data?.success) return { success: false, error: data?.error };
+      return { success: true, status: data?.status };
+    } catch (err: any) {
+      return { success: false, error: err?.message };
+    }
+  }
 }

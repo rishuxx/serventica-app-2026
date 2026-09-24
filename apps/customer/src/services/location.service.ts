@@ -507,6 +507,122 @@ class LocationService {
   }
 
   /**
+   * Watches physical device location with configurable accuracy, distanceInterval, and timeInterval.
+   * Returns a cleanup cancellation function.
+   */
+  async watchPosition(
+    onLocation: (coords: {
+      latitude: number;
+      longitude: number;
+      accuracy?: number;
+      heading?: number;
+      speed?: number;
+      altitude?: number;
+      timestamp: number;
+    }) => void,
+    onError?: (error: Error) => void,
+    options?: {
+      timeInterval?: number;
+      distanceInterval?: number;
+      accuracy?: number;
+    }
+  ): Promise<() => void> {
+    const timeInterval = options?.timeInterval ?? 4000;
+    const distanceInterval = options?.distanceInterval ?? 10;
+
+    // 1. Expo Location Provider (iOS + Android Expo Go / Dev Client)
+    try {
+      const ExpoLocation = require('expo-location');
+      if (ExpoLocation && typeof ExpoLocation.watchPositionAsync === 'function') {
+        const accuracyLevel = options?.accuracy ?? (ExpoLocation.Accuracy?.High || 4);
+        const subscription = await ExpoLocation.watchPositionAsync(
+          {
+            accuracy: accuracyLevel,
+            timeInterval,
+            distanceInterval,
+          },
+          (loc: any) => {
+            if (loc?.coords?.latitude && loc?.coords?.longitude) {
+              onLocation({
+                latitude: loc.coords.latitude,
+                longitude: loc.coords.longitude,
+                accuracy: loc.coords.accuracy ?? undefined,
+                heading: loc.coords.heading ?? undefined,
+                speed: loc.coords.speed ?? undefined,
+                altitude: loc.coords.altitude ?? undefined,
+                timestamp: loc.timestamp || Date.now(),
+              });
+            }
+          }
+        );
+        return () => {
+          try {
+            subscription.remove();
+          } catch (e) {}
+        };
+      }
+    } catch (e) {
+      // Fall through to native or standard watch
+    }
+
+    // 2. Standard navigator.geolocation fallback
+    const geo = (global as any)?.navigator?.geolocation;
+    if (geo && typeof geo.watchPosition === 'function') {
+      const watchId = geo.watchPosition(
+        (pos: any) => {
+          if (pos?.coords?.latitude && pos?.coords?.longitude) {
+            onLocation({
+              latitude: pos.coords.latitude,
+              longitude: pos.coords.longitude,
+              accuracy: pos.coords.accuracy ?? undefined,
+              heading: pos.coords.heading ?? undefined,
+              speed: pos.coords.speed ?? undefined,
+              altitude: pos.coords.altitude ?? undefined,
+              timestamp: pos.timestamp || Date.now(),
+            });
+          }
+        },
+        (err: any) => {
+          if (onError) onError(new Error(err?.message || 'GPS watch error'));
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 3000,
+        }
+      );
+      return () => {
+        try {
+          geo.clearWatch(watchId);
+        } catch (e) {}
+      };
+    }
+
+    // 3. Fallback interval polling via getCurrentCoordinates
+    let isCancelled = false;
+    const intervalTimer = setInterval(async () => {
+      if (isCancelled) return;
+      try {
+        const coords = await this.getCurrentCoordinates();
+        if (!isCancelled) {
+          onLocation({
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+            timestamp: Date.now(),
+          });
+        }
+      } catch (err: any) {
+        if (onError && !isCancelled) onError(err);
+      }
+    }, timeInterval);
+
+    return () => {
+      isCancelled = true;
+      clearInterval(intervalTimer);
+    };
+  }
+
+  /**
    * Calculates geodesic distance in kilometers using the Haversine formula
    */
   calculateDistance(

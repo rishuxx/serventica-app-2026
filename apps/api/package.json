@@ -15,11 +15,14 @@
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/platform-socket.io": "^11.2.6",
+    "@nestjs/websockets": "^11.2.6",
+    "@serventica/config": "*",
     "@serventica/types": "*",
     "@serventica/validation": "*",
-    "@serventica/config": "*",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "socket.io": "^4.8.3"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.0",

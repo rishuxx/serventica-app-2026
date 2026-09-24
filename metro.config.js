@@ -20,6 +20,8 @@ const config = {
         if (typeof name !== 'string') return undefined;
         // Workspace aliases
         if (name === 'ws') return path.resolve(__dirname, 'src/shims/ws.js');
+        if (name === 'socket.io-client') return path.resolve(__dirname, 'node_modules/socket.io-client/dist/socket.io.js');
+        if (name === 'engine.io-client') return path.resolve(__dirname, 'node_modules/engine.io-client/build/cjs/index.js');
         if (name === '@serventica/design-system') return path.resolve(__dirname, 'packages/design-system/src');
         if (name === '@serventica/types') return path.resolve(__dirname, 'packages/types/src');
         if (name === '@serventica/config') return path.resolve(__dirname, 'packages/config/src');

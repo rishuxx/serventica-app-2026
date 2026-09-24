@@ -1,3 +1,15 @@
+import { Platform as RNPlatform } from 'react-native';
+
+// Polyfill process.env.EXPO_OS if missing
+if (typeof process !== 'undefined') {
+  if (!process.env) {
+    (process as any).env = {};
+  }
+  if (!process.env.EXPO_OS) {
+    process.env.EXPO_OS = RNPlatform.OS || 'ios';
+  }
+}
+
 // Universal Cross-Platform Expo Runtime Polyfill
 // Ensures `globalThis.expo` (with EventEmitter, NativeModule, etc.) is always initialized,
 // preventing `Cannot read property 'EventEmitter' of undefined` and `Super expression must either be null or a function`
@@ -102,8 +114,20 @@ class FallbackNativeClass extends EventEmitter {
   [key: string]: any;
 }
 
+const expoFontLoaderStub = {
+  getLoadedFonts: () => [],
+  loadAsync: async () => {},
+  unloadAllAsync: async () => {},
+  unloadAsync: async () => {},
+  isLoaded: () => true,
+  getServerResources: () => [],
+  getServerResourceDescriptors: () => [],
+};
+
 const createModuleProxy = () => {
-  const cache: Record<string, any> = {};
+  const cache: Record<string, any> = {
+    ExpoFontLoader: expoFontLoaderStub,
+  };
   return new Proxy(cache, {
     get: (target, moduleName: string) => {
       if (typeof moduleName !== 'string') return undefined;
@@ -126,6 +150,11 @@ const createModuleProxy = () => {
           stopLocationUpdatesAsync: async () => {},
           loadAsync: async () => {},
           getLoadedFonts: () => [],
+          isLoaded: () => true,
+          unloadAllAsync: async () => {},
+          unloadAsync: async () => {},
+          getServerResources: () => [],
+          getServerResourceDescriptors: () => [],
           exportedMethods: {},
           modulesConstants: {},
         } as Record<string, any>;
@@ -153,12 +182,14 @@ const createModuleProxy = () => {
 const setupExpoGlobal = () => {
   const existingExpo = (globalThis as any).expo;
 
-  // If native Expo runtime is already loaded with its JSI host objects, do NOT overwrite it!
   if (existingExpo && existingExpo.modules && typeof existingExpo.modules === 'object') {
     if (!existingExpo.EventEmitter) existingExpo.EventEmitter = EventEmitter;
     if (!existingExpo.NativeModule) existingExpo.NativeModule = NativeModule;
     if (!existingExpo.SharedObject) existingExpo.SharedObject = SharedObject;
     if (!existingExpo.SharedRef) existingExpo.SharedRef = SharedRef;
+    if (!existingExpo.modules.ExpoFontLoader) {
+      existingExpo.modules.ExpoFontLoader = expoFontLoaderStub;
+    }
     return;
   }
 
@@ -185,7 +216,11 @@ const setupExpoGlobal = () => {
     if (!existingExpo.NativeModule) existingExpo.NativeModule = NativeModule;
     if (!existingExpo.SharedObject) existingExpo.SharedObject = SharedObject;
     if (!existingExpo.SharedRef) existingExpo.SharedRef = SharedRef;
-    if (!existingExpo.modules) existingExpo.modules = createModuleProxy();
+    if (!existingExpo.modules) {
+      existingExpo.modules = createModuleProxy();
+    } else if (!existingExpo.modules.ExpoFontLoader) {
+      existingExpo.modules.ExpoFontLoader = expoFontLoaderStub;
+    }
   }
   
   // Ensure React Native native fetch is used rather than expo/src/winter/fetch mock

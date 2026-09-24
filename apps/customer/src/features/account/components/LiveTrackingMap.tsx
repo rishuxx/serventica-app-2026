@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import {
   StyleSheet,
   View,
@@ -10,183 +10,283 @@ import {
   Animated,
   TouchableOpacity,
   Modal,
+  StatusBar,
 } from 'react-native';
-import Svg, { Polyline as SvgPolyline } from 'react-native-svg';
+import MapboxGL from '@rnmapbox/maps';
 import {
   MapPin,
   Navigation,
   Zap,
-  Compass,
   Maximize2,
   X,
   Plus,
   Minus,
+  RotateCcw,
 } from 'lucide-react-native';
 import { Fonts } from '../../../../../../packages/design-system/src';
 import { BookingPartner } from '../../../../../../packages/types/src';
-import { INITIAL_CONFIGURED_ORIGIN } from '../../../repositories/origin.repository';
-import { GoogleRoutingProvider } from '../../../services/routing/GoogleRoutingProvider';
 import { GeoPoint } from '../../../types/routing.types';
 import { ServenticaEnvironment } from '../../../../../../packages/config/src';
+import { ServenticaBrandLogo } from './ServenticaBrandLogo';
+import { ServsFoundBackdrop } from './ServsFoundBackdrop';
+import { routingFactory } from '../../../services/routing/RoutingProviderFactory';
+import { routeCache } from '../../../services/routing/RouteCache';
+import { locationService } from '../../../services/location.service';
 
-import { InteractiveGoogleMap } from './InteractiveGoogleMap';
+// Initialize Mapbox public token at file scope
+const PUBLIC_MAPBOX_TOKEN =
+  process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN ||
+  process.env.MAPBOX_ACCESS_TOKEN ||
+  ServenticaEnvironment?.mapbox?.accessToken ||
+  '';
 
-// Safe dynamic loader for react-native-maps
-let NativeMapView: any = null;
-let NativeMarker: any = null;
-let NativePolyline: any = null;
-let PROVIDER_GOOGLE_REF: any = undefined;
-
-try {
-  const { TurboModuleRegistry, NativeModules } = require('react-native');
-  const hasTurbo = TurboModuleRegistry?.get?.('RNMapsAirModule') != null;
-  const hasLegacy = Boolean(NativeModules?.RNMapsAirModule || NativeModules?.AirMapModule);
-  if (hasTurbo || hasLegacy) {
-    const RNM = require('react-native-maps');
-    if (RNM && (RNM.default || RNM.MapView)) {
-      NativeMapView = RNM.default || RNM.MapView;
-      NativeMarker = RNM.Marker;
-      NativePolyline = RNM.Polyline;
-      PROVIDER_GOOGLE_REF = RNM.PROVIDER_GOOGLE;
-    }
-  }
-} catch (e) {
-  NativeMapView = null;
-}
+MapboxGL.setAccessToken(PUBLIC_MAPBOX_TOKEN);
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const MAP_HEIGHT = 185;
 
-const GOOGLE_MAPS_KEY =
-  process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY ||
-  process.env.GOOGLE_MAPS_API_KEY ||
-  ServenticaEnvironment?.googleMaps?.apiKey ||
-  'AIzaSyAasVoqGTlhp66ydhb7sLMBLHRr36awF6g';
-
-interface LiveTrackingMapProps {
+export interface LiveTrackingMapProps {
   partner?: BookingPartner | null;
   status: string;
   userAddressTitle?: string;
   userAddressLine?: string;
   etaText?: string;
   distanceText?: string;
-  customerLat?: number;
-  customerLon?: number;
-  partnerLat?: number;
-  partnerLon?: number;
+  customerLat?: number | null;
+  customerLon?: number | null;
+  partnerLat?: number | null;
+  partnerLon?: number | null;
   heading?: number;
   isLiveGps?: boolean;
+  isBackdropOnly?: boolean;
+  height?: number;
+  connectionState?: 'CONNECTED' | 'RECONNECTING' | 'DISCONNECTED';
+  isStale?: boolean;
+  panY?: Animated.Value;
+  onMapReady?: () => void;
 }
 
-export const LiveTrackingMap: React.FC<LiveTrackingMapProps> = ({
+// Coordinate validator ensuring valid bounds [-90, 90] and [-180, 180]
+const isValidCoord = (lat?: number | null, lon?: number | null): boolean => {
+  if (lat == null || lon == null) return false;
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return false;
+  return lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
+};
+
+const LiveTrackingMapComponent: React.FC<LiveTrackingMapProps> = ({
   partner,
   status,
   userAddressTitle = 'Service Location',
   userAddressLine = 'Delivery Location',
   etaText: initialEtaText = 'Arriving in ~12 mins',
   distanceText: initialDistanceText = '1.2 km away',
-  customerLat = 30.3342,
-  customerLon = 77.9629,
+  customerLat,
+  customerLon,
   partnerLat,
   partnerLon,
   heading = 0,
   isLiveGps = false,
+  isBackdropOnly = false,
+  height,
+  connectionState = 'CONNECTED',
+  isStale = false,
+  panY,
+  onMapReady,
 }) => {
-  const mapRef = useRef<any>(null);
-  const modalMapRef = useRef<any>(null);
-  const [nativeMapAvailable, setNativeMapAvailable] = useState<boolean>(Boolean(NativeMapView));
+  const cameraRef = useRef<MapboxGL.Camera>(null);
+  const modalCameraRef = useRef<MapboxGL.Camera>(null);
+  const [mapLoaded, setMapLoaded] = useState<boolean>(false);
+  const [modalMapLoaded, setModalMapLoaded] = useState<boolean>(false);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [isFollowingPartner, setIsFollowingPartner] = useState<boolean>(true);
+
+  // Development-only mount instrumentation
+  const mountCountRef = useRef<number>(0);
+  useEffect(() => {
+    mountCountRef.current += 1;
+    if (__DEV__) {
+      console.log(`[NativeMapbox] LiveTrackingMap mounted (count: ${mountCountRef.current})`);
+    }
+    return () => {
+      if (__DEV__) {
+        console.log(`[NativeMapbox] LiveTrackingMap unmounted`);
+      }
+    };
+  }, []);
 
   const isEnRoute = status === 'PARTNER_EN_ROUTE';
   const isArrived = status === 'PARTNER_ARRIVED';
   const isStarted = status === 'SERVICE_STARTED';
   const isCompleted = status === 'SERVICE_COMPLETED' || status === 'CLOSED';
 
-  // Partner location coordinates
-  const pLat =
-    partnerLat ??
-    (isArrived || isStarted || isCompleted
-      ? customerLat + 0.0001
-      : INITIAL_CONFIGURED_ORIGIN.latitude);
-  const pLon =
-    partnerLon ??
-    (isArrived || isStarted || isCompleted
-      ? customerLon + 0.0001
-      : INITIAL_CONFIGURED_ORIGIN.longitude);
+  // Customer destination coordinate validation
+  const hasValidCustomerDest = isValidCoord(customerLat, customerLon);
+  const validCustomerLat = hasValidCustomerDest ? (customerLat as number) : null;
+  const validCustomerLon = hasValidCustomerDest ? (customerLon as number) : null;
 
-  const [routeCoordinates, setRouteCoordinates] = useState<GeoPoint[]>([
-    { latitude: pLat, longitude: pLon },
-    { latitude: customerLat, longitude: customerLon },
-  ]);
-  const [encodedPolyline, setEncodedPolyline] = useState<string>('');
+  // Partner live GPS coordinate validation - NEVER use fake/fallback coordinates
+  const hasValidPartnerGps = isValidCoord(partnerLat, partnerLon);
+  const safeTargetLat = hasValidPartnerGps ? (partnerLat as number) : null;
+  const safeTargetLon = hasValidPartnerGps ? (partnerLon as number) : null;
+
+  // Presentation-level smoothed coordinates (never jumps/teleports)
+  const [pLat, setPLat] = useState<number | null>(safeTargetLat);
+  const [pLon, setPLon] = useState<number | null>(safeTargetLon);
+  const animFrameRef = useRef<any>(null);
+  const currentPosRef = useRef<{ lat: number | null; lon: number | null }>({
+    lat: safeTargetLat,
+    lon: safeTargetLon,
+  });
+
+  // Smooth visual coordinate interpolation (A -> intermediate positions -> B)
+  useEffect(() => {
+    if (safeTargetLat == null || safeTargetLon == null) {
+      currentPosRef.current = { lat: null, lon: null };
+      setPLat(null);
+      setPLon(null);
+      return;
+    }
+
+    const prevLat = currentPosRef.current.lat;
+    const prevLon = currentPosRef.current.lon;
+
+    if (prevLat == null || prevLon == null) {
+      // First authoritative real GPS fix arrives: snap immediately
+      if (__DEV__) {
+        console.log(
+          `[LiveTrackingMap] FIRST AUTHORITATIVE FIX: lat=${safeTargetLat}, lon=${safeTargetLon}`
+        );
+      }
+      currentPosRef.current = { lat: safeTargetLat, lon: safeTargetLon };
+      setPLat(safeTargetLat);
+      setPLon(safeTargetLon);
+      return;
+    }
+
+    const startLat = prevLat;
+    const startLon = prevLon;
+    const deltaLat = safeTargetLat - startLat;
+    const deltaLon = safeTargetLon - startLon;
+
+    if (__DEV__) {
+      console.log(
+        `[LiveTrackingMap] GPS INTERPOLATION START: from=(${startLat.toFixed(5)}, ${startLon.toFixed(5)}) -> to=(${safeTargetLat.toFixed(5)}, ${safeTargetLon.toFixed(5)}) | delta=(${deltaLat.toFixed(6)}, ${deltaLon.toFixed(6)})`
+      );
+    }
+
+    // If change is tiny (< 1 meter), snap directly
+    if (Math.abs(deltaLat) < 0.00001 && Math.abs(deltaLon) < 0.00001) {
+      currentPosRef.current = { lat: safeTargetLat, lon: safeTargetLon };
+      setPLat(safeTargetLat);
+      setPLon(safeTargetLon);
+      return;
+    }
+
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+    }
+
+    const durationMs = 1200;
+    const startTime = Date.now();
+
+    const step = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(1, elapsed / durationMs);
+      const ease = 1 - Math.pow(1 - progress, 3);
+
+      const nextLat = startLat + deltaLat * ease;
+      const nextLon = startLon + deltaLon * ease;
+
+      currentPosRef.current = { lat: nextLat, lon: nextLon };
+      setPLat(nextLat);
+      setPLon(nextLon);
+
+      if (progress < 1) {
+        animFrameRef.current = requestAnimationFrame(step);
+      } else {
+        if (__DEV__) {
+          console.log(
+            `[LiveTrackingMap] GPS INTERPOLATION END: arrived at (${nextLat.toFixed(5)}, ${nextLon.toFixed(5)})`
+          );
+        }
+      }
+    };
+
+    animFrameRef.current = requestAnimationFrame(step);
+    return () => {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    };
+  }, [safeTargetLat, safeTargetLon]);
+
+  const [routeCoordinates, setRouteCoordinates] = useState<GeoPoint[]>([]);
   const [liveEtaText, setLiveEtaText] = useState(initialEtaText);
   const [liveDistanceText, setLiveDistanceText] = useState(initialDistanceText);
   const [isRouteLoading, setIsRouteLoading] = useState(false);
 
-  const centerLat = (customerLat + pLat) / 2;
-  const centerLon = (customerLon + pLon) / 2;
+  const lastRoutedOriginRef = useRef<GeoPoint | null>(null);
+  const lastRouteFetchTimeRef = useRef<number>(0);
+  const initialFittedRef = useRef<boolean>(false);
 
-  // Pulse animation for partner beacon
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.45,
-          duration: 1100,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1100,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [pulseAnim]);
-
-  // Fetch true turn-by-turn road route via Google / Mapbox Routing Provider
+  // Fetch true turn-by-turn road route via RoutingProviderFactory (Mapbox primary)
+  // ONLY if both partner GPS and customer destination are valid
   useEffect(() => {
     let isMounted = true;
+    if (safeTargetLat == null || safeTargetLon == null || validCustomerLat == null || validCustomerLon == null) {
+      setRouteCoordinates([]);
+      return;
+    }
+
     const fetchRoute = async () => {
+      const currentOrigin: GeoPoint = { latitude: safeTargetLat, longitude: safeTargetLon };
+      const destPoint: GeoPoint = { latitude: validCustomerLat, longitude: validCustomerLon };
+      const now = Date.now();
+
+      // Debounce & Displacement check:
+      // Recalculate only if:
+      // 1. First fetch
+      // 2. Partner moved > 150m from last routed position
+      // 3. Or route is older than 60 seconds
+      if (lastRoutedOriginRef.current) {
+        const distMoved = locationService.calculateDistance(
+          lastRoutedOriginRef.current.latitude,
+          lastRoutedOriginRef.current.longitude,
+          currentOrigin.latitude,
+          currentOrigin.longitude
+        );
+        const timeSinceLast = now - lastRouteFetchTimeRef.current;
+        if (distMoved && distMoved.km < 0.15 && timeSinceLast < 60000) {
+          return;
+        }
+      }
+
       setIsRouteLoading(true);
       try {
-        let result: any = null;
-        try {
-          const googleProvider = new GoogleRoutingProvider(GOOGLE_MAPS_KEY);
-          result = await googleProvider.calculateRoute({
-            origin: { latitude: pLat, longitude: pLon },
-            destination: { latitude: customerLat, longitude: customerLon },
-            profile: 'DRIVING',
-          });
-        } catch (e) {
-          result = null;
-        }
+        // 1. Check in-memory route cache first
+        let result = await routeCache.get(currentOrigin, destPoint, 'DRIVING');
 
-        if (!result || !result.coordinates || result.coordinates.length <= 2) {
-          const { MapboxRoutingProvider } = require('../../../services/routing/MapboxRoutingProvider');
-          const mapboxProvider = new MapboxRoutingProvider();
-          result = await mapboxProvider.calculateRoute({
-            origin: { latitude: pLat, longitude: pLon },
-            destination: { latitude: customerLat, longitude: customerLon },
+        if (!result) {
+          // 2. Calculate via provider factory (Mapbox primary)
+          const provider = routingFactory.getProvider();
+          result = await provider.calculateRoute({
+            origin: currentOrigin,
+            destination: destPoint,
             profile: 'DRIVING',
           });
+
+          // Cache result with 10 min TTL
+          if (result) {
+            await routeCache.set(currentOrigin, destPoint, 'DRIVING', result, 600);
+          }
         }
 
         if (isMounted && result) {
+          lastRoutedOriginRef.current = currentOrigin;
+          lastRouteFetchTimeRef.current = now;
+
           if (result.coordinates && result.coordinates.length > 0) {
             setRouteCoordinates(result.coordinates);
           } else {
-            setRouteCoordinates([
-              { latitude: pLat, longitude: pLon },
-              { latitude: customerLat, longitude: customerLon },
-            ]);
-          }
-
-          if (result.geometry && typeof result.geometry === 'string') {
-            setEncodedPolyline(result.geometry);
+            setRouteCoordinates([currentOrigin, destPoint]);
           }
 
           if (result.durationSeconds) {
@@ -197,22 +297,9 @@ export const LiveTrackingMap: React.FC<LiveTrackingMapProps> = ({
             const km = (result.distanceMeters / 1000).toFixed(1);
             setLiveDistanceText(`${km} km away`);
           }
-
-          if (mapRef.current?.fitToCoordinates) {
-            mapRef.current.fitToCoordinates(
-              [
-                { latitude: pLat, longitude: pLon },
-                { latitude: customerLat, longitude: customerLon },
-              ],
-              {
-                edgePadding: { top: 40, right: 40, bottom: 40, left: 40 },
-                animated: true,
-              }
-            );
-          }
         }
       } catch (err) {
-        console.warn('Route calculation notice:', err);
+        console.warn('[NativeMapbox] Route calculation notice:', err);
       } finally {
         if (isMounted) setIsRouteLoading(false);
       }
@@ -222,67 +309,252 @@ export const LiveTrackingMap: React.FC<LiveTrackingMapProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [pLat, pLon, customerLat, customerLon, status]);
+  }, [safeTargetLat, safeTargetLon, validCustomerLat, validCustomerLon, status]);
+
+  // Initial and displacement-triggered bounds fitting
+  const fitTrackingBounds = useCallback((cam: MapboxGL.Camera | null, animated: boolean = true) => {
+    if (!cam) return;
+    const padding = isBackdropOnly
+      ? { paddingLeft: 40, paddingRight: 40, paddingTop: 100, paddingBottom: 320 }
+      : { paddingLeft: 30, paddingRight: 30, paddingTop: 30, paddingBottom: 30 };
+
+    if (pLat != null && pLon != null && validCustomerLat != null && validCustomerLon != null) {
+      const minLat = Math.min(pLat, validCustomerLat);
+      const maxLat = Math.max(pLat, validCustomerLat);
+      const minLon = Math.min(pLon, validCustomerLon);
+      const maxLon = Math.max(pLon, validCustomerLon);
+
+      cam.setCamera({
+        bounds: {
+          ne: [maxLon, maxLat],
+          sw: [minLon, minLat],
+          ...padding,
+        },
+        animationDuration: animated ? 1000 : 0,
+        animationMode: 'easeTo',
+      });
+    } else if (validCustomerLat != null && validCustomerLon != null) {
+      cam.setCamera({
+        centerCoordinate: [validCustomerLon, validCustomerLat],
+        zoomLevel: 14.5,
+        animationDuration: animated ? 1000 : 0,
+        animationMode: 'easeTo',
+      });
+    } else if (pLat != null && pLon != null) {
+      cam.setCamera({
+        centerCoordinate: [pLon, pLat],
+        zoomLevel: 14.5,
+        animationDuration: animated ? 1000 : 0,
+        animationMode: 'easeTo',
+      });
+    }
+  }, [pLat, pLon, validCustomerLat, validCustomerLon, isBackdropOnly]);
+
+  // Fit bounds once map loads or upon first valid route coordinates
+  useEffect(() => {
+    if (mapLoaded && !initialFittedRef.current) {
+      if ((pLat != null && pLon != null) || (validCustomerLat != null && validCustomerLon != null)) {
+        initialFittedRef.current = true;
+        fitTrackingBounds(cameraRef.current, false);
+      }
+    }
+  }, [mapLoaded, pLat, pLon, validCustomerLat, validCustomerLon, fitTrackingBounds]);
+
+  // Follow partner camera updates (throttled, only if follow mode is active)
+  useEffect(() => {
+    if (!isFollowingPartner || !mapLoaded || pLat == null || pLon == null) return;
+    cameraRef.current?.setCamera({
+      centerCoordinate: [pLon, pLat],
+      animationDuration: 1000,
+      animationMode: 'easeTo',
+    });
+  }, [pLat, pLon, isFollowingPartner, mapLoaded]);
+
+  // Memoized GeoJSON LineString for ShapeSource
+  const routeGeoJSON = useMemo<GeoJSON.FeatureCollection<GeoJSON.LineString>>(() => {
+    const coords: [number, number][] = routeCoordinates
+      .filter((pt) => isValidCoord(pt.latitude, pt.longitude))
+      .map((pt) => [pt.longitude, pt.latitude]);
+
+    if (coords.length < 2 && pLat != null && pLon != null && validCustomerLat != null && validCustomerLon != null) {
+      coords.push([pLon, pLat]);
+      coords.push([validCustomerLon, validCustomerLat]);
+    }
+
+    return {
+      type: 'FeatureCollection',
+      features: coords.length >= 2 ? [
+        {
+          type: 'Feature',
+          properties: {},
+          geometry: {
+            type: 'LineString',
+            coordinates: coords,
+          },
+        },
+      ] : [],
+    };
+  }, [routeCoordinates, pLat, pLon, validCustomerLat, validCustomerLon]);
 
   const partnerName = partner?.name || (isEnRoute ? 'Assigned Servs Partner' : 'Kolhupani Hub');
   const partnerAvatar = partner?.avatarUrl;
-  const cardWidth = Math.round(SCREEN_WIDTH - 32);
-
-  // High-definition Google Static Map snapshot with native Google Road Path, Markers & Auto-Centering
-  const googleStaticMapUrl = useMemo(() => {
-    const w = Math.min(640, cardWidth);
-    const h = Math.min(640, MAP_HEIGHT);
-    const scale = 2; // Retina @2x crispness
-
-    // Partner Marker (Blue Custom Pin with Label P)
-    const partnerMarkerParam = `markers=color:blue%7Clabel:P%7C${pLat},${pLon}`;
-    // Customer Marker (Green Custom Pin with Label C)
-    const customerMarkerParam = `markers=color:green%7Clabel:C%7C${customerLat},${customerLon}`;
-
-    // Google Styled Road Route Polyline
-    let pathParam = '';
-    if (encodedPolyline) {
-      pathParam = `&path=color:0x2563EBff%7Cweight:5%7Cenc:${encodeURIComponent(encodedPolyline)}`;
-    } else {
-      pathParam = `&path=color:0x2563EBff%7Cweight:5%7C${pLat},${pLon}%7C${customerLat},${customerLon}`;
-    }
-
-    return `https://maps.googleapis.com/maps/api/staticmap?size=${w}x${h}&scale=${scale}&maptype=roadmap&${partnerMarkerParam}&${customerMarkerParam}${pathParam}&key=${GOOGLE_MAPS_KEY}`;
-  }, [cardWidth, pLat, pLon, customerLat, customerLon, encodedPolyline]);
-
-  const googleModalStaticMapUrl = useMemo(() => {
-    const w = Math.min(640, Math.round(SCREEN_WIDTH));
-    const h = Math.min(640, Math.round(SCREEN_HEIGHT * 0.65));
-    const scale = 2;
-
-    const partnerMarkerParam = `markers=color:blue%7Clabel:P%7C${pLat},${pLon}`;
-    const customerMarkerParam = `markers=color:green%7Clabel:C%7C${customerLat},${customerLon}`;
-
-    let pathParam = '';
-    if (encodedPolyline) {
-      pathParam = `&path=color:0x2563EBff%7Cweight:5%7Cenc:${encodeURIComponent(encodedPolyline)}`;
-    } else {
-      pathParam = `&path=color:0x2563EBff%7Cweight:5%7C${pLat},${pLon}%7C${customerLat},${customerLon}`;
-    }
-
-    return `https://maps.googleapis.com/maps/api/staticmap?size=${w}x${h}&scale=${scale}&maptype=roadmap&${partnerMarkerParam}&${customerMarkerParam}${pathParam}&key=${GOOGLE_MAPS_KEY}`;
-  }, [pLat, pLon, customerLat, customerLon, encodedPolyline]);
 
   const handleRecenter = () => {
-    if (mapRef.current?.fitToCoordinates) {
-      mapRef.current.fitToCoordinates(
-        [
-          { latitude: pLat, longitude: pLon },
-          { latitude: customerLat, longitude: customerLon },
-        ],
-        {
-          edgePadding: { top: 40, right: 40, bottom: 40, left: 40 },
-          animated: true,
-        }
-      );
-    }
+    setIsFollowingPartner(true);
+    fitTrackingBounds(cameraRef.current, true);
   };
 
+  // Dedicated Render for Fullscreen Backdrop Mode (BookingDetailScreen)
+  if (isBackdropOnly) {
+    const topInset = Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 44;
+    return (
+      <View style={{ width: '100%', height: height || '100%', position: 'relative' }}>
+        <MapboxGL.MapView
+          style={StyleSheet.absoluteFill}
+          styleURL={MapboxGL.StyleURL.Street}
+          logoEnabled={false}
+          attributionEnabled={false}
+          compassEnabled={false}
+          scaleBarEnabled={false}
+          onDidFinishLoadingMap={() => {
+            setMapLoaded(true);
+            if (onMapReady) {
+              onMapReady();
+            }
+          }}
+          onTouchStart={() => {
+            // User manually touches/pans -> disable automatic snapback
+            if (isFollowingPartner) setIsFollowingPartner(false);
+          }}
+        >
+          <MapboxGL.Camera
+            ref={cameraRef}
+            defaultSettings={{
+              centerCoordinate:
+                pLon != null && pLat != null && validCustomerLon != null && validCustomerLat != null
+                  ? [(pLon + validCustomerLon) / 2, (pLat + validCustomerLat) / 2]
+                  : validCustomerLon != null && validCustomerLat != null
+                  ? [validCustomerLon, validCustomerLat]
+                  : pLon != null && pLat != null
+                  ? [pLon, pLat]
+                  : [77.9629, 30.3342],
+              zoomLevel: 14,
+            }}
+          />
+
+          {/* Road Route Polyline Layer */}
+          {routeGeoJSON.features.length > 0 && (
+            <MapboxGL.ShapeSource id="backdropRouteSource" shape={routeGeoJSON}>
+              <MapboxGL.LineLayer
+                id="backdropRouteLineCasing"
+                style={{
+                  lineColor: '#1E40AF',
+                  lineWidth: 7,
+                  lineCap: 'round',
+                  lineJoin: 'round',
+                  lineOpacity: 0.6,
+                }}
+              />
+              <MapboxGL.LineLayer
+                id="backdropRouteLine"
+                style={{
+                  lineColor: '#2563EB',
+                  lineWidth: 5,
+                  lineCap: 'round',
+                  lineJoin: 'round',
+                  lineOpacity: 0.95,
+                }}
+              />
+            </MapboxGL.ShapeSource>
+          )}
+
+          {/* Destination Marker - only renders when customer booking coordinates are valid */}
+          {validCustomerLat != null && validCustomerLon != null && (
+            <MapboxGL.PointAnnotation
+              id="destinationAnnotationBackdrop"
+              coordinate={[validCustomerLon, validCustomerLat]}
+              anchor={{ x: 0.5, y: 0.5 }}
+            >
+              <View style={styles.customerMarkerBox}>
+                <MapPin size={15} color="#FFFFFF" strokeWidth={2.4} />
+              </View>
+            </MapboxGL.PointAnnotation>
+          )}
+
+          {/* Partner Marker with Heading Rotation - ONLY rendered when actual partner GPS is present */}
+          {pLat != null && pLon != null && (
+            <MapboxGL.PointAnnotation
+              id="partnerAnnotationBackdrop"
+              coordinate={[pLon, pLat]}
+              anchor={{ x: 0.5, y: 0.5 }}
+            >
+              <View
+                style={[
+                  styles.partnerIconCircle,
+                  { transform: [{ rotate: `${Math.round(heading || 0)}deg` }] },
+                ]}
+              >
+                <Navigation size={15} color="#FFFFFF" strokeWidth={2.4} fill="#FFFFFF" />
+              </View>
+            </MapboxGL.PointAnnotation>
+          )}
+        </MapboxGL.MapView>
+
+        {/* Top Logo Inset */}
+        <View
+          style={{
+            position: 'absolute',
+            top: topInset + 6,
+            left: 0,
+            right: 0,
+            alignItems: 'center',
+            zIndex: 12,
+          }}
+          pointerEvents="none"
+        >
+          <ServenticaBrandLogo size="md" color="#FFFFFF" />
+        </View>
+
+
+
+        {/* Floating Customer Address Badge */}
+        <View style={styles.customerFloatingBadge}>
+          <View style={styles.customerPinCircle}>
+            <MapPin size={12} color="#FFFFFF" strokeWidth={2.4} />
+          </View>
+          <Text style={styles.customerBadgeText} numberOfLines={1}>
+            {validCustomerLat == null || validCustomerLon == null
+              ? 'Destination Unavailable'
+              : userAddressTitle}
+          </Text>
+        </View>
+
+        {/* Recenter button when user manually panned away */}
+        {!isFollowingPartner && (
+          <TouchableOpacity
+            style={[styles.floatingRecenterBtn, { top: topInset + 54 }]}
+            onPress={handleRecenter}
+            activeOpacity={0.8}
+            accessibilityLabel="Re-center map on partner and destination"
+          >
+            <RotateCcw size={16} color="#2563EB" strokeWidth={2.2} />
+          </TouchableOpacity>
+        )}
+
+        {!mapLoaded && (
+          <View style={StyleSheet.absoluteFill}>
+            <ServsFoundBackdrop
+              height={height || SCREEN_HEIGHT}
+              partner={partner}
+              panY={panY}
+            />
+          </View>
+        )}
+      </View>
+    );
+  }
+
+  // Card View Mode (Partner Simulator & In-Card usage)
   return (
     <View style={styles.card}>
       {/* HEADER WITH REALTIME STATUS, ETA BADGE & EXPAND BUTTON */}
@@ -321,20 +593,92 @@ export const LiveTrackingMap: React.FC<LiveTrackingMapProps> = ({
         </View>
       </View>
 
-      {/* GOOGLE MAPS LIVE CANVAS */}
+      {/* MAPBOX NATIVE VECTOR CANVAS */}
       <View style={styles.mapCanvas}>
-        <InteractiveGoogleMap
-          partnerLat={pLat}
-          partnerLon={pLon}
-          customerLat={customerLat}
-          customerLon={customerLon}
-          heading={heading}
-          partnerName={partnerName}
-          userAddressTitle={userAddressTitle}
-          routeCoordinates={routeCoordinates}
-          encodedPolyline={encodedPolyline}
-          isInteractive={false}
-        />
+        <MapboxGL.MapView
+          style={StyleSheet.absoluteFill}
+          styleURL={MapboxGL.StyleURL.Street}
+          logoEnabled={false}
+          attributionEnabled={false}
+          compassEnabled={false}
+          scaleBarEnabled={false}
+          onDidFinishLoadingMap={() => setMapLoaded(true)}
+          onTouchStart={() => {
+            if (isFollowingPartner) setIsFollowingPartner(false);
+          }}
+        >
+          <MapboxGL.Camera
+            ref={cameraRef}
+            defaultSettings={{
+              centerCoordinate:
+                pLon != null && pLat != null && validCustomerLon != null && validCustomerLat != null
+                  ? [(pLon + validCustomerLon) / 2, (pLat + validCustomerLat) / 2]
+                  : validCustomerLon != null && validCustomerLat != null
+                  ? [validCustomerLon, validCustomerLat]
+                  : pLon != null && pLat != null
+                  ? [pLon, pLat]
+                  : [77.9629, 30.3342],
+              zoomLevel: 13.5,
+            }}
+          />
+
+          {/* Route Shape and LineLayer */}
+          {routeGeoJSON.features.length > 0 && (
+            <MapboxGL.ShapeSource id="cardRouteSource" shape={routeGeoJSON}>
+              <MapboxGL.LineLayer
+                id="cardRouteLineCasing"
+                style={{
+                  lineColor: '#1E40AF',
+                  lineWidth: 7,
+                  lineCap: 'round',
+                  lineJoin: 'round',
+                  lineOpacity: 0.6,
+                }}
+              />
+              <MapboxGL.LineLayer
+                id="cardRouteLine"
+                style={{
+                  lineColor: '#2563EB',
+                  lineWidth: 5,
+                  lineCap: 'round',
+                  lineJoin: 'round',
+                  lineOpacity: 0.95,
+                }}
+              />
+            </MapboxGL.ShapeSource>
+          )}
+
+          {/* Destination Pin - only if customer coordinates are valid */}
+          {validCustomerLat != null && validCustomerLon != null && (
+            <MapboxGL.PointAnnotation
+              id="cardDestinationPin"
+              coordinate={[validCustomerLon, validCustomerLat]}
+              anchor={{ x: 0.5, y: 0.5 }}
+            >
+              <View style={styles.customerMarkerBox}>
+                <MapPin size={15} color="#FFFFFF" strokeWidth={2.4} />
+              </View>
+            </MapboxGL.PointAnnotation>
+          )}
+
+          {/* Partner Pin - ONLY if partner GPS coordinates are valid */}
+          {pLat != null && pLon != null && (
+            <MapboxGL.PointAnnotation
+              id="cardPartnerPin"
+              coordinate={[pLon, pLat]}
+              anchor={{ x: 0.5, y: 0.5 }}
+            >
+              <View
+                style={[
+                  styles.partnerIconCircle,
+                  { transform: [{ rotate: `${Math.round(heading || 0)}deg` }] },
+                ]}
+              >
+                <Navigation size={15} color="#FFFFFF" strokeWidth={2.4} fill="#FFFFFF" />
+              </View>
+            </MapboxGL.PointAnnotation>
+          )}
+        </MapboxGL.MapView>
 
         {/* Tap to expand overlay */}
         <TouchableOpacity
@@ -346,6 +690,17 @@ export const LiveTrackingMap: React.FC<LiveTrackingMapProps> = ({
           <Text style={styles.tapToExpandText}>Tap to Expand</Text>
         </TouchableOpacity>
 
+        {/* Re-center floating button if panned */}
+        {!isFollowingPartner && (
+          <TouchableOpacity
+            style={styles.cardRecenterBtn}
+            onPress={handleRecenter}
+            activeOpacity={0.85}
+          >
+            <RotateCcw size={14} color="#2563EB" strokeWidth={2.2} />
+          </TouchableOpacity>
+        )}
+
         {isRouteLoading && (
           <View style={styles.loadingOverlay}>
             <ActivityIndicator size="small" color="#2563EB" />
@@ -353,20 +708,60 @@ export const LiveTrackingMap: React.FC<LiveTrackingMapProps> = ({
         )}
       </View>
 
-      {/* FOOTER BAR WITH ACCURATE DISTANCE & GOOGLE MAPS STATUS */}
+      {/* FOOTER BAR WITH ACCURATE DISTANCE & MAP STATUS */}
       <View style={styles.footerRow}>
         <View style={styles.distanceBadge}>
-          <Text style={styles.distanceText}>Distance: {liveDistanceText}</Text>
+          <Text style={styles.distanceText}>
+            {validCustomerLat == null || validCustomerLon == null
+              ? 'Destination unavailable'
+              : pLat == null || pLon == null
+              ? 'Locating partner...'
+              : `Distance: ${liveDistanceText}`}
+          </Text>
         </View>
         <View style={styles.liveTagRow}>
-          <View style={[styles.greenPulseDot, !isLiveGps && { backgroundColor: '#3B82F6' }]} />
-          <Text style={[styles.liveTagText, !isLiveGps && { color: '#2563EB' }]}>
-            Google Maps Road Route
+          <View
+            style={[
+              styles.greenPulseDot,
+              connectionState === 'RECONNECTING'
+                ? { backgroundColor: '#F59E0B' }
+                : isStale
+                ? { backgroundColor: '#94A3B8' }
+                : pLat == null || pLon == null
+                ? { backgroundColor: '#94A3B8' }
+                : !isLiveGps
+                ? { backgroundColor: '#3B82F6' }
+                : { backgroundColor: '#16A34A' },
+            ]}
+          />
+          <Text
+            style={[
+              styles.liveTagText,
+              connectionState === 'RECONNECTING'
+                ? { color: '#D97706' }
+                : isStale
+                ? { color: '#64748B' }
+                : pLat == null || pLon == null
+                ? { color: '#64748B' }
+                : !isLiveGps
+                ? { color: '#2563EB' }
+                : { color: '#15803D' },
+            ]}
+          >
+            {connectionState === 'RECONNECTING'
+              ? 'Reconnecting...'
+              : isStale
+              ? 'GPS Signal Stale'
+              : pLat == null || pLon == null
+              ? 'Waiting for Partner GPS'
+              : isLiveGps
+              ? 'Live GPS Track'
+              : 'Live Mapbox Road Route'}
           </Text>
         </View>
       </View>
 
-      {/* EXPANDED FULLSCREEN GOOGLE MAPS MODAL */}
+      {/* EXPANDED FULLSCREEN MAPBOX MODAL */}
       <Modal
         visible={isExpanded}
         animationType="slide"
@@ -385,7 +780,7 @@ export const LiveTrackingMap: React.FC<LiveTrackingMapProps> = ({
             </TouchableOpacity>
 
             <View style={styles.modalHeaderTitleCol}>
-              <Text style={styles.modalTitle}>Google Maps Live Tracking</Text>
+              <Text style={styles.modalTitle}>Live Mapbox Tracking</Text>
               <Text style={styles.modalSubtitle} numberOfLines={1}>
                 {partnerName} • {liveEtaText} ({liveDistanceText})
               </Text>
@@ -397,20 +792,117 @@ export const LiveTrackingMap: React.FC<LiveTrackingMapProps> = ({
             </View>
           </View>
 
-          {/* Fullscreen Interactive Google Map Canvas */}
+          {/* Fullscreen Interactive Native Mapbox Canvas */}
           <View style={styles.modalMapCanvas}>
-            <InteractiveGoogleMap
-              partnerLat={pLat}
-              partnerLon={pLon}
-              customerLat={customerLat}
-              customerLon={customerLon}
-              heading={heading}
-              partnerName={partnerName}
-              userAddressTitle={userAddressTitle}
-              routeCoordinates={routeCoordinates}
-              encodedPolyline={encodedPolyline}
-              isInteractive={true}
-            />
+            <MapboxGL.MapView
+              style={StyleSheet.absoluteFill}
+              styleURL={MapboxGL.StyleURL.Street}
+              logoEnabled={true}
+              attributionEnabled={true}
+              compassEnabled={true}
+              scaleBarEnabled={true}
+              onDidFinishLoadingMap={() => {
+                setModalMapLoaded(true);
+                fitTrackingBounds(modalCameraRef.current, false);
+              }}
+            >
+              <MapboxGL.Camera
+                ref={modalCameraRef}
+                defaultSettings={{
+                  centerCoordinate:
+                    pLon != null && pLat != null && validCustomerLon != null && validCustomerLat != null
+                      ? [(pLon + validCustomerLon) / 2, (pLat + validCustomerLat) / 2]
+                      : validCustomerLon != null && validCustomerLat != null
+                      ? [validCustomerLon, validCustomerLat]
+                      : pLon != null && pLat != null
+                      ? [pLon, pLat]
+                      : [77.9629, 30.3342],
+                  zoomLevel: 14,
+                }}
+              />
+
+              {/* Fullscreen Route Layer */}
+              {routeGeoJSON.features.length > 0 && (
+                <MapboxGL.ShapeSource id="modalRouteSource" shape={routeGeoJSON}>
+                  <MapboxGL.LineLayer
+                    id="modalRouteLineCasing"
+                    style={{
+                      lineColor: '#1E40AF',
+                      lineWidth: 8,
+                      lineCap: 'round',
+                      lineJoin: 'round',
+                      lineOpacity: 0.6,
+                    }}
+                  />
+                  <MapboxGL.LineLayer
+                    id="modalRouteLine"
+                    style={{
+                      lineColor: '#2563EB',
+                      lineWidth: 6,
+                      lineCap: 'round',
+                      lineJoin: 'round',
+                      lineOpacity: 0.95,
+                    }}
+                  />
+                </MapboxGL.ShapeSource>
+              )}
+
+              {/* Destination Pin - only if customer coordinates are valid */}
+              {validCustomerLat != null && validCustomerLon != null && (
+                <MapboxGL.PointAnnotation
+                  id="modalDestPin"
+                  coordinate={[validCustomerLon, validCustomerLat]}
+                  anchor={{ x: 0.5, y: 0.5 }}
+                >
+                  <View style={styles.customerMarkerBox}>
+                    <MapPin size={16} color="#FFFFFF" strokeWidth={2.4} />
+                  </View>
+                </MapboxGL.PointAnnotation>
+              )}
+
+              {/* Partner Pin - ONLY if partner GPS coordinates are valid */}
+              {pLat != null && pLon != null && (
+                <MapboxGL.PointAnnotation
+                  id="modalPartnerPin"
+                  coordinate={[pLon, pLat]}
+                  anchor={{ x: 0.5, y: 0.5 }}
+                >
+                  <View
+                    style={[
+                      styles.partnerIconCircle,
+                      { transform: [{ rotate: `${Math.round(heading || 0)}deg` }] },
+                    ]}
+                  >
+                    <Navigation size={16} color="#FFFFFF" strokeWidth={2.4} fill="#FFFFFF" />
+                  </View>
+                </MapboxGL.PointAnnotation>
+              )}
+            </MapboxGL.MapView>
+
+            {/* Modal Controls: Recenter, Zoom In, Zoom Out */}
+            <View style={styles.modalNavControls}>
+              <TouchableOpacity
+                style={styles.modalControlBtn}
+                onPress={() => modalCameraRef.current?.zoomTo(16, 400)}
+                activeOpacity={0.8}
+              >
+                <Plus size={18} color="#0F172A" strokeWidth={2.4} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalControlBtn}
+                onPress={() => modalCameraRef.current?.zoomTo(12, 400)}
+                activeOpacity={0.8}
+              >
+                <Minus size={18} color="#0F172A" strokeWidth={2.4} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalControlBtn, { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }]}
+                onPress={() => fitTrackingBounds(modalCameraRef.current, true)}
+                activeOpacity={0.8}
+              >
+                <RotateCcw size={16} color="#2563EB" strokeWidth={2.2} />
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* Bottom Card Summary inside Expanded View */}
@@ -526,6 +1018,144 @@ const styles = StyleSheet.create({
   partnerMarkerBox: {
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  partnerFloatingBadge: {
+    position: 'absolute',
+    left: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(15, 23, 42, 0.88)',
+    paddingVertical: 5,
+    paddingHorizontal: 9,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 4,
+    elevation: 4,
+    maxWidth: '55%',
+    zIndex: 10,
+  },
+  partnerPulseCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#2563EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 6,
+  },
+  partnerBadgeText: {
+    fontSize: 11,
+    fontFamily: Fonts.SemiBold,
+    color: '#FFFFFF',
+  },
+  customerFloatingBadge: {
+    position: 'absolute',
+    bottom: 24,
+    right: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    paddingVertical: 5,
+    paddingHorizontal: 9,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 4,
+    maxWidth: '50%',
+    zIndex: 10,
+  },
+  customerPinCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#059669',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 6,
+  },
+  customerBadgeText: {
+    fontSize: 11,
+    fontFamily: Fonts.SemiBold,
+    color: '#0F172A',
+  },
+  floatingRecenterBtn: {
+    position: 'absolute',
+    left: 14,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 4,
+    elevation: 5,
+    zIndex: 15,
+  },
+  cardRecenterBtn: {
+    position: 'absolute',
+    right: 8,
+    bottom: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 3,
+    zIndex: 12,
+  },
+  loader: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 5,
+  },
+  loaderText: {
+    marginTop: 6,
+    fontSize: 12,
+    fontFamily: Fonts.Medium,
+    color: '#64748B',
+  },
+  modalNavControls: {
+    position: 'absolute',
+    right: 14,
+    top: 18,
+    flexDirection: 'column',
+    gap: 8,
+    zIndex: 20,
+  },
+  modalControlBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(255, 255, 255, 0.96)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
   },
   partnerIconCircle: {
     width: 32,
@@ -805,4 +1435,28 @@ const styles = StyleSheet.create({
   },
 });
 
+const arePropsEqual = (prev: LiveTrackingMapProps, next: LiveTrackingMapProps) => {
+  return (
+    prev.partnerLat === next.partnerLat &&
+    prev.partnerLon === next.partnerLon &&
+    prev.customerLat === next.customerLat &&
+    prev.customerLon === next.customerLon &&
+    prev.heading === next.heading &&
+    prev.status === next.status &&
+    prev.connectionState === next.connectionState &&
+    prev.isStale === next.isStale &&
+    prev.isBackdropOnly === next.isBackdropOnly &&
+    prev.height === next.height &&
+    prev.etaText === next.etaText &&
+    prev.distanceText === next.distanceText &&
+    prev.userAddressTitle === next.userAddressTitle &&
+    prev.userAddressLine === next.userAddressLine &&
+    prev.isLiveGps === next.isLiveGps &&
+    prev.partner?.id === next.partner?.id &&
+    prev.partner?.name === next.partner?.name &&
+    prev.panY === next.panY
+  );
+};
+
+export const LiveTrackingMap = React.memo(LiveTrackingMapComponent, arePropsEqual);
 export default LiveTrackingMap;

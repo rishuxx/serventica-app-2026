@@ -175,6 +175,30 @@ export class ProductionPaymentService {
    */
   async verifyPayment(params: VerifyPaymentRequest): Promise<VerifyPaymentResponse> {
     try {
+      // 1. Try Phase 8 authoritative capture RPC (with double-entry ledger & invoices)
+      const { data: authData, error: authError } = await supabase.rpc('authoritative_capture_payment', {
+        p_booking_id: params.bookingId,
+        p_payment_id: params.paymentId,
+        p_provider_payment_id: params.razorpayPaymentId,
+        p_provider_order_id: params.razorpayOrderId,
+        p_provider_signature: params.razorpaySignature,
+        p_payment_method: params.paymentMethod || 'UPI',
+      });
+
+      if (!authError && authData && authData.success) {
+        return {
+          success: true,
+          bookingId: authData.booking_id,
+          bookingNumber: `SRV-${authData.booking_id.slice(0, 8).toUpperCase()}`,
+          paymentId: authData.payment_id,
+          status: 'CAPTURED',
+          message: 'Payment captured, ledger posted, and invoice generated.',
+          transactionId: params.razorpayPaymentId,
+          amount: Number(authData.amount_minor) / 100,
+        };
+      }
+
+      // 2. Legacy fallback to verify_and_confirm_booking
       const { data, error } = await supabase.rpc('verify_and_confirm_booking', {
         p_booking_id: params.bookingId,
         p_payment_id: params.paymentId,

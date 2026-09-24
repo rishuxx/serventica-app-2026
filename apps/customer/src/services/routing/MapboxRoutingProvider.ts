@@ -1,9 +1,12 @@
 import { RoutingProvider } from './RoutingProvider';
 import { RouteRequest, RouteResult, MatrixRequest, MatrixResult, GeoPoint } from '../../types/routing.types';
 
+import { ServenticaEnvironment } from '../../../../../packages/config/src';
+
 const MAPBOX_TOKEN =
   process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN ||
   process.env.MAPBOX_ACCESS_TOKEN ||
+  ServenticaEnvironment?.mapbox?.accessToken ||
   '';
 
 /**
@@ -31,6 +34,9 @@ export class MapboxRoutingProvider implements RoutingProvider {
         throw new Error('No route returned by Mapbox');
       }
 
+      const geometry = route.geometry;
+      const coordinates = typeof geometry === 'string' ? this.decodePolyline(geometry) : undefined;
+
       return {
         provider: 'MAPBOX',
         origin,
@@ -38,7 +44,8 @@ export class MapboxRoutingProvider implements RoutingProvider {
         calculatedAt: new Date().toISOString(),
         durationSeconds: Math.round(route.duration),
         distanceMeters: Math.round(route.distance),
-        geometry: route.geometry, // string encoded polyline
+        geometry, // string encoded polyline
+        coordinates,
         confidence: 'HIGH',
       };
     } catch (error) {
@@ -57,6 +64,47 @@ export class MapboxRoutingProvider implements RoutingProvider {
         confidence: 'LOW',
       };
     }
+  }
+
+  /**
+   * Decodes Mapbox / Google standard encoded polyline string into GeoPoint array
+   */
+  public decodePolyline(encoded: string): GeoPoint[] {
+    const points: GeoPoint[] = [];
+    let index = 0;
+    const len = encoded.length;
+    let lat = 0;
+    let lng = 0;
+
+    while (index < len) {
+      let b;
+      let shift = 0;
+      let result = 0;
+      do {
+        b = encoded.charCodeAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      const dlat = (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
+      lat += dlat;
+
+      shift = 0;
+      result = 0;
+      do {
+        b = encoded.charCodeAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      const dlng = (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
+      lng += dlng;
+
+      points.push({
+        latitude: lat / 1e5,
+        longitude: lng / 1e5,
+      });
+    }
+
+    return points;
   }
 
   async calculateMatrix(request: MatrixRequest): Promise<MatrixResult> {

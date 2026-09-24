@@ -311,14 +311,16 @@ class BookingRepository {
       const raw = await AsyncStorage.getItem(LOCAL_BOOKINGS_STORAGE_KEY);
       if (raw) {
         const parsed: BookingRecord[] = JSON.parse(raw);
+        // Exclude archived items from main tab listings
+        const unarchived = parsed.filter((b) => !b.isArchived);
         if (filter === 'UPCOMING') {
-          localList = parsed.filter(
+          localList = unarchived.filter(
             (b) => !b.status?.includes('CANCEL') && b.status !== 'SERVICE_COMPLETED' && b.status !== 'CLOSED'
           );
         } else if (filter === 'COMPLETED') {
-          localList = parsed.filter((b) => b.status === 'SERVICE_COMPLETED' || b.status === 'CLOSED');
+          localList = unarchived.filter((b) => b.status === 'SERVICE_COMPLETED' || b.status === 'CLOSED');
         } else if (filter === 'CANCELLED') {
-          localList = parsed.filter((b) => b.status?.includes('CANCEL') || b.status === 'PAYMENT_FAILED');
+          localList = unarchived.filter((b) => b.status?.includes('CANCEL') || b.status === 'PAYMENT_FAILED');
         }
       }
     } catch (e) {
@@ -326,6 +328,169 @@ class BookingRepository {
     }
 
     if (!userId || userId === 'guest_user') {
+      if (localList.length === 0) {
+        if (filter === 'UPCOMING') {
+          return [
+            {
+              id: 'mock-booking-h9voqu',
+              bookingNumber: 'SRV-H9VOQU',
+              customerId: 'guest_user',
+              addressId: 'addr_mock_01',
+              status: 'SEARCHING_PARTNER',
+              scheduledDate: new Date().toISOString().split('T')[0],
+              scheduledStartTime: 'Express (~20 mins)',
+              serviceId: 'serv_ac_foam_jet',
+              serviceName: 'Foam Jet AC Power Jet Service',
+              serviceSlug: 'ac-foam-jet-service',
+              serviceImageUrl: 'basic_ac_repair',
+              address: {
+                title: 'Home',
+                shortAddress: 'Tower 4, Apt 802',
+                addressLine1: 'Tower 4, Apt 802, Supertech Capetown',
+                city: 'Sector 74, Noida',
+                state: 'Uttar Pradesh',
+                pincode: '201301',
+                formattedAddress: 'Tower 4, Apt 802, Supertech Capetown, Sector 74, Noida, UP - 201301',
+                latitude: 28.5729,
+                longitude: 77.3849,
+              },
+              payment: {
+                subtotal: 599,
+                tax: 0,
+                discount: 50,
+                platformFee: 29,
+                total: 578,
+                currency: 'INR',
+                paymentStatus: 'PAID',
+              },
+              items: [
+                {
+                  id: 'item_01',
+                  bookingId: 'mock-booking-h9voqu',
+                  serviceId: 'serv_ac_foam_jet',
+                  serviceName: 'Foam Jet AC Power Jet Service',
+                  quantity: 1,
+                  unitPrice: 599,
+                  totalPrice: 599,
+                },
+              ],
+              createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+              updatedAt: new Date().toISOString(),
+            },
+            {
+              id: 'mock-booking-assigned',
+              bookingNumber: 'SRV-ENR402',
+              customerId: 'guest_user',
+              addressId: 'addr_mock_01',
+              status: 'PARTNER_EN_ROUTE',
+              scheduledDate: new Date().toISOString().split('T')[0],
+              scheduledStartTime: 'Express (~10 mins)',
+              serviceId: 'serv_kitchen_deep_clean',
+              serviceName: 'Kitchen Deep Cleaning & Degreasing',
+              serviceSlug: 'kitchen-deep-cleaning',
+              serviceImageUrl: 'kitchen_cleaning',
+              partner: {
+                id: 'servs_partner_vipin_01',
+                name: 'Vipin Sharma',
+                phone: '+91 98765 43210',
+                avatarUrl: 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?w=150&auto=format&fit=crop&q=80',
+                rating: 4.95,
+                specialization: 'Certified Servs Specialist',
+              },
+              address: {
+                title: 'Home',
+                shortAddress: 'Tower 4, Apt 802',
+                addressLine1: 'Tower 4, Apt 802, Supertech Capetown',
+                city: 'Sector 74, Noida',
+                state: 'Uttar Pradesh',
+                pincode: '201301',
+                formattedAddress: 'Tower 4, Apt 802, Supertech Capetown, Sector 74, Noida, UP - 201301',
+                latitude: 28.5729,
+                longitude: 77.3849,
+              },
+              payment: {
+                subtotal: 1299,
+                tax: 0,
+                discount: 100,
+                platformFee: 29,
+                total: 1228,
+                currency: 'INR',
+                paymentStatus: 'PAID',
+              },
+              items: [
+                {
+                  id: 'item_02',
+                  bookingId: 'mock-booking-assigned',
+                  serviceId: 'serv_kitchen_deep_clean',
+                  serviceName: 'Kitchen Deep Cleaning & Degreasing',
+                  quantity: 1,
+                  unitPrice: 1299,
+                  totalPrice: 1299,
+                },
+              ],
+              createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+              updatedAt: new Date().toISOString(),
+            },
+          ];
+        } else if (filter === 'COMPLETED') {
+          return [
+            {
+              id: 'mock-booking-completed',
+              bookingNumber: 'SRV-CMP901',
+              customerId: 'guest_user',
+              addressId: 'addr_mock_01',
+              status: 'SERVICE_COMPLETED',
+              scheduledDate: new Date().toISOString().split('T')[0],
+              scheduledStartTime: 'Today • 02:30 PM',
+              serviceId: 'serv_bathroom_power_scrub',
+              serviceName: 'Bathroom Power Scrub & Sanitization',
+              serviceSlug: 'bathroom-power-scrub',
+              serviceImageUrl: 'bathroom_cleaning',
+              partner: {
+                id: 'servs_partner_vipin_01',
+                name: 'Vipin Sharma',
+                phone: '+91 98765 43210',
+                avatarUrl: 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?w=150&auto=format&fit=crop&q=80',
+                rating: 4.95,
+                specialization: 'Certified Servs Specialist',
+              },
+              address: {
+                title: 'Home',
+                shortAddress: 'Tower 4, Apt 802',
+                addressLine1: 'Tower 4, Apt 802, Supertech Capetown',
+                city: 'Sector 74, Noida',
+                state: 'Uttar Pradesh',
+                pincode: '201301',
+                formattedAddress: 'Tower 4, Apt 802, Supertech Capetown, Sector 74, Noida, UP - 201301',
+                latitude: 28.5729,
+                longitude: 77.3849,
+              },
+              payment: {
+                subtotal: 799,
+                tax: 0,
+                discount: 80,
+                platformFee: 29,
+                total: 748,
+                currency: 'INR',
+                paymentStatus: 'PAID',
+              },
+              items: [
+                {
+                  id: 'item_03',
+                  bookingId: 'mock-booking-completed',
+                  serviceId: 'serv_bathroom_power_scrub',
+                  serviceName: 'Bathroom Power Scrub & Sanitization',
+                  quantity: 1,
+                  unitPrice: 799,
+                  totalPrice: 799,
+                },
+              ],
+              createdAt: new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
+              updatedAt: new Date().toISOString(),
+            },
+          ];
+        }
+      }
       return localList;
     }
 
@@ -478,18 +643,66 @@ class BookingRepository {
       console.warn('[BookingRepository.getBookingDetail] Error:', err);
     }
 
-    // 3. Fallback: If still not found and local storage has any bookings, return first active
-    try {
-      const raw = await AsyncStorage.getItem(LOCAL_BOOKINGS_STORAGE_KEY);
-      if (raw) {
-        const parsed: BookingRecord[] = JSON.parse(raw);
-        if (parsed.length > 0) {
-          return parsed[0];
-        }
-      }
-    } catch (e) {}
+    // 3. Fallback: If still not found, return rich default mock booking for preview/testing
+    const isEnRoute = cleanIdLower.includes('assigned') || cleanIdLower.includes('route') || cleanIdLower.includes('track');
+    const isComp = cleanIdLower.includes('complete') || cleanIdLower.includes('done');
 
-    return null;
+    const mockDefault: BookingRecord = {
+      id: cleanId.startsWith('mock-') ? cleanId : isComp ? 'mock-booking-completed' : isEnRoute ? 'mock-booking-assigned' : 'mock-booking-h9voqu',
+      bookingNumber: isComp ? 'SRV-CMP901' : isEnRoute ? 'SRV-ENR402' : 'SRV-H9VOQU',
+      customerId: 'guest_user',
+      addressId: 'addr_mock_01',
+      status: isComp ? 'SERVICE_COMPLETED' : isEnRoute ? 'PARTNER_EN_ROUTE' : 'SEARCHING_PARTNER',
+      scheduledDate: new Date().toISOString().split('T')[0],
+      scheduledStartTime: isComp ? 'Today • 02:30 PM' : 'Express (~20 mins)',
+      serviceId: 'serv_ac_foam_jet',
+      serviceName: 'Foam Jet AC Power Jet Service',
+      serviceSlug: 'ac-foam-jet-service',
+      serviceImageUrl: 'basic_ac_repair',
+      partner: (isEnRoute || isComp) ? {
+        id: 'servs_partner_vipin_01',
+        name: 'Vipin Sharma',
+        phone: '+91 98765 43210',
+        avatarUrl: 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?w=150&auto=format&fit=crop&q=80',
+        rating: 4.95,
+        specialization: 'Certified Servs Specialist',
+      } : undefined,
+      address: {
+        title: 'Home',
+        shortAddress: 'Tower 4, Apt 802',
+        addressLine1: 'Tower 4, Apt 802, Supertech Capetown',
+        city: 'Sector 74, Noida',
+        state: 'Uttar Pradesh',
+        pincode: '201301',
+        formattedAddress: 'Tower 4, Apt 802, Supertech Capetown, Sector 74, Noida, UP - 201301',
+        latitude: 28.5729,
+        longitude: 77.3849,
+      },
+      payment: {
+        subtotal: 599,
+        tax: 0,
+        discount: 50,
+        platformFee: 29,
+        total: 578,
+        currency: 'INR',
+        paymentStatus: 'PAID',
+      },
+      items: [
+        {
+          id: 'item_01',
+          bookingId: cleanId,
+          serviceId: 'serv_ac_foam_jet',
+          serviceName: 'Foam Jet AC Power Jet Service',
+          quantity: 1,
+          unitPrice: 599,
+          totalPrice: 599,
+        },
+      ],
+      createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    return mockDefault;
   }
 
   /**
@@ -588,12 +801,19 @@ class BookingRepository {
       try {
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetBooking.id);
         if (isUuid) {
-          const { error: rpcError } = await supabase.rpc('cancel_booking_order', {
+          const { error: rpcError } = await supabase.rpc('authoritative_cancel_booking', {
             p_booking_id: targetBooking.id,
             p_reason: reason,
-            p_cancelled_by: 'CUSTOMER',
+            p_actor_type: 'CUSTOMER',
+            p_actor_id: targetBooking.customerId || 'customer_unknown',
           });
           if (rpcError) {
+            // Fallback to legacy cancel RPC
+            await supabase.rpc('cancel_booking_order', {
+              p_booking_id: targetBooking.id,
+              p_reason: reason,
+              p_cancelled_by: 'CUSTOMER',
+            });
             await supabase
               .from('bookings')
               .update({
@@ -777,6 +997,71 @@ class BookingRepository {
     } catch (e: any) {
       return { success: false, error: e.message || 'Failed to clear booking history.' };
     }
+  }
+
+  /**
+   * Fetch all archived bookings
+   */
+  async getArchivedBookings(): Promise<BookingRecord[]> {
+    try {
+      const raw = await AsyncStorage.getItem(LOCAL_BOOKINGS_STORAGE_KEY);
+      if (raw) {
+        const parsed: BookingRecord[] = JSON.parse(raw);
+        return parsed.filter((b) => Boolean(b.isArchived));
+      }
+    } catch (e) {}
+    return [];
+  }
+
+  /**
+   * Archive a booking record
+   */
+  async archiveBooking(bookingId: string): Promise<boolean> {
+    try {
+      const raw = await AsyncStorage.getItem(LOCAL_BOOKINGS_STORAGE_KEY);
+      const list: BookingRecord[] = raw ? JSON.parse(raw) : [];
+      const idx = list.findIndex((b) => b.id === bookingId || b.bookingNumber === bookingId);
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], isArchived: true, updatedAt: new Date().toISOString() };
+        await AsyncStorage.setItem(LOCAL_BOOKINGS_STORAGE_KEY, JSON.stringify(list));
+        this.notifyListeners();
+        return true;
+      }
+    } catch (e) {}
+    return false;
+  }
+
+  /**
+   * Unarchive a booking record back to active listings
+   */
+  async unarchiveBooking(bookingId: string): Promise<boolean> {
+    try {
+      const raw = await AsyncStorage.getItem(LOCAL_BOOKINGS_STORAGE_KEY);
+      const list: BookingRecord[] = raw ? JSON.parse(raw) : [];
+      const idx = list.findIndex((b) => b.id === bookingId || b.bookingNumber === bookingId);
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], isArchived: false, updatedAt: new Date().toISOString() };
+        await AsyncStorage.setItem(LOCAL_BOOKINGS_STORAGE_KEY, JSON.stringify(list));
+        this.notifyListeners();
+        return true;
+      }
+    } catch (e) {}
+    return false;
+  }
+
+  /**
+   * Delete a booking record permanently
+   */
+  async deleteBooking(bookingId: string): Promise<boolean> {
+    try {
+      const raw = await AsyncStorage.getItem(LOCAL_BOOKINGS_STORAGE_KEY);
+      let list: BookingRecord[] = raw ? JSON.parse(raw) : [];
+      const filtered = list.filter((b) => b.id !== bookingId && b.bookingNumber !== bookingId);
+      await AsyncStorage.setItem(LOCAL_BOOKINGS_STORAGE_KEY, JSON.stringify(filtered));
+      this.notifyListeners();
+      return true;
+    } catch (e) {}
+    return false;
   }
 }
 

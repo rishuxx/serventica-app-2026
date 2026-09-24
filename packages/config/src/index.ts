@@ -20,6 +20,9 @@ export interface ServenticaConfig {
   googleMaps: {
     apiKey: string;
   };
+  mapbox: {
+    accessToken: string;
+  };
   app: {
     environment: 'development' | 'staging' | 'production';
     isProduction: boolean;
@@ -40,6 +43,9 @@ export const ServenticaEnvironment: ServenticaConfig = {
   },
   googleMaps: {
     apiKey: 'AIzaSyAasVoqGTlhp66ydhb7sLMBLHRr36awF6g',
+  },
+  mapbox: {
+    accessToken: process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN || '',
   },
   api: {
     baseUrl: 'http://10.0.2.2:3000', // Android emulator localhost alias

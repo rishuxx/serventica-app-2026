@@ -11,14 +11,15 @@
     "test": "jest --passWithNoTests"
   },
   "dependencies": {
-    "@serventica/types": "*",
-    "@serventica/design-system": "*",
     "@serventica/config": "*",
+    "@serventica/design-system": "*",
+    "@serventica/types": "*",
+    "lottie-react-native": "~7.3.8",
     "react": "19.2.3",
     "react-native": "0.86.3",
-    "react-native-safe-area-context": "^5.5.2"
+    "react-native-safe-area-context": "^5.5.2",
+    "socket.io-client": "^4.8.3"
   },
-
   "devDependencies": {
     "@types/react": "^19.2.0",
     "typescript": "^5.8.0"

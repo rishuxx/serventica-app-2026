@@ -45,6 +45,7 @@ import { getFallbackCategoryTheme } from '../../../repositories/experience.repos
 import { ProfileScreen } from '../../account/screens/ProfileScreen';
 import { EditProfileScreen } from '../../account/screens/EditProfileScreen';
 import { BookingsScreen } from '../../account/screens/BookingsScreen';
+import { ArchivedBookingsScreen } from '../../account/screens/ArchivedBookingsScreen';
 import { BookingDetailScreen } from '../../account/screens/BookingDetailScreen';
 import { SavedServicesScreen } from '../../account/screens/SavedServicesScreen';
 import { SupportScreen } from '../../account/screens/SupportScreen';
@@ -52,6 +53,7 @@ import { NotificationsScreen } from '../../account/screens/NotificationsScreen';
 import { ReviewsScreen } from '../../account/screens/ReviewsScreen';
 import { ServiceCardShowcaseScreen } from '../../showcase/ServiceCardShowcaseScreen';
 import { PartnerAppSimulatorScreen } from '../../account/screens/PartnerAppSimulatorScreen';
+import { NativeMapboxDiagnosticScreen } from '../../account/screens/NativeMapboxDiagnosticScreen';
 
 import {
   FulfillmentMode,
@@ -68,12 +70,14 @@ export type AccountSubRoute =
   | 'PROFILE'
   | 'EDIT_PROFILE'
   | 'BOOKINGS'
+  | 'ARCHIVED'
   | 'BOOKING_DETAIL'
   | 'SAVED'
   | 'NOTIFICATIONS'
   | 'SUPPORT'
   | 'REVIEWS'
   | 'SANDBOX'
+  | 'MAP_DIAGNOSTIC'
   | null;
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
@@ -255,17 +259,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
   const handleTabSwitch = React.useCallback((tab: BottomNavTab) => {
     if (tab === 'PROFILE') {
-      if (!isAuthenticated) {
-        onOpenAccount?.();
-        return;
-      }
       setActiveTab('PROFILE');
       setActiveAccountRoute('PROFILE');
     } else if (tab === 'ORDERS') {
-      if (!isAuthenticated) {
-        onOpenAccount?.();
-        return;
-      }
       setActiveTab('ORDERS');
       setActiveAccountRoute('BOOKINGS');
     } else if (tab === 'SAVED') {
@@ -275,7 +271,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       setActiveTab(tab);
       setActiveAccountRoute(null);
     }
-  }, [isAuthenticated, onOpenAccount]);
+  }, []);
 
   // 1.5. If activeFulfillmentScreen is set, navigate to dedicated Instant or Schedule screen
   if (activeFulfillmentScreen === 'INSTANT') {
@@ -327,6 +323,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     );
   }
 
+  if (activeAccountRoute === 'MAP_DIAGNOSTIC') {
+    return (
+      <NativeMapboxDiagnosticScreen
+        onBack={() => {
+          setActiveAccountRoute('PROFILE');
+        }}
+      />
+    );
+  }
+
   if (activeAccountRoute === 'SANDBOX') {
     return (
       <PartnerAppSimulatorScreen
@@ -345,24 +351,18 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   if (activeAccountRoute === 'BOOKING_DETAIL' && selectedBookingId) {
     return (
       <View style={styles.rootContainer}>
-        <View style={styles.feedWrapper}>
-          <BookingDetailScreen
-            bookingId={selectedBookingId}
-            onBack={() => setActiveAccountRoute('BOOKINGS')}
-            onGetHelp={(bookingId: string) => {
-              setSupportBookingContext({ id: bookingId, serviceName: 'Booking' });
-              setActiveAccountRoute('SUPPORT');
-            }}
-            onBookAgain={(serviceId: string) => {
-              setActiveAccountRoute(null);
-              setActiveTab('HOME');
-              setActiveServiceTarget({ id: serviceId, slug: '', fromCategory: false });
-            }}
-          />
-        </View>
-        <HomeBottomNav
-          activeTab={activeTab}
-          onSelectTab={handleTabSwitch}
+        <BookingDetailScreen
+          bookingId={selectedBookingId}
+          onBack={() => setActiveAccountRoute('BOOKINGS')}
+          onGetHelp={(bookingId: string) => {
+            setSupportBookingContext({ id: bookingId, serviceName: 'Booking' });
+            setActiveAccountRoute('SUPPORT');
+          }}
+          onBookAgain={(serviceId: string) => {
+            setActiveAccountRoute(null);
+            setActiveTab('HOME');
+            setActiveServiceTarget({ id: serviceId, slug: '', fromCategory: false });
+          }}
         />
       </View>
     );
@@ -444,6 +444,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             setActiveAccountRoute('BOOKINGS');
             setActiveTab('ORDERS');
           }}
+          onNavigateArchivedBookings={() => {
+            setActiveAccountRoute('ARCHIVED');
+          }}
           onNavigateBookingDetail={(bookingId: string) => {
             setSelectedBookingId(bookingId);
             setActiveAccountRoute('BOOKING_DETAIL');
@@ -461,6 +464,30 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           }}
           onNavigateSandbox={() => {
             setActiveAccountRoute('SANDBOX');
+          }}
+          onNavigateMapDiagnostic={() => {
+            setActiveAccountRoute('MAP_DIAGNOSTIC');
+          }}
+        />
+      );
+    }
+
+    if (activeAccountRoute === 'BOOKING_DETAIL' && selectedBookingId) {
+      return (
+        <BookingDetailScreen
+          bookingId={selectedBookingId}
+          onBack={() => {
+            setActiveAccountRoute('BOOKINGS');
+            setActiveTab('ORDERS');
+          }}
+          onGetHelp={(bookingId: string) => {
+            setSupportBookingContext({ id: bookingId, serviceName: 'Booking' });
+            setActiveAccountRoute('SUPPORT');
+          }}
+          onBookAgain={(serviceId: string) => {
+            setActiveAccountRoute(null);
+            setActiveTab('HOME');
+            setActiveServiceTarget({ id: serviceId, slug: '', fromCategory: false });
           }}
         />
       );
@@ -480,6 +507,20 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           onExploreServices={() => {
             setActiveAccountRoute(null);
             setActiveTab('HOME');
+          }}
+        />
+      );
+    }
+
+    if (activeAccountRoute === 'ARCHIVED') {
+      return (
+        <ArchivedBookingsScreen
+          onBack={() => {
+            setActiveAccountRoute('PROFILE');
+          }}
+          onSelectBooking={(bookingId: string) => {
+            setSelectedBookingId(bookingId);
+            setActiveAccountRoute('BOOKING_DETAIL');
           }}
         />
       );
@@ -816,10 +857,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       )}
 
       {/* 9. BOTTOM NAVIGATION */}
-      <HomeBottomNav
-        activeTab={activeTab}
-        onSelectTab={handleTabSwitch}
-      />
+      {!activeAccountRoute && !isSearchActive && (
+        <HomeBottomNav
+          activeTab={activeTab}
+          onSelectTab={handleTabSwitch}
+        />
+      )}
     </View>
   );
 };

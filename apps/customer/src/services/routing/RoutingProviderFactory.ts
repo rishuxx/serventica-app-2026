@@ -1,20 +1,22 @@
 import { RoutingProvider } from './RoutingProvider';
 import { OSRMRoutingProvider } from './OSRMRoutingProvider';
 import { GoogleRoutingProvider } from './GoogleRoutingProvider';
+import { MapboxRoutingProvider } from './MapboxRoutingProvider';
 import { RoutingProviderName } from '../../types/routing.types';
 
 /**
  * SERVENTICA — Routing Provider Factory (Strategy Pattern)
- * Allows runtime and configuration-driven switching of routing engines (Google -> OSRM)
+ * Allows runtime and configuration-driven switching of routing engines (Mapbox -> Google -> OSRM)
  * without modifying any business logic or UI code.
  */
 export class RoutingProviderFactory {
   private static instance: RoutingProviderFactory;
   private readonly providers: Map<RoutingProviderName, RoutingProvider> = new Map();
-  private defaultProviderName: RoutingProviderName = 'GOOGLE';
+  private defaultProviderName: RoutingProviderName = 'MAPBOX';
 
   private constructor() {
-    // Register Google Provider as primary & OSRM as fallback
+    // Register Mapbox as primary (Phase 2), with Google & OSRM as decoupled fallbacks
+    this.providers.set('MAPBOX', new MapboxRoutingProvider());
     this.providers.set('GOOGLE', new GoogleRoutingProvider());
     this.providers.set('OSRM', new OSRMRoutingProvider());
   }

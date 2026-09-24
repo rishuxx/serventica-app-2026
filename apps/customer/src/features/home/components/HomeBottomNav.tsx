@@ -248,8 +248,8 @@ export const HomeBottomNav: React.FC<HomeBottomNavProps> = ({
   const panResponder = useMemo(
     () =>
       PanResponder.create({
-        onStartShouldSetPanResponder: () => true,
-        onMoveShouldSetPanResponder: (_, gestureState) => Math.abs(gestureState.dx) > 4,
+        onStartShouldSetPanResponder: () => false,
+        onMoveShouldSetPanResponder: (_, gestureState) => Math.abs(gestureState.dx) > 10,
         onPanResponderGrant: (evt) => {
           isDragging.current = true;
           handleTouch(evt.nativeEvent.locationX);

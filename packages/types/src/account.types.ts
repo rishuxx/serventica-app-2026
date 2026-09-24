@@ -69,6 +69,7 @@ export interface BookingRecord {
   cancellationReason?: string;
   cancelledAt?: string;
   refundStatus?: 'NOT_APPLICABLE' | 'REFUND_INITIATED' | 'REFUNDED';
+  isArchived?: boolean;
   createdAt: string;
   updatedAt: string;
 }

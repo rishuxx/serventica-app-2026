@@ -13,6 +13,7 @@ import {
   Linking,
   Animated,
   Modal,
+  Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -52,8 +53,15 @@ import { TicketContainer } from '../../../components/TicketContainer';
 import { formatBookingExactDateTime } from '../../../lib/date.utils';
 import { PriceCalculationEngine } from '../../../services/pricing/PriceCalculationEngine';
 import { LiveTrackingMap } from '../components/LiveTrackingMap';
+import { RadarSearchingBackdrop } from '../components/RadarSearchingBackdrop';
+import { ServiceCompletedBackdrop } from '../components/ServiceCompletedBackdrop';
+import { OrderCancelledBackdrop } from '../components/OrderCancelledBackdrop';
+import { ExpandableOrderBottomSheet, SNAP_COLLAPSED } from '../components/ExpandableOrderBottomSheet';
 import { liveTrackingService } from '../../../services/LiveTrackingService';
+import { useTrackingStore } from '../../../hooks/useTrackingStore';
+import { useEventHaptics } from '../../../hooks/useEventHaptics';
 import { PartnerLiveLocation } from '../../../types/tracking.types';
+import { Star } from 'lucide-react-native';
 
 interface BookingDetailScreenProps {
   bookingId: string;
@@ -83,7 +91,10 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [selectedReason, setSelectedReason] = useState(CANCELLATION_REASONS[0]);
   const [livePartnerLocation, setLivePartnerLocation] = useState<PartnerLiveLocation | null>(null);
+  const [userRating, setUserRating] = useState<number>(0);
+  const [ratingSubmitted, setRatingSubmitted] = useState<boolean>(false);
   const pulseAnim = useRef(new Animated.Value(0.35)).current;
+  const sheetPanY = useRef(new Animated.Value(SNAP_COLLAPSED)).current;
 
   useEffect(() => {
     const loop = Animated.loop(
@@ -104,8 +115,16 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
     return () => loop.stop();
   }, [pulseAnim]);
 
+  // Realtime Socket.IO Tracking Store (Phase 3)
+  const trackingStore = useTrackingStore(bookingId, 'CUSTOMER');
+
+  // Event-driven Haptic Feedback (strictly fires on status value changes, guarded & debounced)
+  useEventHaptics(booking?.status);
+
   useEffect(() => {
     if (!bookingId) return;
+
+    // 1. Keep local fallback / simulation listener active
     const unsub = liveTrackingService.subscribeToBookingTracking(
       bookingId,
       (loc) => {
@@ -114,6 +133,16 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
     );
     return () => unsub();
   }, [bookingId]);
+
+  // Authoritative live GPS: trackingStore has priority for live socket updates
+  const effectivePartnerLocation = trackingStore.partnerLocation || livePartnerLocation;
+  if (effectivePartnerLocation) {
+    console.log(
+      `[CustomerGPS] MAP PROPS\nlat=${effectivePartnerLocation.latitude}\nlon=${effectivePartnerLocation.longitude}`
+    );
+  }
+
+
 
   if (isLoading) {
     return (
@@ -197,29 +226,39 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
     return time;
   };
 
+  // Status definitions
+  const isCancelled =
+    booking.status === 'CANCELLED_BY_CUSTOMER' ||
+    booking.status === 'CANCELLED_BY_PARTNER' ||
+    (booking.status as string) === 'CANCELLED' ||
+    (booking.status as string) === 'CANCELLED_BY_SYSTEM';
+
+  const isCompleted = booking.status === 'SERVICE_COMPLETED' || booking.status === 'CLOSED';
+
   // Dynamic Servs assignment verification
   const hasAssignedStatus =
-    booking.status === 'PARTNER_ASSIGNED' ||
-    booking.status === 'PARTNER_ACCEPTED' ||
-    booking.status === 'PARTNER_EN_ROUTE' ||
-    booking.status === 'PARTNER_ARRIVED' ||
-    booking.status === 'SERVICE_STARTED';
+    !isCancelled &&
+    (booking.status === 'PARTNER_ASSIGNED' ||
+      booking.status === 'PARTNER_ACCEPTED' ||
+      booking.status === 'PARTNER_EN_ROUTE' ||
+      booking.status === 'PARTNER_ARRIVED' ||
+      booking.status === 'SERVICE_STARTED');
 
-  const effectivePartner = booking.partner || (hasAssignedStatus ? {
+  const effectivePartner = !isCancelled ? (booking.partner || (hasAssignedStatus ? {
     id: 'servs_partner_vipin_01',
     name: 'Vipin Sharma',
     phone: '+91 98765 43210',
     avatarUrl: 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?w=150&auto=format&fit=crop&q=80',
     rating: 4.95,
     specialization: 'Certified Servs Specialist',
-  } : null);
+  } : null)) : null;
 
   const hasAssignedPartner = Boolean(
     effectivePartner &&
       (hasAssignedStatus || (booking.status !== 'CONFIRMED' && booking.status !== 'SEARCHING_PARTNER'))
   );
 
-  const isSearchingPartner = !hasAssignedPartner;
+  const isSearchingPartner = !isCancelled && !isCompleted && !hasAssignedPartner;
   const isPartnerDispatched = hasAssignedPartner && (booking.status === 'PARTNER_EN_ROUTE' || booking.status === 'PARTNER_ARRIVED');
 
   // Status timeline definition - Exactly 3 stages as requested
@@ -261,10 +300,6 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
     },
   ];
 
-  const isCancelled =
-    booking.status === 'CANCELLED_BY_CUSTOMER' ||
-    booking.status === 'CANCELLED_BY_PARTNER' ||
-    (booking.status as string) === 'CANCELLED';
 
   const canCancel =
     !isCancelled &&
@@ -301,58 +336,107 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
     totalOriginalBill,
   } = billBreakdown;
 
+
+  const handleSubmitRating = () => {
+    if (userRating === 0) {
+      Alert.alert('Rating', 'Please select a star rating first.');
+      return;
+    }
+    setRatingSubmitted(true);
+    Alert.alert('Thank you!', 'Your feedback helps improve Serventica service quality.');
+  };
+
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle="light-content" />
 
-      {/* HEADER */}
-      <View
-        style={[
-          styles.headerBar,
-          {
-            paddingTop: Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 16) + 8,
-          },
-        ]}
-      >
-        <TouchableOpacity
-          style={styles.circleBackButton}
-          onPress={onBack}
-          activeOpacity={0.7}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-        >
-          <ArrowLeft size={20} color="#0F172A" strokeWidth={2.2} />
-        </TouchableOpacity>
-
-        {/* Header Booking ID Pill */}
-        <TouchableOpacity style={styles.idBadgeGroup} activeOpacity={0.75} onPress={handleCopyId}>
-          <View style={styles.idBadgeContent}>
-            <Text style={styles.idBadgeLabel}>Booking ID</Text>
-            <View style={styles.idBadgeNumberRow}>
-              <Text style={styles.headerIdText}>#{booking.bookingNumber}</Text>
-              {copiedId ? (
-                <Check size={14} color="#059669" strokeWidth={2.5} style={{ marginLeft: 4 }} />
-              ) : (
-                <Copy size={13} color="#64748B" strokeWidth={2} style={{ marginLeft: 4 }} />
-              )}
-            </View>
-          </View>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.helpIconBtn}
-          onPress={() => onGetHelp(booking.id)}
-          activeOpacity={0.7}
-        >
-          <HelpCircle size={20} color="#0F172A" strokeWidth={2} />
-        </TouchableOpacity>
+      {/* DYNAMIC TOP BACKDROP (STATE 1: CANCELLED RED GRADIENT | STATE 2: RADAR | STATE 3: SERVS FOUND DARK GREEN | STATE 4: LIVE MAP | STATE 5: COMPLETED GREEN) */}
+      <View style={StyleSheet.absoluteFill}>
+        {isCancelled ? (
+          <OrderCancelledBackdrop
+            height={Dimensions.get('window').height}
+            panY={sheetPanY}
+            reason={booking.cancellationReason || 'Cancelled upon customer request'}
+          />
+        ) : isCompleted ? (
+          <ServiceCompletedBackdrop
+            height={Dimensions.get('window').height}
+            panY={sheetPanY}
+            completedTime={formatTimeDisplay()}
+          />
+        ) : isSearchingPartner ? (
+          <RadarSearchingBackdrop height={Dimensions.get('window').height} panY={sheetPanY} />
+        ) : (
+          <LiveTrackingMap
+            isBackdropOnly={true}
+            partner={effectivePartner}
+            status={booking.status}
+            userAddressTitle={booking.address?.title || booking.address?.shortAddress || booking.address?.city || 'Service Address'}
+            userAddressLine={booking.address?.formattedAddress || booking.address?.addressLine1 || 'Delivery Location'}
+            customerLat={booking.address?.latitude}
+            customerLon={booking.address?.longitude}
+            partnerLat={effectivePartnerLocation?.latitude}
+            partnerLon={effectivePartnerLocation?.longitude}
+            heading={effectivePartnerLocation?.heading || 0}
+            isLiveGps={Boolean(effectivePartnerLocation)}
+            connectionState={trackingStore.connectionState}
+            isStale={trackingStore.isStale}
+            etaText="Arriving in ~10 mins"
+            distanceText="1.2 km away"
+            panY={sheetPanY}
+          />
+        )}
       </View>
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
+      {/* EXPANDABLE GESTURE-DRIVEN BOTTOM SHEET */}
+      <ExpandableOrderBottomSheet
+        bookingNumber={booking.bookingNumber}
+        onBack={onBack}
+        onGetHelp={() => onGetHelp(booking.id)}
+        animatedPanY={sheetPanY}
       >
+        {/* COMPLETED STATE: EXPERIENCE RATING CARD */}
+        {isCompleted && (
+          <View style={styles.experienceRatingCard}>
+            <Text style={styles.ratingCardTitle}>How was your experience?</Text>
+            <Text style={styles.ratingCardSubtitle}>
+              Rate {effectivePartner?.name || 'Vipin Sharma'}'s service
+            </Text>
+
+            <View style={styles.starsRow}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <TouchableOpacity
+                  key={star}
+                  onPress={() => setUserRating(star)}
+                  activeOpacity={0.75}
+                  style={styles.starTouchBtn}
+                >
+                  <Star
+                    size={30}
+                    color={star <= userRating ? '#F59E0B' : '#CBD5E1'}
+                    fill={star <= userRating ? '#F59E0B' : 'none'}
+                    strokeWidth={2}
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <TouchableOpacity
+              style={[
+                styles.submitRatingBtn,
+                ratingSubmitted && { backgroundColor: '#059669' },
+              ]}
+              onPress={handleSubmitRating}
+              activeOpacity={0.85}
+              disabled={ratingSubmitted}
+            >
+              <Text style={styles.submitRatingBtnText}>
+                {ratingSubmitted ? 'Rating Submitted ✓' : 'Submit rating'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* 1. TICKET-STYLE SERVICE OVERVIEW CARD (USING REUSABLE TICKETCONTAINER WITH SVG CUTS) */}
         <TicketContainer
           top={
@@ -464,7 +548,7 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
           </View>
         ) : null}
 
-        {/* 3. MINIMAL DYNAMIC SERVS ASSIGNMENT STATUS (MATCHING IMAGE 2 EXACTLY) */}
+        {/* 3. MINIMAL DYNAMIC SERVS ASSIGNMENT STATUS (DEFAULT CONTAINER) */}
         {!isCancelled && isSearchingPartner ? (
           <View style={styles.card}>
             <View style={styles.minimalSearchingRow}>
@@ -539,24 +623,6 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
             </View>
           </View>
         ) : null}
-
-        {/* 4. LIVE TRACKING (WHEN ASSIGNED / EN ROUTE AND NOT CANCELLED) */}
-        {!isCancelled && hasAssignedPartner && (
-          <LiveTrackingMap
-            partner={effectivePartner}
-            status={booking.status}
-            userAddressTitle={booking.address?.title || booking.address?.shortAddress || booking.address?.city || 'Service Address'}
-            userAddressLine={booking.address?.formattedAddress || booking.address?.addressLine1 || 'Delivery Location'}
-            customerLat={booking.address?.latitude || 30.3342}
-            customerLon={booking.address?.longitude || 77.9629}
-            partnerLat={livePartnerLocation?.latitude}
-            partnerLon={livePartnerLocation?.longitude}
-            heading={livePartnerLocation?.heading || 0}
-            isLiveGps={Boolean(livePartnerLocation)}
-            etaText="Arriving in ~12 mins"
-            distanceText="1.2 km away"
-          />
-        )}
 
         {/* 4. COMPACT HORIZONTAL SERVICE TIMELINE */}
         <Text style={styles.sectionEyebrow}>SERVICE TIMELINE</Text>
@@ -791,6 +857,26 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
             </TouchableOpacity>
           ) : null}
 
+          {/* INVOICE & RECEIPT BUTTON (FOR CONFIRMED / COMPLETED ORDERS) */}
+          {(booking.status === 'SERVICE_COMPLETED' || booking.status === 'CLOSED' || booking.status === 'CONFIRMED' || booking.status === 'PARTNER_ASSIGNED' || booking.status === 'PARTNER_EN_ROUTE' || booking.status === 'PARTNER_ARRIVED' || booking.status === 'SERVICE_STARTED') && (
+            <TouchableOpacity
+              style={styles.invoiceGlassBtn}
+              onPress={() => {
+                const yearMonth = new Date(booking.createdAt || Date.now()).toISOString().slice(0, 7).replace('-', '');
+                const invNum = `INV-${yearMonth}-${booking.id.replace(/-/g, '').slice(0, 6).toUpperCase()}`;
+                Alert.alert(
+                  'Tax Invoice & Receipt',
+                  `Invoice Number: ${invNum}\nBooking Number: ${booking.bookingNumber}\nAmount Paid: ₹${finalPayable}\nPayment Method: ${booking.payment?.paymentMethod || 'Online / COD'}\nStatus: Verified & Stamped`,
+                  [{ text: 'Close', style: 'cancel' }]
+                );
+              }}
+              activeOpacity={0.85}
+            >
+              <FileText size={16} color="#7C3AED" strokeWidth={2.2} style={{ marginRight: 6 }} />
+              <Text style={styles.invoiceGlassBtnText}>Download Tax Invoice & Receipt</Text>
+            </TouchableOpacity>
+          )}
+
           <TouchableOpacity
             style={styles.supportGlassBtn}
             onPress={() => onGetHelp(booking.id)}
@@ -800,7 +886,7 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
             <Text style={styles.supportGlassBtnText}>Need Help with this Booking?</Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+      </ExpandableOrderBottomSheet>
 
       {/* 8. ZEPTO / BLINKIT CANCELLATION REASON MODAL */}
       <Modal
@@ -913,7 +999,7 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFFFFF',
   },
   headerBar: {
     flexDirection: 'row',
@@ -1365,6 +1451,51 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: Fonts.Medium,
     color: '#34D399',
+  },
+  experienceRatingCard: {
+    backgroundColor: '#ECFDF5',
+    borderRadius: 20,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  ratingCardTitle: {
+    fontSize: 16,
+    fontFamily: Fonts.Bold,
+    color: '#065F46',
+    marginBottom: 3,
+  },
+  ratingCardSubtitle: {
+    fontSize: 12.5,
+    fontFamily: Fonts.Regular,
+    color: '#047857',
+    marginBottom: 12,
+  },
+  starsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 14,
+  },
+  starTouchBtn: {
+    padding: 4,
+  },
+  submitRatingBtn: {
+    backgroundColor: '#10B981',
+    paddingHorizontal: 20,
+    paddingVertical: 9,
+    borderRadius: 12,
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  submitRatingBtnText: {
+    fontSize: 13,
+    fontFamily: Fonts.Bold,
+    color: '#FFFFFF',
   },
   /* COMPACT HORIZONTAL SERVICE TIMELINE STYLES */
   timelineCard: {
@@ -1881,6 +2012,21 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: Fonts.Medium,
     color: '#475569',
+  },
+  invoiceGlassBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F5F3FF',
+    borderWidth: 1,
+    borderColor: '#DDD6FE',
+    height: 44,
+    borderRadius: 14,
+  },
+  invoiceGlassBtnText: {
+    fontSize: 13,
+    fontFamily: Fonts.Bold,
+    color: '#7C3AED',
   },
   centerContainer: {
     flex: 1,

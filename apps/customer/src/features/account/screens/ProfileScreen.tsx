@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -26,12 +26,16 @@ import {
   ChevronRight,
   FlaskConical,
   Trash2,
+  Map,
+  Volume2,
+  Archive,
 } from 'lucide-react-native';
 import { ServenticaTokens } from '../../../../../../packages/design-system/src';
 import { useAuth } from '../../../context/AuthContext';
 import { useProfile } from '../../../hooks/useProfile';
 import { useBookings } from '../../../hooks/useBookings';
 import { useSavedServices } from '../../../hooks/useSavedServices';
+import { useHapticSettings } from '../../../hooks/useEventHaptics';
 import { useNotifications } from '../../../hooks/useNotifications';
 import { bookingRepository } from '../../../repositories/booking.repository';
 import { ProfileHeader } from '../components/ProfileHeader';
@@ -45,6 +49,7 @@ export interface ProfileScreenProps {
   onRequireLogin?: () => void;
   onNavigateEditProfile: () => void;
   onNavigateBookings: () => void;
+  onNavigateArchivedBookings?: () => void;
   onNavigateBookingDetail: (bookingId: string) => void;
   onNavigateAddresses: () => void;
   onNavigateSavedServices: () => void;
@@ -52,6 +57,7 @@ export interface ProfileScreenProps {
   onNavigateSupport: () => void;
   onNavigateReviews: () => void;
   onNavigateSandbox?: () => void;
+  onNavigateMapDiagnostic?: () => void;
 }
 
 export const ProfileScreen: React.FC<ProfileScreenProps> = ({
@@ -59,6 +65,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
   onRequireLogin,
   onNavigateEditProfile,
   onNavigateBookings,
+  onNavigateArchivedBookings,
   onNavigateBookingDetail,
   onNavigateAddresses,
   onNavigateSavedServices,
@@ -66,6 +73,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
   onNavigateSupport,
   onNavigateReviews,
   onNavigateSandbox,
+  onNavigateMapDiagnostic,
 }) => {
   const { signOut, user } = useAuth();
   const { profile } = useProfile();
@@ -76,6 +84,19 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
 
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [archivedCount, setArchivedCount] = useState(0);
+
+  useEffect(() => {
+    const loadArchivedCount = async () => {
+      const items = await bookingRepository.getArchivedBookings();
+      setArchivedCount(items.length);
+    };
+    loadArchivedCount();
+    const unsub = bookingRepository.subscribe(() => {
+      loadArchivedCount();
+    });
+    return () => unsub();
+  }, []);
 
   const activeBooking = bookings[0] || null;
 
@@ -90,6 +111,8 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
       setIsLoggingOut(false);
     }
   };
+
+  const { hapticsEnabled, toggleHaptics } = useHapticSettings();
 
   return (
     <View style={styles.container}>
@@ -177,6 +200,19 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
         {/* 4. ACCOUNT SETTINGS & ADDRESSES */}
         <ProfileSection title="Account & Preferences">
           <ProfileMenuItem
+            label="Haptic Feedback"
+            Icon={Volume2}
+            badge={hapticsEnabled ? 'ON' : 'OFF'}
+            onPress={() => {
+              const newState = !hapticsEnabled;
+              toggleHaptics(newState);
+              Alert.alert(
+                'Haptic Feedback',
+                `Haptics turned ${newState ? 'ON' : 'OFF'}`
+              );
+            }}
+          />
+          <ProfileMenuItem
             label="Personal Details"
             Icon={User}
             onPress={onNavigateEditProfile}
@@ -210,6 +246,12 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
             label="Bookings & Orders"
             Icon={FileText}
             onPress={onNavigateBookings}
+          />
+          <ProfileMenuItem
+            label="Archived Bookings"
+            Icon={Archive}
+            badge={archivedCount > 0 ? archivedCount : undefined}
+            onPress={onNavigateArchivedBookings || (() => {})}
           />
           <ProfileMenuItem
             label="Saved Services"
@@ -254,6 +296,14 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
 
         {/* 7. DEVELOPER SANDBOX (TESTING & PREVIEW) */}
         <ProfileSection title="Testing & Data Reset">
+          {onNavigateMapDiagnostic ? (
+            <ProfileMenuItem
+              label="Native Mapbox Diagnostic"
+              Icon={Map}
+              badge="Phase 1"
+              onPress={onNavigateMapDiagnostic}
+            />
+          ) : null}
           {onNavigateSandbox ? (
             <ProfileMenuItem
               label="Servs Partner Simulator"

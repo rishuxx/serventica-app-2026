@@ -28,6 +28,7 @@ import {
   Zap,
   RotateCcw,
   Radio,
+  Trash2,
 } from 'lucide-react-native';
 import { ServenticaTokens, Fonts } from '../../../../../../packages/design-system/src';
 import { useBookings } from '../../../hooks/useBookings';
@@ -35,7 +36,11 @@ import { BookingRecord } from '../../../../../../packages/types/src';
 import { AssetRegistry } from '../../../services/home.service';
 import { formatBookingExactDateTime } from '../../../lib/date.utils';
 import { BookingTicket } from '../../../components/BookingTicket';
+import { BookingSwipeableRow } from '../../../components/BookingSwipeableRow';
 import { PriceCalculationEngine } from '../../../services/pricing/PriceCalculationEngine';
+import { bookingRepository } from '../../../repositories/booking.repository';
+import { triggerHaptic } from '../../../hooks/useEventHaptics';
+import { Modal } from 'react-native';
 
 interface BookingsScreenProps {
   onBack: () => void;
@@ -53,6 +58,55 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<TabType>('UPCOMING');
   const { bookings, isLoading, error, refresh } = useBookings(activeTab);
+
+  // Swipe Delete Confirmation Modal State
+  const [pendingDeleteBooking, setPendingDeleteBooking] = useState<BookingRecord | null>(null);
+
+  // Undo Snackbar State
+  const [undoBooking, setUndoBooking] = useState<BookingRecord | null>(null);
+  const undoTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleArchive = async (item: BookingRecord) => {
+    triggerHaptic('impactMedium');
+    await bookingRepository.archiveBooking(item.id);
+    refresh();
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!pendingDeleteBooking) return;
+    const target = pendingDeleteBooking;
+    setPendingDeleteBooking(null);
+    triggerHaptic('notificationSuccess');
+
+    const isUpcoming = activeTab === 'UPCOMING';
+
+    // Store for 5-second undo window
+    setUndoBooking(target);
+
+    if (isUpcoming) {
+      // Cancel active upcoming booking
+      await bookingRepository.cancelBooking(target.id, 'Swiped to cancel booking');
+    } else {
+      // Permanently remove completed or cancelled record from history
+      await bookingRepository.deleteBooking(target.id);
+    }
+    refresh();
+
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+    undoTimerRef.current = setTimeout(() => {
+      setUndoBooking(null);
+    }, 5000);
+  };
+
+  const handleUndoDelete = async () => {
+    if (!undoBooking) return;
+    triggerHaptic('impactMedium');
+    const target = undoBooking;
+    setUndoBooking(null);
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+    await bookingRepository.saveBooking(target);
+    refresh();
+  };
 
   // Tab counts helper
   const tabCounts = useMemo(() => {
@@ -141,59 +195,67 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({
     });
 
     return (
-      <BookingTicket
-        theme={theme}
-        status={item.status}
-        bookingId={`#${item.bookingNumber}`}
-        datetime={formatBookingExactDateTime(item.scheduledStartTime, item.scheduledDate, item.createdAt)}
-        thumbnail={imageSource}
-        title={item.serviceName}
-        meta={[
-          {
-            icon: 'clock',
-            text: `${scheduleTimeDisplay} • ${itemCount} ${itemCount === 1 ? 'service' : 'services'}`,
-          },
-          {
-            icon: 'pin',
-            text: addressText,
-          },
-        ]}
-        totalLabel="TOTAL"
-        total={`₹${bill.finalPayable}`}
-        cancelInfo={
-          isCancelled
-            ? {
-                title: 'Booking Cancelled',
-                reason: item.cancellationReason || 'Need to change date or time slot',
-              }
-            : undefined
-        }
-        technician={
-          hasAssignedPartner && effectivePartner
-            ? {
-                name: effectivePartner.name,
-                role: effectivePartner.specialization || 'Serventica Verified',
-                avatar: effectivePartner.avatarUrl,
-                onCall: effectivePartner.phone
-                  ? () => {
-                      const tel = effectivePartner.phone!.replace(/\s+/g, '');
-                      Linking.openURL(`tel:${tel}`).catch(() => {});
-                    }
-                  : undefined,
-                onTrack: () => onSelect(item.id),
-              }
-            : undefined
-        }
-        assigning={
-          !hasAssignedPartner && !isCancelled
-            ? {
-                title: 'Assigning Servs...',
-                subtitle: 'Finding Servs within 5 km',
-              }
-            : undefined
-        }
-        onPress={() => onSelect(item.id)}
-      />
+      <BookingSwipeableRow
+        onSwipeDelete={() => {
+          triggerHaptic('impactLight');
+          setPendingDeleteBooking(item);
+        }}
+        onSwipeArchive={() => handleArchive(item)}
+      >
+        <BookingTicket
+          theme={theme}
+          status={item.status}
+          bookingId={`#${item.bookingNumber}`}
+          datetime={formatBookingExactDateTime(item.scheduledStartTime, item.scheduledDate, item.createdAt)}
+          thumbnail={imageSource}
+          title={item.serviceName}
+          meta={[
+            {
+              icon: 'clock',
+              text: `${scheduleTimeDisplay} • ${itemCount} ${itemCount === 1 ? 'service' : 'services'}`,
+            },
+            {
+              icon: 'pin',
+              text: addressText,
+            },
+          ]}
+          totalLabel="TOTAL"
+          total={`₹${bill.finalPayable}`}
+          cancelInfo={
+            isCancelled
+              ? {
+                  title: 'Booking Cancelled',
+                  reason: item.cancellationReason || 'Need to change date or time slot',
+                }
+              : undefined
+          }
+          technician={
+            hasAssignedPartner && effectivePartner
+              ? {
+                  name: effectivePartner.name,
+                  role: effectivePartner.specialization || 'Serventica Verified',
+                  avatar: effectivePartner.avatarUrl,
+                  onCall: effectivePartner.phone
+                    ? () => {
+                        const tel = effectivePartner.phone!.replace(/\s+/g, '');
+                        Linking.openURL(`tel:${tel}`).catch(() => {});
+                      }
+                    : undefined,
+                  onTrack: () => onSelect(item.id),
+                }
+              : undefined
+          }
+          assigning={
+            !hasAssignedPartner && !isCancelled
+              ? {
+                  title: 'Assigning Servs...',
+                  subtitle: 'Finding Servs within 5 km',
+                }
+              : undefined
+          }
+          onPress={() => onSelect(item.id)}
+        />
+      </BookingSwipeableRow>
     );
   };
 
@@ -315,6 +377,72 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({
           removeClippedSubviews={Platform.OS === 'android'}
         />
       )}
+
+      {/* 5-SECOND UNDO TOAST / SNACKBAR */}
+      {undoBooking ? (
+        <View style={styles.undoToastBar}>
+          <View style={styles.undoToastTextGroup}>
+            <CheckCircle2 size={16} color="#10B981" strokeWidth={2.4} />
+            <Text style={styles.undoToastText}>
+              {activeTab === 'UPCOMING' ? 'Booking cancelled' : 'Booking deleted'}
+            </Text>
+          </View>
+          <TouchableOpacity style={styles.undoActionBtn} onPress={handleUndoDelete} activeOpacity={0.8}>
+            <RotateCcw size={14} color="#7C3AED" strokeWidth={2.4} />
+            <Text style={styles.undoActionBtnText}>UNDO</Text>
+          </TouchableOpacity>
+        </View>
+      ) : null}
+
+      {/* CONFIRMATION BOTTOM SHEET MODAL (CANCEL FOR UPCOMING, DELETE FOR HISTORY) */}
+      <Modal
+        visible={Boolean(pendingDeleteBooking)}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPendingDeleteBooking(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity
+            style={styles.modalBackdropTap}
+            activeOpacity={1}
+            onPress={() => setPendingDeleteBooking(null)}
+          />
+          <View style={styles.modalContentCard}>
+            <View style={styles.modalIconWrapper}>
+              <Trash2 size={24} color="#DC2626" strokeWidth={2.2} />
+            </View>
+
+            <Text style={styles.modalTitle}>
+              {activeTab === 'UPCOMING' ? 'Cancel booking?' : 'Delete booking?'}
+            </Text>
+            <Text style={styles.modalBodyText}>
+              {activeTab === 'UPCOMING'
+                ? `#${pendingDeleteBooking?.bookingNumber || pendingDeleteBooking?.id} will be cancelled. 100% full refund will be processed to your original payment method.`
+                : `#${pendingDeleteBooking?.bookingNumber || pendingDeleteBooking?.id} will be permanently removed. This action cannot be undone.`}
+            </Text>
+
+            <View style={styles.modalActionButtonsRow}>
+              <TouchableOpacity
+                style={styles.cancelModalBtn}
+                activeOpacity={0.85}
+                onPress={() => setPendingDeleteBooking(null)}
+              >
+                <Text style={styles.cancelModalBtnText}>Keep Service</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.deleteModalBtn}
+                activeOpacity={0.85}
+                onPress={handleConfirmDelete}
+              >
+                <Text style={styles.deleteModalBtnText}>
+                  {activeTab === 'UPCOMING' ? 'Confirm Cancel' : 'Delete'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -724,6 +852,138 @@ const styles = StyleSheet.create({
   exploreBtnText: {
     fontSize: 14,
     fontFamily: Fonts.SemiBold,
+    color: '#FFFFFF',
+  },
+  /* 5-SECOND UNDO TOAST STYLES */
+  undoToastBar: {
+    position: 'absolute',
+    bottom: 24,
+    left: 20,
+    right: 20,
+    backgroundColor: '#0F172A',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 8,
+    zIndex: 99,
+  },
+  undoToastTextGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  undoToastText: {
+    fontSize: 13.5,
+    fontFamily: Fonts.Medium,
+    color: '#FFFFFF',
+  },
+  undoActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F3FF',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+    gap: 5,
+  },
+  undoActionBtnText: {
+    fontSize: 12,
+    fontFamily: Fonts.Bold,
+    color: '#7C3AED',
+    letterSpacing: 0.5,
+  },
+  /* DELETE CONFIRMATION MODAL STYLES */
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  modalBackdropTap: {
+    ...StyleSheet.absoluteFill,
+  },
+  modalContentCard: {
+    width: '100%',
+    maxWidth: 340,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 24,
+    alignItems: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
+    zIndex: 100,
+  },
+  modalIconWrapper: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: '#FEF2F2',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: '#FCA5A5',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontFamily: Fonts.Bold,
+    color: '#0F172A',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  modalBodyText: {
+    fontSize: 13,
+    fontFamily: Fonts.Light,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 19,
+    marginBottom: 20,
+  },
+  modalActionButtonsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  cancelModalBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 14,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelModalBtnText: {
+    fontSize: 14,
+    fontFamily: Fonts.SemiBold,
+    color: '#475569',
+  },
+  deleteModalBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 14,
+    backgroundColor: '#DC2626',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#DC2626',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  deleteModalBtnText: {
+    fontSize: 14,
+    fontFamily: Fonts.Bold,
     color: '#FFFFFF',
   },
 });

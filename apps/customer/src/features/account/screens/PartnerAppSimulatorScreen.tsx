@@ -25,6 +25,8 @@ import {
   Radio,
   RefreshCw,
   Trash2,
+  Compass,
+  XCircle,
 } from 'lucide-react-native';
 import { Fonts } from '../../../../../../packages/design-system/src';
 import { useAuth } from '../../../context/AuthContext';
@@ -35,7 +37,11 @@ import { formatBookingExactDateTime } from '../../../lib/date.utils';
 import { PriceCalculationEngine } from '../../../services/pricing/PriceCalculationEngine';
 import { LiveTrackingMap } from '../components/LiveTrackingMap';
 import { liveTrackingService } from '../../../services/LiveTrackingService';
-import { INITIAL_CONFIGURED_ORIGIN } from '../../../repositories/origin.repository';
+import { trackingSocketService } from '../../../services/tracking/TrackingSocketService';
+import { socketConnectionManager } from '../../../services/tracking/SocketConnectionManager';
+import { locationService } from '../../../services/location.service';
+import { backgroundLocationManager } from '../../../services/location/BackgroundLocationManager';
+import { DispatchService } from '../../../services/DispatchService';
 
 interface PartnerAppSimulatorScreenProps {
   onBack: () => void;
@@ -89,35 +95,160 @@ export const PartnerAppSimulatorScreen: React.FC<PartnerAppSimulatorScreenProps>
     });
     return () => unsub();
   }, [user?.id]);
+  const [partnerCoords, setPartnerCoords] = useState<{ latitude: number; longitude: number } | null>(null);
+
+  // Immediately acquire partner's live device GPS on screen mount before any order is accepted
+  useEffect(() => {
+    let isMounted = true;
+    const fetchInitialPartnerGps = async () => {
+      try {
+        const perm = await locationService.requestPermission();
+        if (perm === 'GRANTED' && isMounted) {
+          const coords = await locationService.getCurrentCoordinates();
+          if (coords && isMounted) {
+            console.log(`[PartnerSimulator] Initial live GPS acquired before acceptance: lat=${coords.latitude}, lon=${coords.longitude}`);
+            setPartnerCoords({ latitude: coords.latitude, longitude: coords.longitude });
+          }
+        }
+      } catch (e) {
+        console.warn('[PartnerSimulator] Initial GPS fetch error:', e);
+      }
+    };
+    fetchInitialPartnerGps();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const activePartner = SIMULATED_PARTNERS[selectedPartnerIndex];
 
   const handleAcceptBooking = async (booking: BookingRecord) => {
-    const updated: BookingRecord = {
-      ...booking,
-      status: 'PARTNER_ASSIGNED',
-      partner: {
-        id: activePartner.id,
-        name: activePartner.name,
-        phone: activePartner.phone,
-        avatarUrl: activePartner.avatarUrl,
-        rating: activePartner.rating,
-        specialization: activePartner.specialization,
-      },
-      updatedAt: new Date().toISOString(),
-    };
-    await bookingRepository.saveBooking(updated);
-    Alert.alert(
-      'Service Accepted!',
-      `${activePartner.name} has accepted the service order. Customer app will now show Servs assigned with live contact.`,
-      [
-        { text: 'Stay Here', style: 'cancel' },
-        {
-          text: 'View Customer UI',
-          onPress: () => onNavigateToBookingDetail?.(booking.id),
+    try {
+      // 1. Request GPS permission and acquire initial physical device GPS fix
+      const perm = await locationService.requestPermission();
+      let deviceCoords: { latitude: number; longitude: number } | null = null;
+      if (perm === 'GRANTED') {
+        deviceCoords = await locationService.getCurrentCoordinates();
+      }
+
+      if (deviceCoords) {
+        setPartnerCoords({ latitude: deviceCoords.latitude, longitude: deviceCoords.longitude });
+      }
+
+      const updated: BookingRecord = {
+        ...booking,
+        status: 'PARTNER_ASSIGNED',
+        partner: {
+          id: activePartner.id,
+          name: activePartner.name,
+          phone: activePartner.phone,
+          avatarUrl: activePartner.avatarUrl,
+          rating: activePartner.rating,
+          specialization: activePartner.specialization,
         },
-      ]
-    );
+        updatedAt: new Date().toISOString(),
+      };
+      await bookingRepository.saveBooking(updated);
+
+      // 2. Immediately start real device GPS streaming to establish initial anchor
+      await startGpsStreaming(updated);
+
+      Alert.alert(
+        'Service Accepted!',
+        `${activePartner.name} has accepted the service order.${
+          deviceCoords
+            ? ` Captured live partner location (${deviceCoords.latitude.toFixed(4)}, ${deviceCoords.longitude.toFixed(4)}).`
+            : ''
+        } Customer app now shows live assigned partner.`,
+        [
+          { text: 'Stay Here', style: 'cancel' },
+          {
+            text: 'View Customer UI',
+            onPress: () => onNavigateToBookingDetail?.(booking.id),
+          },
+        ]
+      );
+    } catch (err: any) {
+      console.warn('[PartnerSimulator] Error accepting booking with GPS:', err);
+    }
+  };
+
+  const startGpsStreaming = async (booking: BookingRecord) => {
+    try {
+      const perm = await locationService.requestPermission();
+      if (perm !== 'GRANTED') {
+        Alert.alert('Permission Denied', 'GPS permission is required to stream partner location.');
+        return;
+      }
+      const coords = await locationService.getCurrentCoordinates();
+      if (coords) {
+        setPartnerCoords({ latitude: coords.latitude, longitude: coords.longitude });
+        const initialPayload = {
+          bookingId: booking.id,
+          partnerId: activePartner.id,
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+          timestamp: new Date().toISOString(),
+          isMocked: false,
+        };
+
+        socketConnectionManager.connect({
+          role: 'PARTNER',
+          userId: activePartner.id,
+        });
+
+        trackingSocketService.emitPartnerLocation(initialPayload);
+        liveTrackingService.publishPartnerLocation(initialPayload);
+      }
+
+      if (!backgroundLocationManager.isTracking()) {
+        await backgroundLocationManager.startTracking({
+          bookingId: booking.id,
+          partnerId: activePartner.id,
+          profile: 'ACTIVE_NAVIGATION',
+          onLocationUpdate: (loc) => {
+            console.log(
+              `[PartnerGPS] Real Device GPS callback: lat=${loc.latitude.toFixed(5)}, lon=${loc.longitude.toFixed(5)}, accuracy=${loc.accuracy ?? 0}`
+            );
+            setPartnerCoords({ latitude: loc.latitude, longitude: loc.longitude });
+            trackingSocketService.emitPartnerLocation({
+              bookingId: booking.id,
+              partnerId: activePartner.id,
+              latitude: loc.latitude,
+              longitude: loc.longitude,
+              accuracy: loc.accuracy,
+              heading: loc.heading,
+              speed: loc.speed,
+              timestamp: new Date(loc.timestamp).toISOString(),
+              isMocked: false,
+            });
+          },
+        });
+      }
+
+      // Continuous 2.5-second fallback heartbeat loop to stream live GPS (e.g. from Emulator "Play Route" or device sensors if watchPosition is idle)
+      const existingTimer = (global as any).__servsPartnerGpsTimer;
+      if (existingTimer) clearInterval(existingTimer);
+
+      (global as any).__servsPartnerGpsTimer = setInterval(async () => {
+        try {
+          const fresh = await locationService.getCurrentCoordinates();
+          if (fresh) {
+            setPartnerCoords({ latitude: fresh.latitude, longitude: fresh.longitude });
+            trackingSocketService.emitPartnerLocation({
+              bookingId: booking.id,
+              partnerId: activePartner.id,
+              latitude: fresh.latitude,
+              longitude: fresh.longitude,
+              timestamp: new Date().toISOString(),
+              isMocked: false,
+            });
+          }
+        } catch (pollErr) {}
+      }, 2500);
+    } catch (e: any) {
+      console.warn('[PartnerSimulator] GPS streaming activation error:', e?.message);
+    }
   };
 
   const handleStartEnRoute = async (booking: BookingRecord) => {
@@ -136,58 +267,55 @@ export const PartnerAppSimulatorScreen: React.FC<PartnerAppSimulatorScreenProps>
     };
     await bookingRepository.saveBooking(updated);
 
-    // Broadcast starting GPS coordinate & animate partner movement
-    const originLat = INITIAL_CONFIGURED_ORIGIN.latitude;
-    const originLng = INITIAL_CONFIGURED_ORIGIN.longitude;
-    const destLat = booking.address?.latitude || 30.3342;
-    const destLng = booking.address?.longitude || 77.9629;
-
-    // Send initial en route GPS coordinate
-    liveTrackingService.publishPartnerLocation({
-      bookingId: booking.id,
-      partnerId: activePartner.id,
-      latitude: originLat,
-      longitude: originLng,
-      heading: 45,
-      speed: 8.5,
-      timestamp: new Date().toISOString(),
-    });
-
-    // Simulate progressive GPS checkpoints approaching customer
-    let step = 1;
-    const totalSteps = 4;
-    const interval = setInterval(() => {
-      if (step >= totalSteps) {
-        clearInterval(interval);
-        return;
-      }
-      const progress = step / totalSteps;
-      const curLat = originLat + (destLat - originLat) * progress;
-      const curLng = originLng + (destLng - originLng) * progress;
-
-      liveTrackingService.publishPartnerLocation({
-        bookingId: booking.id,
-        partnerId: activePartner.id,
-        latitude: curLat,
-        longitude: curLng,
-        heading: 45,
-        speed: 7.2,
-        timestamp: new Date().toISOString(),
-      });
-      step++;
-    }, 4000);
+    // Start single authoritative Android device/emulator GPS streaming
+    await startGpsStreaming(updated);
 
     Alert.alert(
       'En Route Started!',
-      `Partner is on the way. The customer app will display live tracking route on the map with arriving ETA.`,
+      `Partner is en route. Live device GPS is streaming directly to customer map over Socket.IO.`,
       [
-        { text: 'OK', style: 'cancel' },
+        { text: 'Stay Here', style: 'cancel' },
         {
           text: 'View Customer UI',
           onPress: () => onNavigateToBookingDetail?.(booking.id),
         },
       ]
     );
+  };
+
+  const handleBroadcastDeviceGPS = async (booking: BookingRecord) => {
+    try {
+      // Mark status as EN_ROUTE if still assigned/accepted
+      if (booking.status === 'PARTNER_ASSIGNED' || booking.status === 'PARTNER_ACCEPTED') {
+        const updated: BookingRecord = {
+          ...booking,
+          status: 'PARTNER_EN_ROUTE',
+          partner: booking.partner || {
+            id: activePartner.id,
+            name: activePartner.name,
+            phone: activePartner.phone,
+            avatarUrl: activePartner.avatarUrl,
+            rating: activePartner.rating,
+            specialization: activePartner.specialization,
+          },
+          updatedAt: new Date().toISOString(),
+        };
+        await bookingRepository.saveBooking(updated);
+        await startGpsStreaming(updated);
+      } else {
+        await startGpsStreaming(booking);
+      }
+
+      const coords = await locationService.getCurrentCoordinates();
+      Alert.alert(
+        'Physical GPS Broadcasted',
+        coords
+          ? `Broadcasting live physical device GPS (${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)}) to Socket.IO tracking room & background service.`
+          : 'Broadcasting live physical device GPS to Socket.IO tracking room & background service.'
+      );
+    } catch (e: any) {
+      Alert.alert('GPS Error', e?.message || 'Unable to read physical device GPS.');
+    }
   };
 
   const handleArrived = async (booking: BookingRecord) => {
@@ -197,16 +325,25 @@ export const PartnerAppSimulatorScreen: React.FC<PartnerAppSimulatorScreenProps>
       updatedAt: new Date().toISOString(),
     };
     await bookingRepository.saveBooking(updated);
+    // Battery optimization: reduce GPS frequency once arrived at location
+    backgroundLocationManager.updateProfile('ARRIVED_OR_STARTED');
     Alert.alert('Partner Arrived!', 'Customer notified that Servs has arrived at the location.');
   };
 
   const handleStartService = async (booking: BookingRecord) => {
+    // 1. Authoritative transition via Phase 7 RPC
+    await DispatchService.startService({
+      bookingId: booking.id,
+      partnerId: activePartner.id,
+    });
+
     const updated: BookingRecord = {
       ...booking,
       status: 'SERVICE_STARTED',
       updatedAt: new Date().toISOString(),
     };
     await bookingRepository.saveBooking(updated);
+    backgroundLocationManager.updateProfile('ARRIVED_OR_STARTED');
     Alert.alert(
       'Service Started!',
       'Work in progress status broadcasted to customer app.',
@@ -221,15 +358,24 @@ export const PartnerAppSimulatorScreen: React.FC<PartnerAppSimulatorScreenProps>
   };
 
   const handleCompleteService = async (booking: BookingRecord) => {
+    // 1. Authoritative completion & financial settlement via Phase 7 RPC
+    const res = await DispatchService.completeService({
+      bookingId: booking.id,
+      partnerId: activePartner.id,
+      completionNotes: 'Work verified and successfully completed.',
+    });
+
     const updated: BookingRecord = {
       ...booking,
       status: 'SERVICE_COMPLETED',
       updatedAt: new Date().toISOString(),
     };
     await bookingRepository.saveBooking(updated);
+    // Terminate background tracking task once service lifecycle finishes
+    await backgroundLocationManager.stopTracking();
     Alert.alert(
       'Service Completed!',
-      'Job marked completed in real time. The customer order is now completed and moved to the Completed tab with full invoice.',
+      `Job completed with settlement created (Specialist Payout: ₹${res.payout ?? 418}). Order moved to Completed tab.`,
       [
         { text: 'Stay in Partner App', style: 'cancel' },
         {
@@ -241,6 +387,14 @@ export const PartnerAppSimulatorScreen: React.FC<PartnerAppSimulatorScreenProps>
   };
 
   const handleResetToSearching = async (booking: BookingRecord) => {
+    // Reassign via Phase 7 RPC: atomically revokes old partner authority & re-opens dispatch
+    await DispatchService.reassignPartner({
+      bookingId: booking.id,
+      reason: 'Partner manually unassigned in simulator',
+      actorType: 'PARTNER',
+      actorId: activePartner.id,
+    });
+
     const updated: BookingRecord = {
       ...booking,
       status: 'CONFIRMED',
@@ -394,8 +548,66 @@ export const PartnerAppSimulatorScreen: React.FC<PartnerAppSimulatorScreenProps>
             <Radio size={28} color="#94A3B8" />
             <Text style={styles.emptyTitle}>No orders in this state</Text>
             <Text style={styles.emptySub}>
-              Book a service from the customer app to test incoming order requests.
+              Book a service from the customer app, or create an instant live test order here.
             </Text>
+            <TouchableOpacity
+              style={[styles.acceptBtn, { marginTop: 14, paddingHorizontal: 20 }]}
+              onPress={async () => {
+                const now = new Date().toISOString();
+                const testBooking: BookingRecord = {
+                  id: `SRV-${Date.now().toString().slice(-6)}`,
+                  bookingNumber: `SRV-${Math.floor(100000 + Math.random() * 900000)}`,
+                  serviceId: 's1',
+                  serviceName: 'AC Repair & Diagnosis',
+                  status: 'CONFIRMED',
+                  customerId: user?.id || 'guest_user',
+                  addressId: 'addr_test_01',
+                  createdAt: now,
+                  updatedAt: now,
+                  scheduledDate: now.split('T')[0],
+                  scheduledStartTime: 'Express (~15 mins)',
+                  address: {
+                    title: 'Customer Residence',
+                    addressLine1: 'Rajpur Road, Near Clock Tower',
+                    city: 'Dehradun',
+                    state: 'Uttarakhand',
+                    pincode: '248001',
+                    formattedAddress: 'Rajpur Road, Dehradun, Uttarakhand 248001',
+                    latitude: 30.3342,
+                    longitude: 77.9629,
+                  },
+                  partner: null,
+                  items: [
+                    {
+                      id: 'item_01',
+                      bookingId: `SRV-TEST`,
+                      serviceId: 's1',
+                      serviceName: 'AC Repair & Diagnosis',
+                      quantity: 1,
+                      unitPrice: 499,
+                      totalPrice: 499,
+                    },
+                  ],
+                  payment: {
+                    subtotal: 499,
+                    tax: 0,
+                    platformFee: 49,
+                    discount: 0,
+                    total: 548,
+                    currency: 'INR',
+                    paymentStatus: 'PENDING',
+                    paymentMethod: 'CASH_ON_DELIVERY',
+                  },
+                };
+                await bookingRepository.saveBooking(testBooking);
+                await loadAllBookings();
+                Alert.alert('Test Booking Created', `Booking #${testBooking.bookingNumber} is ready for live tracking test.`);
+              }}
+              activeOpacity={0.85}
+            >
+              <Sparkles size={16} color="#FFFFFF" strokeWidth={2.4} />
+              <Text style={styles.acceptBtnText}>Create Instant Test Order</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           filteredBookings.map((item) => {
@@ -487,6 +699,76 @@ export const PartnerAppSimulatorScreen: React.FC<PartnerAppSimulatorScreenProps>
                   </View>
                 )}
 
+                {/* Live GPS Test & Route Setup Card */}
+                <View style={styles.liveGpsTestCard}>
+                  <View style={styles.liveGpsHeader}>
+                    <Compass size={14} color="#059669" strokeWidth={2.4} />
+                    <Text style={styles.liveGpsTitle}>Live GPS Test & Route Setup</Text>
+                  </View>
+
+                  {/* Route Test Guide */}
+                  <View style={styles.routeTestingGuide}>
+                    <Text style={styles.routeTestingStep}>
+                      <Text style={styles.boldLabel}>START (Partner GPS):</Text>{' '}
+                      {partnerCoords
+                        ? `${partnerCoords.latitude.toFixed(6)}, ${partnerCoords.longitude.toFixed(6)}`
+                        : 'Acquiring device GPS...'}
+                    </Text>
+                    <Text style={styles.routeTestingStep}>
+                      <Text style={styles.boldLabel}>END (Customer Destination):</Text>{' '}
+                      {item.address?.latitude != null && item.address?.longitude != null
+                        ? `${Number(item.address.latitude).toFixed(6)}, ${Number(item.address.longitude).toFixed(6)}`
+                        : 'No destination in booking'}
+                    </Text>
+                  </View>
+
+                  <View style={styles.gpsGrid}>
+                    {/* Partner Current GPS */}
+                    <View style={styles.gpsBlock}>
+                      <Text style={styles.gpsBlockTag}>PARTNER CURRENT GPS</Text>
+                      <Text style={styles.gpsCoordinate}>
+                        Latitude: {partnerCoords ? partnerCoords.latitude.toFixed(6) : 'Acquiring...'}
+                      </Text>
+                      <Text style={styles.gpsCoordinate}>
+                        Longitude: {partnerCoords ? partnerCoords.longitude.toFixed(6) : 'Acquiring...'}
+                      </Text>
+                    </View>
+
+                    {/* Customer Destination */}
+                    <View style={styles.gpsBlock}>
+                      <Text style={styles.gpsBlockTag}>CUSTOMER DESTINATION</Text>
+                      <Text style={styles.gpsCoordinate}>
+                        Latitude: {item.address?.latitude != null ? Number(item.address.latitude).toFixed(6) : 'N/A'}
+                      </Text>
+                      <Text style={styles.gpsCoordinate}>
+                        Longitude: {item.address?.longitude != null ? Number(item.address.longitude).toFixed(6) : 'N/A'}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <TouchableOpacity
+                    style={styles.refreshGpsAction}
+                    onPress={async () => {
+                      try {
+                        const c = await locationService.getCurrentCoordinates();
+                        if (c) {
+                          setPartnerCoords({ latitude: c.latitude, longitude: c.longitude });
+                          Alert.alert(
+                            'GPS Updated',
+                            `Partner GPS:\nLat: ${c.latitude.toFixed(6)}\nLon: ${c.longitude.toFixed(6)}\n\nDestination:\nLat: ${item.address?.latitude ?? 'N/A'}\nLon: ${item.address?.longitude ?? 'N/A'}`
+                          );
+                        }
+                      } catch (e: any) {
+                        Alert.alert('GPS Error', e?.message || 'Failed to read device GPS');
+                      }
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <RefreshCw size={12} color="#059669" />
+                    <Text style={styles.refreshGpsActionText}>Refresh GPS Coordinates</Text>
+                  </TouchableOpacity>
+                </View>
+
                 {/* 1. Live Interactive Route Map to Customer Location */}
                 <View style={{ marginVertical: 8 }}>
                   <LiveTrackingMap
@@ -494,8 +776,10 @@ export const PartnerAppSimulatorScreen: React.FC<PartnerAppSimulatorScreenProps>
                     status={item.status}
                     userAddressTitle={item.address?.shortAddress || item.address?.title || item.address?.city || 'Customer Location'}
                     userAddressLine={item.address?.formattedAddress || item.address?.addressLine1 || 'Customer Delivery Address'}
-                    customerLat={item.address?.latitude || 30.3342}
-                    customerLon={item.address?.longitude || 77.9629}
+                    customerLat={item.address?.latitude}
+                    customerLon={item.address?.longitude}
+                    partnerLat={partnerCoords?.latitude}
+                    partnerLon={partnerCoords?.longitude}
                     etaText={
                       item.status === 'PARTNER_ARRIVED'
                         ? 'Arrived at Doorstep'
@@ -514,14 +798,27 @@ export const PartnerAppSimulatorScreen: React.FC<PartnerAppSimulatorScreenProps>
                 {/* 2. Partner Action Buttons Grid */}
                 <View style={styles.btnGrid}>
                   {!isAssigned ? (
-                    <TouchableOpacity
-                      style={styles.acceptBtn}
-                      onPress={() => handleAcceptBooking(item)}
-                      activeOpacity={0.85}
-                    >
-                      <UserCheck size={16} color="#FFFFFF" strokeWidth={2.4} />
-                      <Text style={styles.acceptBtnText}>Accept Order as {activePartner.name}</Text>
-                    </TouchableOpacity>
+                    <View style={{ gap: 8 }}>
+                      <TouchableOpacity
+                        style={styles.acceptBtn}
+                        onPress={() => handleAcceptBooking(item)}
+                        activeOpacity={0.85}
+                      >
+                        <UserCheck size={16} color="#FFFFFF" strokeWidth={2.4} />
+                        <Text style={styles.acceptBtnText}>Accept Order as {activePartner.name}</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={[styles.resetBtn, { backgroundColor: '#F8FAFC', borderColor: '#E2E8F0', marginTop: 0 }]}
+                        onPress={() => {
+                          Alert.alert('Offer Declined', 'Specialist passed on this offer. Next nearby specialist in dispatch wave will receive it.');
+                        }}
+                        activeOpacity={0.85}
+                      >
+                        <XCircle size={14} color="#64748B" strokeWidth={2} />
+                        <Text style={[styles.resetBtnText, { color: '#64748B' }]}>Decline / Pass Offer</Text>
+                      </TouchableOpacity>
+                    </View>
                   ) : (
                     <>
                       {/* Step 1: Start Ride */}
@@ -533,6 +830,20 @@ export const PartnerAppSimulatorScreen: React.FC<PartnerAppSimulatorScreenProps>
                         >
                           <Navigation size={15} color="#FFFFFF" strokeWidth={2.2} />
                           <Text style={styles.enRouteBtnText}>1. Start Ride (En Route)</Text>
+                        </TouchableOpacity>
+                      )}
+
+                      {/* Broadcast Real Device GPS (Always accessible when Assigned or En Route) */}
+                      {(item.status === 'PARTNER_ASSIGNED' || item.status === 'PARTNER_ACCEPTED' || item.status === 'PARTNER_EN_ROUTE') && (
+                        <TouchableOpacity
+                          style={[styles.enRouteBtn, { backgroundColor: '#059669', marginTop: item.status === 'PARTNER_EN_ROUTE' ? 0 : 6 }]}
+                          onPress={() => handleBroadcastDeviceGPS(item)}
+                          activeOpacity={0.85}
+                        >
+                          <Compass size={15} color="#FFFFFF" strokeWidth={2.2} />
+                          <Text style={styles.enRouteBtnText}>
+                            {backgroundLocationManager.isTracking() ? 'Streaming Real GPS Live ●' : 'Broadcast Real Device GPS'}
+                          </Text>
                         </TouchableOpacity>
                       )}
 
@@ -983,5 +1294,84 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.Light,
     color: '#64748B',
     textAlign: 'center',
+  },
+  liveGpsTestCard: {
+    backgroundColor: '#F0FDF4',
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 8,
+  },
+  liveGpsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 8,
+  },
+  liveGpsTitle: {
+    fontSize: 12,
+    fontFamily: Fonts.Bold,
+    color: '#166534',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  routeTestingGuide: {
+    backgroundColor: '#DCFCE7',
+    padding: 8,
+    borderRadius: 8,
+    marginBottom: 8,
+    gap: 4,
+  },
+  routeTestingStep: {
+    fontSize: 11,
+    fontFamily: Fonts.Regular,
+    color: '#14532D',
+  },
+  boldLabel: {
+    fontFamily: Fonts.Bold,
+    color: '#14532D',
+  },
+  gpsGrid: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 8,
+  },
+  gpsBlock: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 8,
+    padding: 8,
+  },
+  gpsBlockTag: {
+    fontSize: 9.5,
+    fontFamily: Fonts.Bold,
+    color: '#059669',
+    marginBottom: 4,
+    letterSpacing: 0.3,
+  },
+  gpsCoordinate: {
+    fontSize: 11,
+    fontFamily: Fonts.Medium,
+    color: '#334155',
+    lineHeight: 16,
+  },
+  refreshGpsAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 6,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#86EFAC',
+  },
+  refreshGpsActionText: {
+    fontSize: 11,
+    fontFamily: Fonts.SemiBold,
+    color: '#059669',
   },
 });

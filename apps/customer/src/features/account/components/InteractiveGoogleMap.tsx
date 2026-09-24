@@ -9,6 +9,8 @@ import {
   ActivityIndicator,
   PanResponder,
   Animated,
+  Platform,
+  StatusBar,
 } from 'react-native';
 import {
   MapPin,
@@ -34,6 +36,7 @@ const GOOGLE_MAPS_KEY =
 const MAPBOX_TOKEN =
   process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN ||
   process.env.MAPBOX_ACCESS_TOKEN ||
+  ServenticaEnvironment?.mapbox?.accessToken ||
   '';
 
 export interface InteractiveGoogleMapProps {
@@ -65,30 +68,47 @@ export const InteractiveGoogleMap: React.FC<InteractiveGoogleMapProps> = ({
   const [imageLoaded, setImageLoaded] = useState<boolean>(false);
   const [hasError, setHasError] = useState<boolean>(false);
 
-  // Dynamic Navigation & Pan/Zoom State
-  const [zoomOffset, setZoomOffset] = useState<number>(0); // manual zoom delta
-  const [panCenter, setPanCenter] = useState<{ lat: number; lon: number } | null>(null);
+  // Explicit Follow Mode (Phase 5)
+  const [isFollowingPartner, setIsFollowingPartner] = useState<boolean>(true);
+  const [zoomOffset, setZoomOffset] = useState<number>(0);
 
-  const initialCenterLat = (partnerLat + customerLat) / 2;
-  const initialCenterLon = (partnerLon + customerLon) / 2;
+  // Stable Anchor Coordinates (Prevents tile reload on subtle drag/GPS updates)
+  const lastBasePartnerRef = useRef<{ lat: number; lon: number }>({
+    lat: partnerLat,
+    lon: partnerLon,
+  });
 
-  const currentCenterLat = panCenter ? panCenter.lat : initialCenterLat;
-  const currentCenterLon = panCenter ? panCenter.lon : initialCenterLon;
+  // Calculate distance moved from last base tile anchor
+  const distFromBase = Math.hypot(
+    partnerLat - lastBasePartnerRef.current.lat,
+    partnerLon - lastBasePartnerRef.current.lon
+  );
+
+  // Only update tile base if displaced significantly (~250m) and in follow mode
+  if (isFollowingPartner && distFromBase > 0.0025) {
+    lastBasePartnerRef.current = { lat: partnerLat, lon: partnerLon };
+  }
+
+  const basePartner = lastBasePartnerRef.current;
+  const initialCenterLat = (basePartner.lat + customerLat) / 2;
+  const initialCenterLon = (basePartner.lon + customerLon) / 2;
 
   const cardWidth = isInteractive ? Math.min(640, Math.round(SCREEN_WIDTH)) : Math.min(640, Math.round(SCREEN_WIDTH - 32));
   const cardHeight = isInteractive ? Math.min(640, Math.round(SCREEN_HEIGHT * 0.65)) : Math.min(640, MAP_HEIGHT);
 
-  // Gesture scaling and translation
+  // Gesture scaling and translation (Native 60fps transform layer)
   const pan = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
   const scale = useRef(new Animated.Value(1)).current;
   const lastDistance = useRef<number | null>(null);
 
-  // Pan responder for direct 60fps drag & pinch gestures in expanded view
+  // Pan responder for direct 60fps drag & pinch gestures without resetting camera or reloading tiles
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => isInteractive,
       onMoveShouldSetPanResponder: () => isInteractive,
       onPanResponderGrant: () => {
+        // User touched/dragged -> explicitly disable follow mode (Phase 5)
+        setIsFollowingPartner(false);
         pan.setOffset({
           x: (pan.x as any)._value || 0,
           y: (pan.y as any)._value || 0,
@@ -107,52 +127,60 @@ export const InteractiveGoogleMap: React.FC<InteractiveGoogleMapProps> = ({
           if (lastDistance.current !== null) {
             const diff = dist - lastDistance.current;
             if (Math.abs(diff) > 2) {
-              const newScale = Math.max(0.75, Math.min(2.5, ((scale as any)._value || 1) + diff * 0.008));
+              const newScale = Math.max(0.65, Math.min(3.0, ((scale as any)._value || 1) + diff * 0.008));
               scale.setValue(newScale);
             }
           }
           lastDistance.current = dist;
         } else {
-          // Single finger pan
+          // Single finger pan - 60fps GPU animated translation
           pan.setValue({ x: gestureState.dx, y: gestureState.dy });
         }
       },
-      onPanResponderRelease: (evt, gestureState) => {
+      onPanResponderRelease: () => {
         lastDistance.current = null;
         pan.flattenOffset();
-        // Convert screen drag offset into lat/lon displacement
-        if (Math.abs(gestureState.dx) > 15 || Math.abs(gestureState.dy) > 15) {
-          const latDiff = (gestureState.dy / cardHeight) * 0.04;
-          const lonDiff = -(gestureState.dx / cardWidth) * 0.04;
-          setPanCenter({
-            lat: currentCenterLat + latDiff,
-            lon: currentCenterLon + lonDiff,
-          });
-          pan.setValue({ x: 0, y: 0 });
-        }
+        // NEVER call setPanCenter or trigger map reload on drag!
+        // Transform offset stays intact smoothly on the canvas.
       },
     })
   ).current;
 
-  // Zoom in / out handlers
+  // Zoom in / out handlers using smooth animation
   const handleZoomIn = () => {
-    setZoomOffset((prev) => Math.min(prev + 1, 4));
+    setIsFollowingPartner(false);
+    Animated.spring(scale, {
+      toValue: Math.min(3.0, ((scale as any)._value || 1) * 1.25),
+      useNativeDriver: true,
+    }).start();
   };
 
   const handleZoomOut = () => {
-    setZoomOffset((prev) => Math.max(prev - 1, -3));
+    setIsFollowingPartner(false);
+    Animated.spring(scale, {
+      toValue: Math.max(0.65, ((scale as any)._value || 1) * 0.8),
+      useNativeDriver: true,
+    }).start();
   };
 
+  // Re-center on partner button (Phase 5)
   const handleResetRecenter = () => {
-    setPanCenter(null);
-    setZoomOffset(0);
-    pan.setValue({ x: 0, y: 0 });
-    scale.setValue(1);
+    setIsFollowingPartner(true);
+    Animated.parallel([
+      Animated.spring(pan, {
+        toValue: { x: 0, y: 0 },
+        useNativeDriver: true,
+      }),
+      Animated.spring(scale, {
+        toValue: 1,
+        useNativeDriver: true,
+      }),
+    ]).start();
   };
 
-  // High-definition Mapbox Street engine with live path and navigation
+  // Stable Mapbox Street engine URL: Only depends on stable base coordinates and route
   const mapUrl = useMemo(() => {
-    const partnerPin = `pin-s-car+2563eb(${partnerLon},${partnerLat})`;
+    const partnerPin = `pin-s-car+2563eb(${basePartner.lon},${basePartner.lat})`;
     const customerPin = `pin-s-home+059669(${customerLon},${customerLat})`;
 
     let pathOverlay = '';
@@ -160,15 +188,9 @@ export const InteractiveGoogleMap: React.FC<InteractiveGoogleMapProps> = ({
       pathOverlay = `path-5+2563eb-0.95(${encodeURIComponent(encodedPolyline)}),`;
     }
 
-    if (panCenter !== null || zoomOffset !== 0) {
-      // Manual pan / zoom level
-      const baseZoom = 13 + zoomOffset;
-      return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${pathOverlay}${partnerPin},${customerPin}/${currentCenterLon},${currentCenterLat},${baseZoom},0/${cardWidth}x${cardHeight}@2x?access_token=${MAPBOX_TOKEN}`;
-    }
-
-    // Default auto-framing
-    return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${pathOverlay}${partnerPin},${customerPin}/auto/${cardWidth}x${cardHeight}@2x?padding=45,45,45,45&access_token=${MAPBOX_TOKEN}`;
-  }, [partnerLat, partnerLon, customerLat, customerLon, encodedPolyline, cardWidth, cardHeight, panCenter, zoomOffset, currentCenterLat, currentCenterLon]);
+    // Default auto-framing with generous padding
+    return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${pathOverlay}${partnerPin},${customerPin}/auto/${cardWidth}x${cardHeight}@2x?padding=50,50,50,50&access_token=${MAPBOX_TOKEN}`;
+  }, [basePartner.lat, basePartner.lon, customerLat, customerLon, encodedPolyline, cardWidth, cardHeight]);
 
   return (
     <View style={styles.container} {...(isInteractive ? panResponder.panHandlers : {})}>
@@ -188,6 +210,7 @@ export const InteractiveGoogleMap: React.FC<InteractiveGoogleMapProps> = ({
           source={{ uri: mapUrl }}
           style={StyleSheet.absoluteFill}
           resizeMode="cover"
+          fadeDuration={0}
           onLoad={() => {
             setImageLoaded(true);
           }}
@@ -206,18 +229,20 @@ export const InteractiveGoogleMap: React.FC<InteractiveGoogleMapProps> = ({
         </View>
       )}
 
-      {/* Dynamic Animated Partner Floating Pill Over Map */}
+      {/* Partner Live Beacon Pill with Dynamic Heading */}
       <View style={styles.partnerFloatingBadge}>
-        <View style={styles.partnerPulseCircle}>
-          <Navigation
-            size={12}
-            color="#FFFFFF"
-            strokeWidth={2.4}
-            style={{ transform: [{ rotate: `${heading}deg` }] }}
-          />
+        <View
+          style={[
+            styles.partnerPulseCircle,
+            {
+              transform: [{ rotate: `${Math.round(heading || 0)}deg` }],
+            },
+          ]}
+        >
+          <Navigation size={11} color="#FFFFFF" strokeWidth={2.4} fill="#FFFFFF" />
         </View>
         <Text style={styles.partnerBadgeText} numberOfLines={1}>
-          {partnerName} (En Route)
+          {partnerName}
         </Text>
       </View>
 
@@ -233,7 +258,12 @@ export const InteractiveGoogleMap: React.FC<InteractiveGoogleMapProps> = ({
 
       {/* Interactive Navigation Control Tools (Zoom In, Zoom Out, Re-center) */}
       {isInteractive && (
-        <View style={styles.navControlsCol}>
+        <View
+          style={[
+            styles.navControlsCol,
+            { top: (Platform.OS === 'android' ? (StatusBar.currentHeight || 28) : 44) + 18 },
+          ]}
+        >
           <TouchableOpacity
             style={styles.controlBtn}
             onPress={handleZoomIn}
@@ -252,12 +282,12 @@ export const InteractiveGoogleMap: React.FC<InteractiveGoogleMapProps> = ({
             <Minus size={18} color="#0F172A" strokeWidth={2.4} />
           </TouchableOpacity>
 
-          {(panCenter !== null || zoomOffset !== 0) && (
+          {!isFollowingPartner && (
             <TouchableOpacity
               style={[styles.controlBtn, styles.recenterBtn]}
               onPress={handleResetRecenter}
               activeOpacity={0.8}
-              accessibilityLabel="Reset map view"
+              accessibilityLabel="Center on partner"
             >
               <RotateCcw size={16} color="#2563EB" strokeWidth={2.2} />
             </TouchableOpacity>

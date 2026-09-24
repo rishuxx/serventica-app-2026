@@ -31,11 +31,13 @@ export const ProfileMenuItem: React.FC<ProfileMenuItemProps> = ({
       accessibilityLabel={label}
     >
       <View style={[styles.iconBox, isDestructive && styles.destructiveIconBox]}>
-        <Icon
-          size={21}
-          color={isDestructive ? '#DC2626' : '#1E242B'}
-          strokeWidth={1.8}
-        />
+        {Icon ? (
+          <Icon
+            size={21}
+            color={isDestructive ? '#DC2626' : '#1E242B'}
+            strokeWidth={1.8}
+          />
+        ) : null}
       </View>
 
       <View style={styles.textContainer}>
