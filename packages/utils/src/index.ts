@@ -14,3 +14,6 @@ export * from './mobile-error';
 export * from './storage/safe-storage';
 export * from './auth/phone-normalizer';
 export * from './auth/auth-error-mapper';
+export * from './rate-limiter/sliding-window-limiter';
+export * from './rate-limiter/mobile-client-rate-limiter';
+

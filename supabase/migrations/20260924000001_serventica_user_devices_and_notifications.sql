@@ -68,6 +68,11 @@ RETURNS public.user_devices AS $$
 DECLARE
   v_device public.user_devices;
 BEGIN
+  -- Enforce caller authorization: caller must be authenticated and matching p_user_id
+  IF auth.uid() IS NULL OR auth.uid() != p_user_id THEN
+    RAISE EXCEPTION 'Unauthorized: Cannot register or refresh device token for another user';
+  END IF;
+
   INSERT INTO public.user_devices (
     user_id,
     platform,

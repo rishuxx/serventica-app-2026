@@ -24,8 +24,15 @@ let TrackingGateway = TrackingGateway_1 = class TrackingGateway {
         this.logger = new common_1.Logger(TrackingGateway_1.name);
         this.socketUsers = new Map();
         this.socketRooms = new Map();
+        this.gpsPingThrottle = new Map();
     }
     handleConnection(client) {
+        if (this.socketUsers.size >= TrackingGateway_1.MAX_CONNECTIONS) {
+            this.logger.warn(`[ConnectionRejected] Max connections reached (${TrackingGateway_1.MAX_CONNECTIONS}). Rejecting ${client.id}`);
+            client.emit('error', { message: 'Server at capacity. Please retry shortly.' });
+            client.disconnect(true);
+            return;
+        }
         const token = client.handshake.auth?.token ||
             client.handshake.headers?.authorization ||
             'anonymous_token';
@@ -95,6 +102,12 @@ let TrackingGateway = TrackingGateway_1 = class TrackingGateway {
             });
             return;
         }
+        const now = Date.now();
+        const lastPing = this.gpsPingThrottle.get(user.userId) || 0;
+        if (now - lastPing < TrackingGateway_1.GPS_PING_MIN_INTERVAL_MS) {
+            return;
+        }
+        this.gpsPingThrottle.set(user.userId, now);
         const bookingId = location?.bookingId;
         if (!bookingId) {
             client.emit('tracking:error', {
@@ -154,6 +167,8 @@ let TrackingGateway = TrackingGateway_1 = class TrackingGateway {
     }
 };
 exports.TrackingGateway = TrackingGateway;
+TrackingGateway.MAX_CONNECTIONS = 500;
+TrackingGateway.GPS_PING_MIN_INTERVAL_MS = 2000;
 __decorate([
     (0, websockets_1.WebSocketServer)(),
     __metadata("design:type", socket_io_1.Server)
@@ -191,6 +206,7 @@ exports.TrackingGateway = TrackingGateway = TrackingGateway_1 = __decorate([
         namespace: '/',
         pingInterval: 10000,
         pingTimeout: 5000,
+        maxHttpBufferSize: 64 * 1024,
     }),
     __metadata("design:paramtypes", [tracking_session_service_1.TrackingSessionService])
 ], TrackingGateway);

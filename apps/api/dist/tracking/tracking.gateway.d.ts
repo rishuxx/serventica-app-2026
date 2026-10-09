@@ -8,6 +8,9 @@ export declare class TrackingGateway implements OnGatewayConnection, OnGatewayDi
     private readonly logger;
     private readonly socketUsers;
     private readonly socketRooms;
+    private static readonly MAX_CONNECTIONS;
+    private readonly gpsPingThrottle;
+    private static readonly GPS_PING_MIN_INTERVAL_MS;
     constructor(sessionService: TrackingSessionService);
     handleConnection(client: Socket): void;
     handleDisconnect(client: Socket): void;

@@ -14,6 +14,8 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FulfillmentController = void 0;
 const common_1 = require("@nestjs/common");
+const throttler_1 = require("@nestjs/throttler");
+const supabase_auth_guard_1 = require("../common/guards/supabase-auth.guard");
 const fulfillment_transaction_service_1 = require("./fulfillment-transaction.service");
 let FulfillmentController = class FulfillmentController {
     constructor(fulfillmentService) {
@@ -63,6 +65,7 @@ exports.FulfillmentController = FulfillmentController;
 __decorate([
     (0, common_1.Post)('confirm'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, throttler_1.Throttle)({ default: { limit: 5, ttl: 60_000 } }),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Headers)('x-idempotency-key')),
     __metadata("design:type", Function),
@@ -72,6 +75,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)('accept'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, throttler_1.Throttle)({ default: { limit: 10, ttl: 60_000 } }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -80,6 +84,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)('reassign'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, throttler_1.Throttle)({ default: { limit: 5, ttl: 60_000 } }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -88,6 +93,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)('start-service'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, throttler_1.Throttle)({ default: { limit: 10, ttl: 60_000 } }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -96,6 +102,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)('complete-service'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, throttler_1.Throttle)({ default: { limit: 10, ttl: 60_000 } }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -104,6 +111,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)('cancel'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, throttler_1.Throttle)({ default: { limit: 3, ttl: 60_000 } }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -111,6 +119,7 @@ __decorate([
 ], FulfillmentController.prototype, "cancelBooking", null);
 exports.FulfillmentController = FulfillmentController = __decorate([
     (0, common_1.Controller)('fulfillment'),
+    (0, common_1.UseGuards)(supabase_auth_guard_1.SupabaseAuthGuard),
     __metadata("design:paramtypes", [fulfillment_transaction_service_1.FulfillmentTransactionService])
 ], FulfillmentController);
 //# sourceMappingURL=fulfillment.controller.js.map

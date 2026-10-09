@@ -100,6 +100,15 @@ const LiveTrackingMapComponent: React.FC<LiveTrackingMapProps> = ({
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [isFollowingPartner, setIsFollowingPartner] = useState<boolean>(true);
 
+  // Fallback timer to guarantee transition to live map even if Mapbox style load event delays or is cached
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMapLoaded(true);
+      if (onMapReady) onMapReady();
+    }, 2800);
+    return () => clearTimeout(timer);
+  }, [onMapReady]);
+
   // Development-only mount instrumentation
   const mountCountRef = useRef<number>(0);
   useEffect(() => {
@@ -422,6 +431,19 @@ const LiveTrackingMapComponent: React.FC<LiveTrackingMapProps> = ({
               onMapReady();
             }
           }}
+          onDidFinishLoadingStyle={() => {
+            setMapLoaded(true);
+            if (onMapReady) {
+              onMapReady();
+            }
+          }}
+          onCameraChanged={() => {
+            setMapLoaded(true);
+          }}
+          onMapLoadingError={() => {
+            console.warn('[NativeMapbox] map style loading error');
+            setMapLoaded(true);
+          }}
           onTouchStart={() => {
             // User manually touches/pans -> disable automatic snapback
             if (isFollowingPartner) setIsFollowingPartner(false);
@@ -547,6 +569,7 @@ const LiveTrackingMapComponent: React.FC<LiveTrackingMapProps> = ({
               height={height || SCREEN_HEIGHT}
               partner={partner}
               panY={panY}
+              onTransitionToMap={() => setMapLoaded(true)}
             />
           </View>
         )}

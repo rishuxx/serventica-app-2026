@@ -32,6 +32,7 @@ import {
   namespace: '/',
   pingInterval: 10000,
   pingTimeout: 5000,
+  maxHttpBufferSize: 64 * 1024, // 64KB max payload per message
 })
 export class TrackingGateway
   implements OnGatewayConnection, OnGatewayDisconnect
@@ -45,12 +46,30 @@ export class TrackingGateway
   // Socket ID -> Joined Booking Rooms Set
   private readonly socketRooms: Map<string, Set<string>> = new Map();
 
+  // ── Scalability Guards ────────────────────────────────────────
+  // Max concurrent WebSocket connections (200 users × ~2 sockets each = 400, plus buffer)
+  private static readonly MAX_CONNECTIONS = 500;
+  // GPS ping throttle: userId -> lastPingTimestamp
+  private readonly gpsPingThrottle: Map<string, number> = new Map();
+  // Min interval between GPS pings per partner (2 seconds)
+  private static readonly GPS_PING_MIN_INTERVAL_MS = 2000;
+
   constructor(private readonly sessionService: TrackingSessionService) {}
 
   /**
    * Handle incoming Socket.IO connection
+   * Enforces a hard connection cap to prevent memory exhaustion.
    */
   handleConnection(client: Socket) {
+    // ── Connection Cap ────────────────────────────────────────
+    if (this.socketUsers.size >= TrackingGateway.MAX_CONNECTIONS) {
+      this.logger.warn(
+        `[ConnectionRejected] Max connections reached (${TrackingGateway.MAX_CONNECTIONS}). Rejecting ${client.id}`
+      );
+      client.emit('error', { message: 'Server at capacity. Please retry shortly.' });
+      client.disconnect(true);
+      return;
+    }
     const token =
       (client.handshake.auth?.token as string) ||
       (client.handshake.headers?.authorization as string) ||
@@ -170,6 +189,15 @@ export class TrackingGateway
       });
       return;
     }
+
+    // ── GPS Ping Throttle (max 1 ping per 2s per partner) ─────
+    const now = Date.now();
+    const lastPing = this.gpsPingThrottle.get(user.userId) || 0;
+    if (now - lastPing < TrackingGateway.GPS_PING_MIN_INTERVAL_MS) {
+      // Silently drop — don't emit error to avoid flooding the partner client
+      return;
+    }
+    this.gpsPingThrottle.set(user.userId, now);
 
     const bookingId = location?.bookingId;
     if (!bookingId) {

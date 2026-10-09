@@ -11,6 +11,11 @@ import Svg, {
   G,
   Path,
   Circle,
+  Defs,
+  LinearGradient as SvgLinearGradient,
+  RadialGradient as SvgRadialGradient,
+  Stop,
+  Rect,
 } from 'react-native-svg';
 import { ServenticaTokens } from '../../../../packages/design-system/src/tokens';
 
@@ -18,7 +23,7 @@ interface WelcomeSplashScreenProps {
   onFinish?: () => void;
 }
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 export const WelcomeSplashScreen: React.FC<WelcomeSplashScreenProps> = ({ onFinish }) => {
   // Pure opacity-only fade drivers - zero scaling/rasterization to keep vector paths 100% razor sharp
@@ -53,6 +58,33 @@ export const WelcomeSplashScreen: React.FC<WelcomeSplashScreenProps> = ({ onFini
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+
+      {/* 16-STOP ULTRA-SMOOTH LIQUID DEEP PURPLE GRADIENT */}
+      <Svg style={StyleSheet.absoluteFill} width={width} height={height}>
+        <Defs>
+          {/* 16-Stop Spline Curve Interpolated Gradient for Butter-Smooth Transitions */}
+          <SvgLinearGradient id="splashGrad" x1="0.1" y1="0" x2="0.9" y2="1">
+            <Stop offset="0%" stopColor="#7C3AED" stopOpacity="1" />
+            <Stop offset="6.6%" stopColor="#7434E4" stopOpacity="1" />
+            <Stop offset="13.3%" stopColor="#6A2CDA" stopOpacity="1" />
+            <Stop offset="20%" stopColor="#6024D0" stopOpacity="1" />
+            <Stop offset="26.6%" stopColor="#561DC6" stopOpacity="1" />
+            <Stop offset="33.3%" stopColor="#4C16BC" stopOpacity="1" />
+            <Stop offset="40%" stopColor="#4210B0" stopOpacity="1" />
+            <Stop offset="46.6%" stopColor="#3A0C9D" stopOpacity="1" />
+            <Stop offset="53.3%" stopColor="#320A8A" stopOpacity="1" />
+            <Stop offset="60%" stopColor="#2A0877" stopOpacity="1" />
+            <Stop offset="66.6%" stopColor="#240765" stopOpacity="1" />
+            <Stop offset="73.3%" stopColor="#1F0653" stopOpacity="1" />
+            <Stop offset="80%" stopColor="#1B0543" stopOpacity="1" />
+            <Stop offset="86.6%" stopColor="#170435" stopOpacity="1" />
+            <Stop offset="93.3%" stopColor="#15042A" stopOpacity="1" />
+            <Stop offset="100%" stopColor="#130424" stopOpacity="1" />
+          </SvgLinearGradient>
+        </Defs>
+
+        <Rect x="0" y="0" width={width} height={height} fill="url(#splashGrad)" />
+      </Svg>
 
       {/* Main Center Group */}
       <View style={styles.centerGroup}>
@@ -157,7 +189,7 @@ export const WelcomeSplashScreen: React.FC<WelcomeSplashScreenProps> = ({ onFini
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#8B5CF6', // Bright Light Purple
+    backgroundColor: '#130424', // Deep rich dark purple base matching gradient end stop
     justifyContent: 'center',
     alignItems: 'center',
   },
