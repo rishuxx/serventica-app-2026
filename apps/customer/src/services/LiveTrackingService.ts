@@ -106,6 +106,7 @@ class LiveTrackingService {
         this.activeChannels.set(channelName, channel);
       }
 
+      console.log('[DEBUG-SEND] LiveTrackingService.publishPartnerLocation for bookingId:', bookingId);
       await channel.send({
         type: 'broadcast',
         event: 'PARTNER_LOCATION_UPDATE',
@@ -120,39 +121,97 @@ class LiveTrackingService {
   }
 
   /**
+   * Broadcast order status update (PARTNER_ACCEPTED, EN_ROUTE, ARRIVED, STARTED, COMPLETED, CANCELLED)
+   */
+  public async publishTrackingStatus(
+    bookingId: string,
+    status: TrackingStatus | string,
+    bookingNumber?: string
+  ): Promise<{ success: boolean; error?: string }> {
+    if (!bookingId) return { success: false, error: 'MISSING_BOOKING_ID' };
+
+    const channelNames = new Set<string>();
+    channelNames.add(`order_${bookingId}_tracking`);
+    if (bookingNumber) {
+      channelNames.add(`order_${bookingNumber}_tracking`);
+    }
+
+    // Notify local listeners
+    const listeners = this.statusListeners.get(bookingId);
+    if (listeners) {
+      listeners.forEach((listener) => {
+        try {
+          listener(status as TrackingStatus);
+        } catch (e) {}
+      });
+    }
+
+    try {
+      for (const chName of channelNames) {
+        let ch = this.activeChannels.get(chName);
+        if (!ch) {
+          ch = supabase.channel(chName, {
+            config: { broadcast: { self: true, ack: true } },
+          });
+          ch.subscribe();
+          this.activeChannels.set(chName, ch);
+        }
+        await ch.send({
+          type: 'broadcast',
+          event: 'TRACKING_STATUS_UPDATE',
+          payload: { status, bookingId, bookingNumber, timestamp: Date.now() },
+        });
+      }
+      return { success: true };
+    } catch (err: any) {
+      console.warn('[LiveTrackingService] publishTrackingStatus error:', err);
+      return { success: false, error: err.message };
+    }
+  }
+
+  /**
    * Subscribe customer screen to live partner location updates for a specific booking
    */
   public subscribeToBookingTracking(
     bookingId: string,
     onLocationUpdate: LocationListener,
-    onStatusUpdate?: StatusListener
+    onStatusUpdate?: StatusListener,
+    bookingNumber?: string
   ): () => void {
     if (!bookingId) return () => {};
 
-    // 1. Register listener in local map
-    if (!this.locationListeners.has(bookingId)) {
-      this.locationListeners.set(bookingId, new Set());
-    }
-    this.locationListeners.get(bookingId)!.add(onLocationUpdate);
+    const cleanId = bookingId.trim();
+    const cleanNumber = bookingNumber?.trim();
+    const idsToTrack = new Set<string>();
+    idsToTrack.add(cleanId);
+    if (cleanNumber) idsToTrack.add(cleanNumber);
 
-    if (onStatusUpdate) {
-      if (!this.statusListeners.has(bookingId)) {
-        this.statusListeners.set(bookingId, new Set());
+    // 1. Register listener in local map for all associated identifiers
+    idsToTrack.forEach((id) => {
+      if (!this.locationListeners.has(id)) {
+        this.locationListeners.set(id, new Set());
       }
-      this.statusListeners.get(bookingId)!.add(onStatusUpdate);
-    }
+      this.locationListeners.get(id)!.add(onLocationUpdate);
+
+      if (onStatusUpdate) {
+        if (!this.statusListeners.has(id)) {
+          this.statusListeners.set(id, new Set());
+        }
+        this.statusListeners.get(id)!.add(onStatusUpdate);
+      }
+    });
 
     // 2. Deliver last known location immediately if available
-    const cachedLoc = this.lastKnownLocations.get(bookingId);
+    const cachedLoc = this.lastKnownLocations.get(cleanId) || (cleanNumber ? this.lastKnownLocations.get(cleanNumber) : null);
     if (cachedLoc) {
       onLocationUpdate(cachedLoc);
     } else {
-      AsyncStorage.getItem(`@serventica_live_loc_${bookingId}`).then((raw) => {
+      AsyncStorage.getItem(`@serventica_live_loc_${cleanId}`).then((raw) => {
         if (raw) {
           try {
             const parsed = JSON.parse(raw);
             if (parsed && parsed.latitude && parsed.longitude) {
-              this.lastKnownLocations.set(bookingId, parsed);
+              this.lastKnownLocations.set(cleanId, parsed);
               onLocationUpdate(parsed);
             }
           } catch (e) {}
@@ -160,78 +219,91 @@ class LiveTrackingService {
       });
     }
 
-    // 3. Connect to Supabase Realtime channel
-    const channelName = `order_${bookingId}_tracking`;
-    let channel = this.activeChannels.get(channelName);
+    // 3. Connect to Supabase Realtime channel(s) (dual-channel room for zero-mismatch)
+    const channelNames = Array.from(idsToTrack).map((id) => `order_${id}_tracking`);
+    channelNames.forEach((channelName) => {
+      let channel = this.activeChannels.get(channelName);
 
-    if (!channel) {
-      channel = supabase.channel(channelName, {
-        config: { broadcast: { self: true, ack: true } },
-      });
+      if (!channel) {
+        channel = supabase.channel(channelName, {
+          config: { broadcast: { self: true, ack: true } },
+        });
 
-      channel
-        .on('broadcast', { event: 'PARTNER_LOCATION_UPDATE' }, (eventPayload: any) => {
-          const loc = eventPayload?.payload as PartnerLiveLocation;
-          if (loc && loc.latitude != null && loc.longitude != null) {
-            const val = this.validateLocation(loc);
-            if (val.isValid) {
-              this.lastKnownLocations.set(bookingId, loc);
-              const set = this.locationListeners.get(bookingId);
-              if (set) {
-                set.forEach((cb) => {
-                  try {
-                    cb(loc);
-                  } catch (e) {}
+        channel
+          .on('broadcast', { event: 'PARTNER_LOCATION_UPDATE' }, (eventPayload: any) => {
+            const loc = eventPayload?.payload as PartnerLiveLocation;
+            if (loc && loc.latitude != null && loc.longitude != null) {
+              const val = this.validateLocation(loc);
+              if (val.isValid) {
+                idsToTrack.forEach((id) => this.lastKnownLocations.set(id, loc));
+                idsToTrack.forEach((id) => {
+                  const set = this.locationListeners.get(id);
+                  if (set) {
+                    set.forEach((cb) => {
+                      try {
+                        cb(loc);
+                      } catch (e) {}
+                    });
+                  }
                 });
               }
             }
-          }
-        })
-        .on('broadcast', { event: 'TRACKING_STATUS_UPDATE' }, (eventPayload: any) => {
-          const status = eventPayload?.payload?.status as TrackingStatus;
-          if (status) {
-            const set = this.statusListeners.get(bookingId);
-            if (set) {
-              set.forEach((cb) => {
-                try {
-                  cb(status);
-                } catch (e) {}
+          })
+          .on('broadcast', { event: 'TRACKING_STATUS_UPDATE' }, (eventPayload: any) => {
+            const status = eventPayload?.payload?.status as TrackingStatus;
+            if (status) {
+              idsToTrack.forEach((id) => {
+                const set = this.statusListeners.get(id);
+                if (set) {
+                  set.forEach((cb) => {
+                    try {
+                      cb(status);
+                    } catch (e) {}
+                  });
+                }
               });
             }
-          }
-        })
-        .subscribe();
+          })
+          .subscribe();
 
-      this.activeChannels.set(channelName, channel);
-    }
+        this.activeChannels.set(channelName, channel);
+      }
+    });
 
     // 4. Return cleanup function
     return () => {
-      const locSet = this.locationListeners.get(bookingId);
-      if (locSet) {
-        locSet.delete(onLocationUpdate);
-        if (locSet.size === 0) {
-          this.locationListeners.delete(bookingId);
-        }
-      }
-
-      if (onStatusUpdate) {
-        const statSet = this.statusListeners.get(bookingId);
-        if (statSet) {
-          statSet.delete(onStatusUpdate);
-          if (statSet.size === 0) {
-            this.statusListeners.delete(bookingId);
+      idsToTrack.forEach((id) => {
+        const locSet = this.locationListeners.get(id);
+        if (locSet) {
+          locSet.delete(onLocationUpdate);
+          if (locSet.size === 0) {
+            this.locationListeners.delete(id);
           }
         }
-      }
 
-      // If no more listeners for this booking, leave channel
-      if (!this.locationListeners.has(bookingId) && !this.statusListeners.has(bookingId)) {
-        if (channel) {
-          supabase.removeChannel(channel);
-          this.activeChannels.delete(channelName);
+        if (onStatusUpdate) {
+          const statSet = this.statusListeners.get(id);
+          if (statSet) {
+            statSet.delete(onStatusUpdate);
+            if (statSet.size === 0) {
+              this.statusListeners.delete(id);
+            }
+          }
         }
-      }
+      });
+
+      channelNames.forEach((channelName) => {
+        const isStillNeeded = Array.from(idsToTrack).some(
+          (id) => this.locationListeners.has(id) || this.statusListeners.has(id)
+        );
+        if (!isStillNeeded) {
+          const ch = this.activeChannels.get(channelName);
+          if (ch) {
+            supabase.removeChannel(ch);
+            this.activeChannels.delete(channelName);
+          }
+        }
+      });
     };
   }
 

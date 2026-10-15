@@ -7,6 +7,7 @@ import { AssetRegistry } from '../../../services/home.service';
 import { formatBookingExactDateTime } from '../../../lib/date.utils';
 import { BookingTicket } from '../../../components/BookingTicket';
 import { PriceCalculationEngine } from '../../../services/pricing/PriceCalculationEngine';
+import { getInstantServiceImage } from '../../../assets/images/instant';
 
 interface UpcomingBookingCardProps {
   booking: BookingRecord;
@@ -17,9 +18,39 @@ export const UpcomingBookingCard: React.FC<UpcomingBookingCardProps> = ({
   booking,
   onPress,
 }) => {
+  const isInstantSlug =
+    ['helping-hand', 'instant-helping-hand', 'road-help', 'laundry', 'pack-move', 'pack-and-move'].includes(
+      booking.serviceId?.toLowerCase() || booking.serviceSlug?.toLowerCase() || ''
+    ) ||
+    Boolean(booking.serviceName?.toLowerCase().includes('helping hand')) ||
+    Boolean(booking.serviceName?.toLowerCase().includes('road help')) ||
+    Boolean(booking.serviceName?.toLowerCase().includes('pack & move')) ||
+    Boolean(booking.serviceName?.toLowerCase().includes('express laundry'));
+
+  const isInstantService =
+    (booking.fulfillmentMode === 'INSTANT' ||
+     (booking as any).fulfillment_mode === 'INSTANT' ||
+     booking.id.startsWith('inst_')) &&
+    isInstantSlug;
+
+  const instantSlug =
+    booking.serviceSlug ||
+    booking.serviceId ||
+    (booking.serviceName?.toLowerCase().includes('helping hand')
+      ? 'helping-hand'
+      : booking.serviceName?.toLowerCase().includes('road help')
+      ? 'road-help'
+      : booking.serviceName?.toLowerCase().includes('laundry')
+      ? 'laundry'
+      : booking.serviceName?.toLowerCase().includes('pack')
+      ? 'pack-move'
+      : 'helping-hand');
+
   const imageSource =
     booking.serviceImageUrl && AssetRegistry[booking.serviceImageUrl]
       ? AssetRegistry[booking.serviceImageUrl]
+      : isInstantService
+      ? getInstantServiceImage(instantSlug)
       : AssetRegistry.basic_ac_repair;
 
   const formattedDate = formatBookingExactDateTime(
@@ -55,14 +86,7 @@ export const UpcomingBookingCard: React.FC<UpcomingBookingCardProps> = ({
     booking.status === 'PARTNER_ARRIVED' ||
     booking.status === 'SERVICE_STARTED';
 
-  const effectivePartner = booking.partner || (hasAssignedStatus ? {
-    id: 'servs_partner_vipin_01',
-    name: 'Vipin Sharma',
-    phone: '+91 98765 43210',
-    avatarUrl: 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?w=150&auto=format&fit=crop&q=80',
-    rating: 4.95,
-    specialization: 'Certified Servs Specialist',
-  } : null);
+  const effectivePartner = booking.partner || null;
 
   const hasAssignedPartner = Boolean(effectivePartner && (hasAssignedStatus || (booking.status !== 'CONFIRMED' && booking.status !== 'SEARCHING_PARTNER')));
 
@@ -78,7 +102,13 @@ export const UpcomingBookingCard: React.FC<UpcomingBookingCardProps> = ({
     items: booking.items,
   });
 
-  const theme = isCancelled ? 'red' : isCompleted ? 'green' : 'purple';
+  const theme = isCancelled
+    ? 'red'
+    : isCompleted
+    ? 'green'
+    : isInstantService
+    ? 'yellow'
+    : 'purple';
   const addressText =
     booking.address?.shortAddress ||
     booking.address?.formattedAddress ||
@@ -93,6 +123,7 @@ export const UpcomingBookingCard: React.FC<UpcomingBookingCardProps> = ({
         theme={theme}
         status={booking.status}
         bookingId={`#${booking.bookingNumber}`}
+        isInstant={isInstantService}
         datetime={formattedDate}
         thumbnail={imageSource}
         title={booking.serviceName}

@@ -26,4 +26,5 @@ export const AddressInputSchema = z.object({
 
 export * from './availability_engine';
 export * from './payment_transaction_engine';
+export * from './instant_fulfillment_schemas';
 

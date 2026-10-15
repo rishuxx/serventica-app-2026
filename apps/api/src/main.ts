@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { Logger } from '@nestjs/common';
 import helmet from 'helmet';
-import compression from 'compression';
+const compression = require('compression');
 
 /**
  * SERVENTICA — Production-Grade API Server Bootstrap

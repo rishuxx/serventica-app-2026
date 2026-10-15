@@ -164,15 +164,16 @@ export const ExpandableOrderBottomSheet: React.FC<ExpandableOrderBottomSheetProp
       ]}
     >
       {/* DRAG HANDLE BAR (CAPTURES GESTURES & TAP TO TOGGLE) */}
-      <View {...panResponder.panHandlers} style={styles.dragHandleArea}>
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={toggleExpand}
-          style={styles.dragIndicatorTouch}
-          hitSlop={{ top: 12, bottom: 12, left: 50, right: 50 }}
-        >
-          <View style={styles.dragIndicator} />
-        </TouchableOpacity>
+      <View style={styles.dragHandleArea}>
+        <View {...panResponder.panHandlers} style={styles.dragIndicatorTouch}>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={toggleExpand}
+            hitSlop={{ top: 12, bottom: 12, left: 50, right: 50 }}
+          >
+            <View style={styles.dragIndicator} />
+          </TouchableOpacity>
+        </View>
 
         {/* FLOATING HEADER ROW: Back Button | Booking ID Pill | Help Button */}
         <View style={styles.headerRow}>
@@ -221,17 +222,10 @@ export const ExpandableOrderBottomSheet: React.FC<ExpandableOrderBottomSheetProp
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         bounces={false}
-        scrollEnabled={isExpanded}
+        scrollEnabled={true}
+        keyboardShouldPersistTaps="handled"
       >
-        <TouchableOpacity
-          activeOpacity={isExpanded ? 1 : 0.9}
-          onPress={() => {
-            if (!isExpanded) snapTo(SNAP_EXPANDED);
-          }}
-          disabled={isExpanded}
-        >
-          {children}
-        </TouchableOpacity>
+        {children}
       </ScrollView>
     </Animated.View>
   );

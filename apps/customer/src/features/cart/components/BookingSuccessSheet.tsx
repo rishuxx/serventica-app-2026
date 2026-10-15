@@ -24,6 +24,7 @@ interface BookingSuccessSheetProps {
   itemCount?: number;
   selectedDate?: string | null;
   bookingMode?: 'EXPRESS' | 'SCHEDULED';
+  verificationOtp?: string;
   onClose: () => void;
   onViewBooking: () => void;
 }
@@ -45,6 +46,7 @@ export const BookingSuccessSheet: React.FC<BookingSuccessSheetProps> = ({
   itemCount = 1,
   selectedDate,
   bookingMode = 'EXPRESS',
+  verificationOtp,
   onClose,
   onViewBooking,
 }) => {
@@ -174,6 +176,13 @@ export const BookingSuccessSheet: React.FC<BookingSuccessSheetProps> = ({
             label="Booking ID"
             value={`#${transactionResult.bookingNumber}`}
           />
+          {Boolean(verificationOtp) && (
+            <Row
+              label="Doorstep Start Code"
+              value={verificationOtp!}
+              valueStyle={{ color: '#7C3AED', fontWeight: '800', letterSpacing: 2 }}
+            />
+          )}
           <Row
             label="Status"
             value="Paid & Confirmed"

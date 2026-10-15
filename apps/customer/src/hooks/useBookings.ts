@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { bookingRepository } from '../repositories/booking.repository';
+import { liveTrackingService } from '../services/LiveTrackingService';
 import { BookingRecord } from '../../../../packages/types/src';
 
 export function useBookings(filter: 'UPCOMING' | 'COMPLETED' | 'CANCELLED' = 'UPCOMING') {
@@ -9,14 +10,19 @@ export function useBookings(filter: 'UPCOMING' | 'COMPLETED' | 'CANCELLED' = 'UP
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadBookings = useCallback(async () => {
+  const loadBookings = useCallback(async (showLoading = true) => {
     const effectiveUserId = user?.id || 'guest_user';
-    setIsLoading(true);
+    console.log('[useBookings] loadBookings called for userId:', effectiveUserId, 'filter:', filter);
+    if (showLoading) {
+      setIsLoading(true);
+    }
     setError(null);
     try {
       const data = await bookingRepository.getBookings(effectiveUserId, filter);
+      console.log('[useBookings] returned bookings count:', data.length);
       setBookings(data);
     } catch (err: any) {
+      console.error('[useBookings] error loading bookings:', err);
       setError(err.message || 'Failed to load bookings');
     } finally {
       setIsLoading(false);
@@ -24,17 +30,17 @@ export function useBookings(filter: 'UPCOMING' | 'COMPLETED' | 'CANCELLED' = 'UP
   }, [user?.id, filter]);
 
   useEffect(() => {
-    loadBookings();
+    loadBookings(true);
     
     // 1. Local event listener (intra-app)
     const unsubscribeLocal = bookingRepository.subscribe(() => {
-      loadBookings();
+      loadBookings(false);
     });
 
     // 2. Supabase Realtime database listener (inter-device / multi-device instant sync)
     const unsubscribeRealtime = user?.id
       ? bookingRepository.subscribeToUserBookings(user.id, () => {
-          loadBookings();
+          loadBookings(false);
         })
       : () => {};
 
@@ -48,7 +54,7 @@ export function useBookings(filter: 'UPCOMING' | 'COMPLETED' | 'CANCELLED' = 'UP
     bookings,
     isLoading,
     error,
-    refresh: loadBookings,
+    refresh: () => loadBookings(true),
   };
 }
 
@@ -59,14 +65,16 @@ export function useBookingDetail(bookingId?: string) {
   const [error, setError] = useState<string | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
 
-  const loadDetail = useCallback(async () => {
+  const loadDetail = useCallback(async (isInitial = false) => {
     if (!bookingId) {
       setBooking(null);
       setIsLoading(false);
       return;
     }
 
-    setIsLoading(true);
+    if (isInitial) {
+      setIsLoading(true);
+    }
     setError(null);
     try {
       const data = await bookingRepository.getBookingDetail(bookingId);
@@ -83,25 +91,51 @@ export function useBookingDetail(bookingId?: string) {
   }, [bookingId]);
 
   useEffect(() => {
-    loadDetail();
+    loadDetail(true);
 
-    // Local subscription
-    const unsubscribeLocal = bookingRepository.subscribe(() => {
-      loadDetail();
-    });
-
-    // Realtime subscription for multi-device sync
-    const unsubscribeRealtime = user?.id
-      ? bookingRepository.subscribeToUserBookings(user.id, () => {
-          loadDetail();
+    // 1. Direct realtime subscription for this booking
+    const unsubscribeDirect = bookingId
+      ? bookingRepository.subscribeToBooking(bookingId, () => {
+          loadDetail(false);
         })
       : () => {};
 
+    // 2. Local subscription
+    const unsubscribeLocal = bookingRepository.subscribe(() => {
+      loadDetail(false);
+    });
+
+    // 3. User bookings realtime channel
+    const unsubscribeRealtime = user?.id
+      ? bookingRepository.subscribeToUserBookings(user.id, () => {
+          loadDetail(false);
+        })
+      : () => {};
+
+    // 4. Live Broadcast tracking room subscription (Subscribes to immediate partner acceptance, en-route, arrived, cancel, completion)
+    const unsubscribeBroadcast = bookingId
+      ? liveTrackingService.subscribeToBookingTracking(
+          bookingId,
+          () => {},
+          () => {
+            loadDetail(false);
+          }
+        )
+      : () => {};
+
+    // 5. Background poll every 3 seconds as a safety net
+    const pollInterval = setInterval(() => {
+      loadDetail(false);
+    }, 3000);
+
     return () => {
+      unsubscribeDirect();
       unsubscribeLocal();
       unsubscribeRealtime();
+      unsubscribeBroadcast();
+      clearInterval(pollInterval);
     };
-  }, [loadDetail, user?.id]);
+  }, [loadDetail, user?.id, bookingId]);
 
   const cancel = async (reason: string) => {
     if (!bookingId) return { success: false, error: 'No booking selected' };

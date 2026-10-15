@@ -81,7 +81,7 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
   categoryExperience,
   deliveryTime = '20 minutes',
   isCalculatingETA = false,
-  selectedFulfillmentMode = 'INSTANT',
+  selectedFulfillmentMode = 'SCHEDULED',
   instantAvailabilityState = 'AVAILABLE',
   scheduledAvailabilityState = 'AVAILABLE',
   instantEtaText = '15–20 mins',
@@ -105,21 +105,27 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
 
   const isAcAppliances = !currentCategorySlug || currentCategorySlug === 'ac-appliances';
 
-  const isDark =
-    activeTheme?.isDark !== undefined
-      ? activeTheme.isDark
-      : themeFallback?.isDark !== undefined
-      ? themeFallback.isDark
-      : true;
+  const isInstantMode = selectedFulfillmentMode === 'INSTANT';
 
-  const gradientColors: string[] =
-    activeHero?.palette?.gradientColors && activeHero.palette.gradientColors.length >= 2
-      ? activeHero.palette.gradientColors
-      : activeTheme?.gradientColors && activeTheme.gradientColors.length >= 2
-      ? activeTheme.gradientColors
-      : themeFallback?.gradientColors && themeFallback.gradientColors.length >= 2
-      ? themeFallback.gradientColors
-      : ['#0284C7', '#38BDF8'];
+  const isDark = isInstantMode
+    ? false
+    : activeTheme?.isDark !== undefined
+    ? activeTheme.isDark
+    : themeFallback?.isDark !== undefined
+    ? themeFallback.isDark
+    : true;
+
+  const instantGradientColors = ['#BA86FA', '#C89FFB'];
+
+  const gradientColors: string[] = isInstantMode
+    ? instantGradientColors
+    : activeHero?.palette?.gradientColors && activeHero.palette.gradientColors.length >= 2
+    ? activeHero.palette.gradientColors
+    : activeTheme?.gradientColors && activeTheme.gradientColors.length >= 2
+    ? activeTheme.gradientColors
+    : themeFallback?.gradientColors && themeFallback.gradientColors.length >= 2
+    ? themeFallback.gradientColors
+    : ['#0284C7', '#38BDF8'];
 
   const textColor = isDark ? '#FFFFFF' : '#1E242B';
   const textSubColor = isDark ? 'rgba(255, 255, 255, 0.90)' : '#222222';
@@ -193,6 +199,7 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
           {
             backgroundColor: gradientColors[0],
             paddingTop: Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 12) + 6,
+            paddingBottom: isInstantMode ? 4 : 10,
           },
         ]}
         onLayout={(e) => {
@@ -306,7 +313,7 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
                 ]}
                 numberOfLines={1}
               >
-                {searchQuery || `Search in ${categoryExperience?.category.name || 'Serventica'}...`}
+                {searchQuery || (isInstantMode ? 'Search Instant Services (chores, fuel, laundry...)' : `Search in ${categoryExperience?.category.name || 'Serventica'}...`)}
               </Text>
             </View>
 
@@ -339,7 +346,7 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
           {categories && categories.length > 0 ? (
             <CategoryRail
               categories={categories}
-              selectedCategoryId={selectedCategoryId}
+              selectedCategoryId={isInstantMode ? null : selectedCategoryId}
               onSelectCategory={onSelectCategory}
               variant="hero"
               isDarkBackground={isDark}
@@ -350,7 +357,7 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
         </View>
 
         {/* HORIZONTAL DIVIDER LINE */}
-        <View style={styles.horizontalDivider} />
+        <View style={[styles.horizontalDivider, !isDark && { backgroundColor: 'rgba(0, 0, 0, 0.08)' }]} />
 
         {/* ROW 5: SERV-03 INSTANT & SCHEDULED FULFILLMENT MODE SELECTOR */}
         <FulfillmentModeSelector
@@ -368,13 +375,15 @@ export const TopHeroSection: React.FC<TopHeroSectionProps> = ({
       {/* 2. LOWER HERO IMAGE SECTION — SUPABASE / DELIVERED HERO IMAGE ONLY        */}
       {/* Clean, edge-to-edge promotional/category hero image banner               */}
       {/* ========================================================================= */}
-      <View style={styles.lowerImageHeroSection}>
-        <Animated.Image
-          source={heroImageSource}
-          style={[styles.lowerHeroBackgroundImage, { opacity: fadeAnim }]}
-          resizeMode="cover"
-        />
-      </View>
+      {!isInstantMode && (
+        <View style={styles.lowerImageHeroSection}>
+          <Animated.Image
+            source={heroImageSource}
+            style={[styles.lowerHeroBackgroundImage, { opacity: fadeAnim }]}
+            resizeMode="cover"
+          />
+        </View>
+      )}
     </View>
   );
 };

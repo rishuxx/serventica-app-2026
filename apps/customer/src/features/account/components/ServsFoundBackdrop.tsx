@@ -115,10 +115,8 @@ export const ServsFoundBackdrop: React.FC<ServsFoundBackdropProps> = ({
     };
   }, [durationMs, onTransitionToMap, scaleAnim, opacityAnim, progressAnim, pulseAnim]);
 
-  const partnerName = partner?.name || 'Vipin Sharma';
-  const partnerAvatar =
-    partner?.avatarUrl ||
-    'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?w=150&auto=format&fit=crop&q=80';
+  const partnerName = partner?.name || 'Assigned Servs Specialist';
+  const partnerAvatar = partner?.avatarUrl || null;
 
   return (
     <View style={[styles.container, { height }]}>
@@ -200,7 +198,12 @@ export const ServsFoundBackdrop: React.FC<ServsFoundBackdropProps> = ({
             ]}
           />
           <View style={styles.avatarBorderCircle}>
-            <Image source={{ uri: partnerAvatar }} style={styles.avatarImage} />
+            <Image
+              source={{
+                uri: partnerAvatar || 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?w=150',
+              }}
+              style={styles.avatarImage}
+            />
             <View style={styles.verifiedFloatingPill}>
               <CheckCircle2 size={13} color="#FFFFFF" strokeWidth={2.8} />
             </View>

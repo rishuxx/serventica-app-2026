@@ -25,6 +25,7 @@ import {
   Phone,
   Navigation,
   Radio,
+  Zap,
   LucideIcon,
 } from 'lucide-react-native';
 import { Fonts } from '../../../../packages/design-system/src';
@@ -63,6 +64,12 @@ export const THEMES: Record<string, ThemeColors> = {
     to: '#0F172A',
     soft: 'rgba(226,232,240,0.80)',
     badgeFg: '#0F172A',
+  },
+  yellow: {
+    from: '#FFF50F', // vivid electric banana yellow
+    to: '#F59E0B', // rich amber-gold for beautiful gradient depth
+    soft: 'rgba(0, 0, 0, 0.70)',
+    badgeFg: '#000000',
   },
 };
 
@@ -161,9 +168,11 @@ export interface BookingCancelInfoState {
 }
 
 export interface BookingTicketProps {
-  theme?: 'purple' | 'green' | 'red' | 'dark' | ThemeColors;
+  theme?: 'purple' | 'green' | 'red' | 'dark' | 'yellow' | ThemeColors;
   status?: string;
   bookingId?: string;
+  serviceId?: string;
+  isInstant?: boolean;
   datetime?: string;
   thumbnail?: ImageSourcePropType;
   title: string;
@@ -186,6 +195,8 @@ export const BookingTicket: React.FC<BookingTicketProps> = ({
   theme = 'purple',
   status = 'confirmed',
   bookingId,
+  serviceId,
+  isInstant = false,
   datetime,
   thumbnail,
   title,
@@ -209,6 +220,12 @@ export const BookingTicket: React.FC<BookingTicketProps> = ({
     typeof theme === 'string'
       ? THEMES[theme] || (isCancelled ? THEMES.red : THEMES.purple)
       : { ...THEMES.purple, ...theme };
+
+  // When rendered on bright yellow gradient background, use deep black for crystal-clear readability
+  const isLight = t.from === '#FFF50F' || theme === 'yellow' || isInstant;
+  const mainTextColor = isLight ? '#0B0F19' : '#FFFFFF';
+  const subtextColor = isLight ? 'rgba(15, 23, 42, 0.72)' : t.soft;
+  const dividerStroke = isLight ? 'rgba(0, 0, 0, 0.22)' : 'rgba(255, 255, 255, 0.40)';
 
   const normalizedStatus = status.toLowerCase().replace(/-/g, '_');
   const st = isCancelled
@@ -277,9 +294,9 @@ export const BookingTicket: React.FC<BookingTicketProps> = ({
           pointerEvents="none"
         >
           <Defs>
-            <LinearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
-              <Stop offset="0" stopColor={t.from} />
-              <Stop offset="1" stopColor={t.to} />
+            <LinearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
+              <Stop offset="0%" stopColor={t.from} stopOpacity={1} />
+              <Stop offset="100%" stopColor={t.to} stopOpacity={1} />
             </LinearGradient>
           </Defs>
           {/* Card body with real transparent SVG notch cutouts */}
@@ -291,7 +308,7 @@ export const BookingTicket: React.FC<BookingTicketProps> = ({
             y1={NOTCH_R + 3}
             x2={px}
             y2={size.h - NOTCH_R - 3}
-            stroke="rgba(255, 255, 255, 0.40)"
+            stroke={dividerStroke}
             strokeWidth={1.5}
             strokeDasharray="3.5 3.5"
           />
@@ -301,13 +318,21 @@ export const BookingTicket: React.FC<BookingTicketProps> = ({
       <View style={styles.content}>
         {/* Left main section */}
         <View style={styles.main}>
-          <View style={styles.badge}>
-            <st.Icon size={11} color={t.badgeFg} strokeWidth={2.8} />
-            <Text style={[styles.badgeText, { color: t.badgeFg }]}>{st.label}</Text>
+          <View style={styles.headerBadgeRow}>
+            <View style={styles.badge}>
+              <st.Icon size={11} color={t.badgeFg} strokeWidth={2.8} />
+              <Text style={[styles.badgeText, { color: t.badgeFg }]}>{st.label}</Text>
+            </View>
+            {isInstant && (
+              <View style={styles.instantPill}>
+                <Zap size={10} color="#000000" fill="#000000" />
+                <Text style={styles.instantPillText}>INSTANT</Text>
+              </View>
+            )}
           </View>
 
           {(bookingId || datetime) && (
-            <Text style={[styles.idLine, { color: t.soft }]} numberOfLines={1}>
+            <Text style={[styles.idLine, { color: subtextColor }]} numberOfLines={1}>
               {bookingId ? `${bookingId}` : ''}
               {bookingId && datetime ? '  •  ' : ''}
               {datetime || ''}
@@ -316,18 +341,18 @@ export const BookingTicket: React.FC<BookingTicketProps> = ({
 
           <View style={styles.infoRow}>
             {!!thumbnail && (
-              <Image source={thumbnail} style={styles.thumb} resizeMode="cover" />
+              <Image source={thumbnail} style={styles.thumb} resizeMode="contain" />
             )}
             <View style={styles.infoText}>
-              <Text style={styles.title} numberOfLines={2}>
+              <Text style={[styles.title, { color: mainTextColor }]} numberOfLines={2}>
                 {title}
               </Text>
               {meta.map((m, i) => {
                 const Icon = META_ICONS[m.icon] || Info;
                 return (
                   <View key={i} style={styles.metaRow}>
-                    <Icon size={12} color={t.soft} strokeWidth={1.7} />
-                    <Text style={[styles.metaText, { color: t.soft }]} numberOfLines={1}>
+                    <Icon size={12} color={subtextColor} strokeWidth={1.7} />
+                    <Text style={[styles.metaText, { color: subtextColor }]} numberOfLines={1}>
                       {m.text}
                     </Text>
                   </View>
@@ -339,8 +364,8 @@ export const BookingTicket: React.FC<BookingTicketProps> = ({
 
         {/* Right stub section */}
         <View style={[styles.stub, { width: size ? size.w * stubRatio : '33%' }]}>
-          <Text style={[styles.totalLabel, { color: t.soft }]}>{totalLabel}</Text>
-          <Text style={styles.total} numberOfLines={1} adjustsFontSizeToFit>
+          <Text style={[styles.totalLabel, { color: subtextColor }]}>{totalLabel}</Text>
+          <Text style={[styles.total, { color: mainTextColor }]} numberOfLines={1} adjustsFontSizeToFit>
             {total}
           </Text>
 
@@ -365,11 +390,11 @@ export const BookingTicket: React.FC<BookingTicketProps> = ({
                   </Text>
                 </View>
               )}
-              <Text style={styles.techName} numberOfLines={1}>
+              <Text style={[styles.techName, { color: mainTextColor }]} numberOfLines={1}>
                 {technician.name}
               </Text>
               {!!technician.role && (
-                <Text style={[styles.techRole, { color: t.soft }]} numberOfLines={2}>
+                <Text style={[styles.techRole, { color: subtextColor }]} numberOfLines={2}>
                   {technician.role}
                 </Text>
               )}
@@ -405,24 +430,24 @@ export const BookingTicket: React.FC<BookingTicketProps> = ({
           ) : effectiveCancelInfo ? (
             /* 2. Cancellation state with pulsing X indicator */
             <View style={styles.assigning}>
-              <PulseIndicator color="#FFFFFF">
-                <X size={18} color="#FFFFFF" strokeWidth={2.8} />
+              <PulseIndicator color={isLight ? '#000000' : '#FFFFFF'}>
+                <X size={18} color={isLight ? '#000000' : '#FFFFFF'} strokeWidth={2.8} />
               </PulseIndicator>
-              <Text style={styles.assignTitle} numberOfLines={1}>
+              <Text style={[styles.assignTitle, { color: mainTextColor }]} numberOfLines={1}>
                 {effectiveCancelInfo.title}
               </Text>
-              <Text style={[styles.assignSub, { color: t.soft }]} numberOfLines={2}>
+              <Text style={[styles.assignSub, { color: subtextColor }]} numberOfLines={2}>
                 {effectiveCancelInfo.reason}
               </Text>
             </View>
           ) : assigning ? (
             /* 3. Dynamic Searching Radar State */
             <View style={styles.assigning}>
-              <PulseIndicator color="#34D399" />
-              <Text style={styles.assignTitle} numberOfLines={1}>
+              <PulseIndicator color={isLight ? '#000000' : '#34D399'} />
+              <Text style={[styles.assignTitle, { color: mainTextColor }]} numberOfLines={1}>
                 {assigning.title}
               </Text>
-              <Text style={[styles.assignSub, { color: t.soft }]} numberOfLines={2}>
+              <Text style={[styles.assignSub, { color: subtextColor }]} numberOfLines={2}>
                 {assigning.subtitle}
               </Text>
             </View>
@@ -438,10 +463,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     overflow: 'visible',
     marginBottom: 16,
-    shadowColor: '#4C1D95',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
+    shadowOpacity: 0.16,
+    shadowRadius: 10,
     elevation: 4,
   },
   content: {
@@ -456,6 +481,11 @@ const styles = StyleSheet.create({
     paddingRight: 10,
     justifyContent: 'center',
   },
+  headerBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -465,6 +495,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 9,
     paddingVertical: 4,
     gap: 4.5,
+  },
+  instantPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 3.5,
+    gap: 3.5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  instantPillText: {
+    fontSize: 9,
+    fontFamily: Fonts.Bold,
+    color: '#000000',
+    letterSpacing: 0.8,
   },
   badgeText: {
     fontSize: 9.5,

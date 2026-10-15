@@ -6,8 +6,9 @@ import {
   ScrollView,
   TouchableOpacity,
   StatusBar,
+  Platform,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ArrowLeft,
   Calendar,
@@ -57,6 +58,16 @@ export const ScheduleFulfillmentScreen: React.FC<ScheduleFulfillmentScreenProps>
   categoryName = 'House Help & Cleaning',
   categorySlug = 'home-cleaning',
 }) => {
+  const insets = useSafeAreaInsets();
+  const topInset = Math.max(
+    insets.top,
+    Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 16
+  );
+  const bottomInset = Math.max(
+    insets.bottom,
+    Platform.OS === 'android' ? 16 : 24
+  );
+
   const { addItem, openCartDrawer } = useCart();
   const [selectedDurationId, setSelectedDurationId] = useState<string>('1hr');
   const [selectedDayIndex, setSelectedDayIndex] = useState<number>(0);
@@ -102,11 +113,24 @@ export const ScheduleFulfillmentScreen: React.FC<ScheduleFulfillmentScreenProps>
   };
 
   return (
-    <SafeAreaView style={styles.safeContainer}>
-      <StatusBar barStyle="dark-content" />
+    <View style={styles.safeContainer}>
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="#FFFFFF"
+        translucent={Platform.OS === 'android'}
+      />
 
       {/* Top Header */}
-      <View style={styles.headerRow}>
+      <View
+        style={[
+          styles.headerRow,
+          {
+            paddingTop: topInset + 8,
+            paddingLeft: Math.max(insets.left, 18),
+            paddingRight: Math.max(insets.right, 18),
+          },
+        ]}
+      >
         <TouchableOpacity style={styles.backBtn} onPress={onBack} activeOpacity={0.7}>
           <ArrowLeft size={22} color="#1E242B" strokeWidth={2.4} />
         </TouchableOpacity>
@@ -114,7 +138,17 @@ export const ScheduleFulfillmentScreen: React.FC<ScheduleFulfillmentScreenProps>
         <View style={{ width: 36 }} />
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[
+          styles.scrollContent,
+          {
+            paddingBottom: bottomInset + 80,
+            paddingLeft: Math.max(insets.left, 18),
+            paddingRight: Math.max(insets.right, 18),
+          },
+        ]}
+      >
         {/* Category Header Label */}
         <View style={styles.categoryContextBadge}>
           <Text style={styles.categoryContextText}>{categoryName.toUpperCase()} SERVICE</Text>
@@ -222,12 +256,21 @@ export const ScheduleFulfillmentScreen: React.FC<ScheduleFulfillmentScreenProps>
       </ScrollView>
 
       {/* STICKY BOTTOM ADD TO CART BUTTON */}
-      <View style={styles.bottomBar}>
+      <View
+        style={[
+          styles.bottomBar,
+          {
+            paddingBottom: Math.max(bottomInset, 14),
+            paddingLeft: Math.max(insets.left, 20),
+            paddingRight: Math.max(insets.right, 20),
+          },
+        ]}
+      >
         <TouchableOpacity style={styles.addCartButton} onPress={handleAddToCart} activeOpacity={0.88}>
           <Text style={styles.addCartButtonText}>Add to cart • ₹{selectedDuration.price}</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -271,7 +314,7 @@ const styles = StyleSheet.create({
   categoryContextText: {
     fontSize: 10.5,
     fontFamily: ServenticaTokens.fonts.Bold,
-    color: '#0A7E44',
+    color: '#7C3AED',
     letterSpacing: 0.5,
   },
   scrollContent: {
@@ -302,8 +345,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   durationTileActive: {
-    borderColor: '#0A7E44',
-    backgroundColor: '#EDF9F3',
+    borderColor: '#7C3AED',
+    backgroundColor: '#F5F3FF',
   },
   durationTileLabel: {
     fontSize: 14,
@@ -337,8 +380,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dateTileActive: {
-    borderColor: '#0A7E44',
-    backgroundColor: '#EDF9F3',
+    borderColor: '#7C3AED',
+    backgroundColor: '#F5F3FF',
   },
   dateTileText: {
     fontSize: 13,
@@ -353,7 +396,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   dateTileSubActive: {
-    color: '#0A7E44',
+    color: '#7C3AED',
   },
   periodPillGroup: {
     flexDirection: 'row',
@@ -373,7 +416,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   periodPillActive: {
-    backgroundColor: '#0A7E44',
+    backgroundColor: '#7C3AED',
   },
   periodPillText: {
     fontSize: 12.5,
@@ -413,8 +456,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   slotItemActive: {
-    backgroundColor: '#EDF9F3',
-    borderColor: '#0A7E44',
+    backgroundColor: '#F5F3FF',
+    borderColor: '#7C3AED',
   },
   slotItemText: {
     fontSize: 11.5,
@@ -422,7 +465,7 @@ const styles = StyleSheet.create({
     color: '#334155',
   },
   slotItemTextActive: {
-    color: '#0A7E44',
+    color: '#7C3AED',
     fontFamily: ServenticaTokens.fonts.Bold,
   },
   noteContainer: {
@@ -453,7 +496,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   addCartButton: {
-    backgroundColor: '#0A7E44',
+    backgroundColor: '#7C3AED',
     width: '100%',
     paddingVertical: 14,
     borderRadius: 14,

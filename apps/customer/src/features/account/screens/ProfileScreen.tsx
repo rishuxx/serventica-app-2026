@@ -57,6 +57,7 @@ export interface ProfileScreenProps {
   onNavigateSupport: () => void;
   onNavigateReviews: () => void;
   onNavigateSandbox?: () => void;
+  onNavigateAdminOps?: () => void;
   onNavigateMapDiagnostic?: () => void;
 }
 
@@ -73,6 +74,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
   onNavigateSupport,
   onNavigateReviews,
   onNavigateSandbox,
+  onNavigateAdminOps,
   onNavigateMapDiagnostic,
 }) => {
   const { signOut, user } = useAuth();
@@ -310,6 +312,14 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
               Icon={FlaskConical}
               badge="Accept Orders"
               onPress={onNavigateSandbox}
+            />
+          ) : null}
+          {onNavigateAdminOps ? (
+            <ProfileMenuItem
+              label="Instant Ops Dashboard"
+              Icon={ShieldCheck}
+              badge="Admin Plane"
+              onPress={onNavigateAdminOps}
             />
           ) : null}
           <ProfileMenuItem

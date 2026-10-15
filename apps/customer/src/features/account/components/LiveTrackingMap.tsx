@@ -942,7 +942,7 @@ const LiveTrackingMapComponent: React.FC<LiveTrackingMapProps> = ({
               <View style={{ flex: 1, marginLeft: 12 }}>
                 <Text style={styles.modalPartnerName}>{partnerName}</Text>
                 <Text style={styles.modalPartnerSpecialty}>
-                  {partner?.specialization || 'Certified Servs Specialist'} • ★ {partner?.rating || 4.95}
+                  {partner?.specialization || 'Certified Specialist'} • Rating {partner?.rating || 4.95}
                 </Text>
               </View>
               <View style={styles.modalEtaCol}>

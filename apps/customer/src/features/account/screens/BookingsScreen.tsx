@@ -41,6 +41,7 @@ import { PriceCalculationEngine } from '../../../services/pricing/PriceCalculati
 import { bookingRepository } from '../../../repositories/booking.repository';
 import { triggerHaptic } from '../../../hooks/useEventHaptics';
 import { Modal } from 'react-native';
+import { getInstantServiceImage } from '../../../assets/images/instant';
 
 interface BookingsScreenProps {
   onBack: () => void;
@@ -121,10 +122,25 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({
 
   const formatScheduleText = (item: BookingRecord) => {
     const time = item.scheduledStartTime;
-    if (!time) return 'Scheduled Slot';
-    if (time.toLowerCase().includes('express') || time.toLowerCase().includes('min')) {
-      return time;
+    const isInstantSlug =
+      ['helping-hand', 'instant-helping-hand', 'road-help', 'laundry', 'pack-move', 'pack-and-move'].includes(
+        item.serviceSlug?.toLowerCase() || item.serviceId?.toLowerCase() || ''
+      ) ||
+      Boolean(item.serviceName?.toLowerCase().includes('helping hand')) ||
+      Boolean(item.serviceName?.toLowerCase().includes('road help')) ||
+      Boolean(item.serviceName?.toLowerCase().includes('pack & move')) ||
+      Boolean(item.serviceName?.toLowerCase().includes('express laundry'));
+
+    const isInstant =
+      (item.fulfillmentMode === 'INSTANT' ||
+       (item as any).fulfillment_mode === 'INSTANT' ||
+       item.id.startsWith('inst_')) &&
+      isInstantSlug;
+
+    if (isInstant) {
+      return 'Instant (~9-15 mins)';
     }
+    if (!time) return 'Scheduled Slot';
     // If ISO timestamp format
     if (time.includes('T') || (time.includes('-') && time.includes(':'))) {
       try {
@@ -141,9 +157,42 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({
     item,
     onSelect,
   }) => {
+    // Strictly detect true Instant services only
+    const isInstantSlug =
+      ['helping-hand', 'instant-helping-hand', 'road-help', 'laundry', 'pack-move', 'pack-and-move'].includes(
+        item.serviceSlug?.toLowerCase() || item.serviceId?.toLowerCase() || ''
+      ) ||
+      Boolean(item.serviceName?.toLowerCase().includes('helping hand')) ||
+      Boolean(item.serviceName?.toLowerCase().includes('road help')) ||
+      Boolean(item.serviceName?.toLowerCase().includes('pack & move')) ||
+      Boolean(item.serviceName?.toLowerCase().includes('express laundry'));
+
+    const isInstantService =
+      (item.fulfillmentMode === 'INSTANT' ||
+       (item as any).fulfillment_mode === 'INSTANT' ||
+       item.id.startsWith('inst_')) &&
+      isInstantSlug;
+
+    const instantSlug =
+      item.serviceSlug ||
+      item.serviceId ||
+      (item.serviceName?.toLowerCase().includes('helping hand')
+        ? 'helping-hand'
+        : item.serviceName?.toLowerCase().includes('road help')
+        ? 'road-help'
+        : item.serviceName?.toLowerCase().includes('laundry')
+        ? 'laundry'
+        : item.serviceName?.toLowerCase().includes('pack')
+        ? 'pack-move'
+        : 'helping-hand');
+
     const imageSource =
       item.serviceImageUrl && AssetRegistry[item.serviceImageUrl]
         ? AssetRegistry[item.serviceImageUrl]
+        : item.serviceImageUrl && (item.serviceImageUrl.startsWith('http://') || item.serviceImageUrl.startsWith('https://'))
+        ? { uri: item.serviceImageUrl }
+        : isInstantService
+        ? getInstantServiceImage(instantSlug)
         : AssetRegistry.basic_ac_repair;
 
     const itemCount = item.items?.length || 1;
@@ -157,14 +206,7 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({
       item.status === 'PARTNER_ARRIVED' ||
       item.status === 'SERVICE_STARTED';
 
-    const effectivePartner = item.partner || (hasAssignedStatus ? {
-      id: 'servs_partner_vipin_01',
-      name: 'Vipin Sharma',
-      phone: '+91 98765 43210',
-      avatarUrl: 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?w=150&auto=format&fit=crop&q=80',
-      rating: 4.95,
-      specialization: 'Certified Servs Specialist',
-    } : null);
+    const effectivePartner = item.partner || null;
 
     const hasAssignedPartner = Boolean(effectivePartner && (hasAssignedStatus || (item.status !== 'CONFIRMED' && item.status !== 'SEARCHING_PARTNER')));
 
@@ -175,6 +217,8 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({
       ? 'red'
       : isCompleted
       ? 'green'
+      : isInstantService
+      ? 'yellow'
       : 'purple';
 
     const addressText =
@@ -194,6 +238,18 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({
       items: item.items,
     });
 
+    const accurateTitle = isInstantService
+      ? (item.serviceName && item.serviceName !== 'AC General Service' && item.serviceName !== 'Home Service'
+          ? item.serviceName
+          : (instantSlug.includes('road')
+              ? 'Road Help'
+              : instantSlug.includes('laundry')
+              ? 'Express Laundry'
+              : instantSlug.includes('pack')
+              ? 'Pack & Move Help'
+              : 'Helping Hand'))
+      : item.serviceName || 'Home Service';
+
     return (
       <BookingSwipeableRow
         onSwipeDelete={() => {
@@ -206,9 +262,10 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({
           theme={theme}
           status={item.status}
           bookingId={`#${item.bookingNumber}`}
+          isInstant={isInstantService}
           datetime={formatBookingExactDateTime(item.scheduledStartTime, item.scheduledDate, item.createdAt)}
           thumbnail={imageSource}
-          title={item.serviceName}
+          title={accurateTitle}
           meta={[
             {
               icon: 'clock',
@@ -241,7 +298,7 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({
                         Linking.openURL(`tel:${tel}`).catch(() => {});
                       }
                     : undefined,
-                  onTrack: () => onSelect(item.id),
+                  onTrack: () => onSelectBooking(item.id || item.bookingNumber),
                 }
               : undefined
           }
@@ -253,7 +310,7 @@ export const BookingsScreen: React.FC<BookingsScreenProps> = ({
                 }
               : undefined
           }
-          onPress={() => onSelect(item.id)}
+          onPress={() => onSelectBooking(item.id || item.bookingNumber)}
         />
       </BookingSwipeableRow>
     );

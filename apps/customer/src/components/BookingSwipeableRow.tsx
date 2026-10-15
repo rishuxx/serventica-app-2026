@@ -39,10 +39,13 @@ export const BookingSwipeableRow: React.FC<BookingSwipeableRowProps> = ({
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => false,
+      onStartShouldSetPanResponderCapture: () => false,
+      onMoveShouldSetPanResponderCapture: () => false,
       onMoveShouldSetPanResponder: (_, gestureState) => {
-        // Only capture horizontal swipes exceeding threshold
-        return Math.abs(gestureState.dx) > 10 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
+        // Only capture intentional horizontal swipes exceeding 18px and strictly larger than vertical movement
+        return Math.abs(gestureState.dx) > 18 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 1.5;
       },
+      onPanResponderTerminationRequest: () => true,
       onPanResponderGrant: () => {
         setIsSwiping(true);
         hasTriggeredRevealRef.current = false;

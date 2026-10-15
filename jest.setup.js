@@ -35,3 +35,15 @@ jest.mock('expo-font', () => ({
   loadAsync: jest.fn().mockResolvedValue(true),
   isLoaded: jest.fn().mockReturnValue(true),
 }));
+
+jest.mock('@rnmapbox/maps', () => ({
+  setAccessToken: jest.fn(),
+  MapView: 'MapView',
+  Camera: 'Camera',
+  PointAnnotation: 'PointAnnotation',
+  ShapeSource: 'ShapeSource',
+  LineLayer: 'LineLayer',
+  UserLocation: 'UserLocation',
+  InterpolateCodes: {},
+}));
+

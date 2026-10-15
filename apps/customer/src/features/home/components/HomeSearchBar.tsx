@@ -45,7 +45,6 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
       style={[
         styles.container,
         isFocused && styles.containerFocused,
-        isFocused && { paddingTop: dynamicTopPadding },
       ]}
     >
       {onBack ? (

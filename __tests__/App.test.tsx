@@ -29,8 +29,26 @@ jest.mock('../apps/customer/src/services/location.service', () => ({
   },
 }));
 
+jest.mock('../apps/customer/src/services/auth.service', () => ({
+  authService: {
+    getSession: jest.fn().mockResolvedValue(null),
+    getUser: jest.fn().mockResolvedValue(null),
+    onAuthStateChange: jest.fn().mockReturnValue({ data: { subscription: { unsubscribe: jest.fn() } } }),
+  },
+}));
+
+beforeEach(() => {
+  jest.useFakeTimers();
+});
+
+afterEach(() => {
+  jest.runOnlyPendingTimers();
+  jest.useRealTimers();
+});
+
 test('renders correctly', async () => {
   await ReactTestRenderer.act(async () => {
     ReactTestRenderer.create(<App />);
   });
 });
+

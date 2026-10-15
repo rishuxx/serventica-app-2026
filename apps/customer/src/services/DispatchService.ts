@@ -42,6 +42,60 @@ export class DispatchService {
   }
 
   /**
+   * Authoritative endpoint to place an order and immediately trigger dispatch wave to online partners
+   */
+  static async placeOrderAndDispatch(params: {
+    customerId?: string;
+    serviceIdOrSlug?: string;
+    serviceName?: string;
+    pickupLatitude?: number;
+    pickupLongitude?: number;
+    addressText?: string;
+    totalAmount?: number;
+    paymentMethod?: string;
+    bookingId?: string;
+    bookingNumber?: string;
+    verificationOtp?: string;
+  }): Promise<{
+    success: boolean;
+    bookingId?: string;
+    bookingNumber?: string;
+    dispatchRequestId?: string;
+    candidatesCount?: number;
+    error?: string;
+  }> {
+    try {
+      const { data, error } = await supabase.rpc('place_instant_order_and_dispatch', {
+        p_customer_id: params.customerId && params.customerId !== 'guest_user' ? params.customerId : null,
+        p_service_id_or_slug: params.serviceIdOrSlug || null,
+        p_service_name: params.serviceName || null,
+        p_pickup_lat: params.pickupLatitude ?? 30.343866,
+        p_pickup_lng: params.pickupLongitude ?? 77.953231,
+        p_address_text: params.addressText || 'Customer Location, Dehradun',
+        p_total_amount: params.totalAmount || 499.0,
+        p_payment_method: params.paymentMethod || 'ONLINE',
+        p_booking_id: params.bookingId || null,
+        p_booking_number: params.bookingNumber || null,
+        p_verification_otp: params.verificationOtp || null,
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      return {
+        success: Boolean(data?.success),
+        bookingId: data?.booking_id,
+        bookingNumber: data?.booking_number,
+        dispatchRequestId: data?.dispatch?.dispatch_request_id,
+        candidatesCount: data?.dispatch?.offered_candidates_count || 0,
+      };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  }
+
+  /**
    * Concurrency-safe atomic acceptance by an eligible partner
    */
   static async acceptOffer(params: {

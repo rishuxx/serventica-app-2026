@@ -75,6 +75,7 @@ export class CartCloudSyncService {
     try {
       // 1. Send Realtime WebSocket Broadcast
       if (this.activeChannel) {
+        console.log('[DEBUG-SEND] CartCloudSyncService broadcastCartChange for:', this.currentUserId);
         this.activeChannel.send({
           type: 'broadcast',
           event: 'CART_UPDATED',

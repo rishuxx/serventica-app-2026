@@ -14,6 +14,7 @@ import {
   Animated,
   Modal,
   Dimensions,
+  BackHandler,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -44,14 +45,19 @@ import {
   ClipboardList,
   AlertCircle,
   X,
+  MessageSquare,
+  Lock,
 } from 'lucide-react-native';
 import { ServenticaTokens, Fonts } from '../../../../../../packages/design-system/src';
 import { useBookingDetail } from '../../../hooks/useBookings';
 import { BookingStatus } from '../../../../../../packages/types/src';
 import { AssetRegistry } from '../../../services/home.service';
+import { getInstantServiceImage } from '../../../assets/images/instant';
 import { TicketContainer } from '../../../components/TicketContainer';
 import { formatBookingExactDateTime } from '../../../lib/date.utils';
 import { PriceCalculationEngine } from '../../../services/pricing/PriceCalculationEngine';
+import { BookingChatModal } from '../../instant/components/BookingChatModal';
+import { InstantDoorstepOtpCard } from '../../instant/components/InstantDoorstepOtpCard';
 import { LiveTrackingMap } from '../components/LiveTrackingMap';
 import { RadarSearchingBackdrop } from '../components/RadarSearchingBackdrop';
 import { ServiceCompletedBackdrop } from '../components/ServiceCompletedBackdrop';
@@ -62,6 +68,7 @@ import { useTrackingStore } from '../../../hooks/useTrackingStore';
 import { useEventHaptics } from '../../../hooks/useEventHaptics';
 import { PartnerLiveLocation } from '../../../types/tracking.types';
 import { Star } from 'lucide-react-native';
+import { DispatchService } from '../../../services/DispatchService';
 
 interface BookingDetailScreenProps {
   bookingId: string;
@@ -93,8 +100,25 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
   const [livePartnerLocation, setLivePartnerLocation] = useState<PartnerLiveLocation | null>(null);
   const [userRating, setUserRating] = useState<number>(0);
   const [ratingSubmitted, setRatingSubmitted] = useState<boolean>(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const pulseAnim = useRef(new Animated.Value(0.35)).current;
   const sheetPanY = useRef(new Animated.Value(SNAP_COLLAPSED)).current;
+
+  // 40-Second Cancellation Window countdown
+  const [secondsRemaining, setSecondsRemaining] = useState<number>(() => {
+    if (!booking?.createdAt) return 40;
+    const elapsed = Math.floor((Date.now() - new Date(booking.createdAt).getTime()) / 1000);
+    return Math.max(0, 40 - elapsed);
+  });
+
+  useEffect(() => {
+    if (!booking?.createdAt) return;
+    const timer = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - new Date(booking.createdAt).getTime()) / 1000);
+      setSecondsRemaining(Math.max(0, 40 - elapsed));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [booking?.createdAt]);
 
   useEffect(() => {
     const loop = Animated.loop(
@@ -124,18 +148,42 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
   useEffect(() => {
     if (!bookingId) return;
 
-    // 1. Keep local fallback / simulation listener active
+    // 1. Keep local fallback / simulation listener active with dual-channel keying (UUID and bookingNumber)
     const unsub = liveTrackingService.subscribeToBookingTracking(
       bookingId,
       (loc) => {
         setLivePartnerLocation(loc);
-      }
+      },
+      () => {},
+      booking?.bookingNumber
     );
     return () => unsub();
-  }, [bookingId]);
+  }, [bookingId, booking?.bookingNumber]);
 
-  // Authoritative live GPS: trackingStore has priority for live socket updates
-  const effectivePartnerLocation = trackingStore.partnerLocation || livePartnerLocation;
+  useEffect(() => {
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      onBack();
+      return true;
+    });
+    return () => sub.remove();
+  }, [onBack]);
+
+  // Partner initial location from booking detail if presence session provided coordinates
+  const partnerInitialLocation: PartnerLiveLocation | null =
+    booking && (booking.partner as any)?.currentLatitude != null && (booking.partner as any)?.currentLongitude != null
+      ? {
+          latitude: Number((booking.partner as any).currentLatitude),
+          longitude: Number((booking.partner as any).currentLongitude),
+          bookingId,
+          partnerId: booking.partner?.id || '',
+          heading: 0,
+          speed: 0,
+          timestamp: new Date().toISOString(),
+        }
+      : null;
+
+  // Authoritative live GPS: trackingStore has priority for live socket updates, then live Realtime broadcast, then initial location
+  const effectivePartnerLocation = trackingStore.partnerLocation || livePartnerLocation || partnerInitialLocation;
   if (effectivePartnerLocation) {
     console.log(
       `[CustomerGPS] MAP PROPS\nlat=${effectivePartnerLocation.latitude}\nlon=${effectivePartnerLocation.longitude}`
@@ -143,6 +191,82 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
   }
 
 
+
+  // Status definitions
+  const isCancelled =
+    booking?.status === 'CANCELLED_BY_CUSTOMER' ||
+    booking?.status === 'CANCELLED_BY_PARTNER' ||
+    (booking?.status as string) === 'CANCELLED' ||
+    (booking?.status as string) === 'CANCELLED_BY_SYSTEM';
+
+  const isCompleted = booking?.status === 'SERVICE_COMPLETED' || booking?.status === 'CLOSED';
+
+  // Dynamic Servs assignment verification
+  const hasAssignedStatus =
+    !isCancelled &&
+    (booking?.status === 'PARTNER_ASSIGNED' ||
+      booking?.status === 'PARTNER_ACCEPTED' ||
+      booking?.status === 'PARTNER_EN_ROUTE' ||
+      booking?.status === 'PARTNER_ARRIVED' ||
+      booking?.status === 'SERVICE_STARTED');
+
+  const effectivePartner = !isCancelled ? (booking?.partner || null) : null;
+
+  const hasAssignedPartner = Boolean(
+    effectivePartner &&
+      (hasAssignedStatus || (booking?.status !== 'CONFIRMED' && booking?.status !== 'SEARCHING_PARTNER'))
+  );
+
+  const isSearchingPartner = !isCancelled && !isCompleted && !hasAssignedPartner;
+  const isPartnerDispatched = hasAssignedPartner && (booking?.status === 'PARTNER_EN_ROUTE' || booking?.status === 'PARTNER_ARRIVED');
+
+  // Active Dispatch Engine Pulse: ONLY for true instant services searching for a partner
+  useEffect(() => {
+    if (!booking || !isSearchingPartner || !isInstantService) return;
+
+    let isDisposed = false;
+
+    const pulseDispatchScan = async () => {
+      try {
+        const effectiveServiceId = booking.serviceId || booking.items?.[0]?.serviceId;
+        const effectiveServiceName = booking.serviceName || booking.items?.[0]?.serviceName;
+        const pickupLat = booking.address?.latitude || 30.343866;
+        const pickupLng = booking.address?.longitude || 77.953231;
+        const addressText = booking.address?.formattedAddress || booking.address?.addressLine1 || 'Dehradun, India';
+
+        console.log('[BookingDetailScreen] Firing live dispatch wave for booking:', booking.bookingNumber);
+        await DispatchService.placeOrderAndDispatch({
+          bookingId: booking.id,
+          bookingNumber: booking.bookingNumber,
+          customerId: booking.customerId,
+          serviceIdOrSlug: effectiveServiceId,
+          serviceName: effectiveServiceName,
+          pickupLatitude: pickupLat,
+          pickupLongitude: pickupLng,
+          addressText: addressText,
+          totalAmount: booking.payment?.total || 249,
+          paymentMethod: booking.payment?.paymentMethod || 'ONLINE',
+        });
+      } catch (err) {
+        console.warn('[BookingDetailScreen] Dispatch pulse error:', err);
+      }
+    };
+
+    // Immediate pulse on mount / entry
+    pulseDispatchScan();
+
+    // Periodic wave renewal every 20 seconds while waiting for partner acceptance
+    const scanInterval = setInterval(() => {
+      if (!isDisposed) {
+        pulseDispatchScan();
+      }
+    }, 20000);
+
+    return () => {
+      isDisposed = true;
+      clearInterval(scanInterval);
+    };
+  }, [booking?.id, isSearchingPartner]);
 
   if (isLoading) {
     return (
@@ -188,7 +312,31 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
     });
   };
 
+  const isMidway =
+    booking?.status === 'PARTNER_EN_ROUTE' ||
+    booking?.status === 'PARTNER_ARRIVED' ||
+    booking?.status === 'SERVICE_STARTED' ||
+    (booking?.status as any) === 'SERVICE_IN_PROGRESS';
+
   const handleCancelPress = () => {
+    if (isMidway) {
+      Alert.alert(
+        'Mid-Way Cancellation Unavailable',
+        'Your specialist is already dispatched / en-route or service is in progress. Mid-way cancellation is strictly not permitted to protect our partner community.',
+        [{ text: 'Understood', style: 'default' }]
+      );
+      return;
+    }
+
+    if (!isSearchingPartner && secondsRemaining <= 0) {
+      Alert.alert(
+        'Cancellation Window Expired',
+        'Free cancellation was available for 40 seconds following booking placement. Specialist is committed to your order.',
+        [{ text: 'Understood', style: 'default' }]
+      );
+      return;
+    }
+
     setIsCancelModalOpen(true);
   };
 
@@ -225,41 +373,6 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
     }
     return time;
   };
-
-  // Status definitions
-  const isCancelled =
-    booking.status === 'CANCELLED_BY_CUSTOMER' ||
-    booking.status === 'CANCELLED_BY_PARTNER' ||
-    (booking.status as string) === 'CANCELLED' ||
-    (booking.status as string) === 'CANCELLED_BY_SYSTEM';
-
-  const isCompleted = booking.status === 'SERVICE_COMPLETED' || booking.status === 'CLOSED';
-
-  // Dynamic Servs assignment verification
-  const hasAssignedStatus =
-    !isCancelled &&
-    (booking.status === 'PARTNER_ASSIGNED' ||
-      booking.status === 'PARTNER_ACCEPTED' ||
-      booking.status === 'PARTNER_EN_ROUTE' ||
-      booking.status === 'PARTNER_ARRIVED' ||
-      booking.status === 'SERVICE_STARTED');
-
-  const effectivePartner = !isCancelled ? (booking.partner || (hasAssignedStatus ? {
-    id: 'servs_partner_vipin_01',
-    name: 'Vipin Sharma',
-    phone: '+91 98765 43210',
-    avatarUrl: 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?w=150&auto=format&fit=crop&q=80',
-    rating: 4.95,
-    specialization: 'Certified Servs Specialist',
-  } : null)) : null;
-
-  const hasAssignedPartner = Boolean(
-    effectivePartner &&
-      (hasAssignedStatus || (booking.status !== 'CONFIRMED' && booking.status !== 'SEARCHING_PARTNER'))
-  );
-
-  const isSearchingPartner = !isCancelled && !isCompleted && !hasAssignedPartner;
-  const isPartnerDispatched = hasAssignedPartner && (booking.status === 'PARTNER_EN_ROUTE' || booking.status === 'PARTNER_ARRIVED');
 
   // Status timeline definition - Exactly 3 stages as requested
   const timelineSteps = [
@@ -311,10 +424,56 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
       'PARTNER_EN_ROUTE',
     ].includes(booking.status);
 
-  const imageSource =
-    booking.serviceImageUrl && AssetRegistry[booking.serviceImageUrl]
-      ? AssetRegistry[booking.serviceImageUrl]
-      : AssetRegistry.basic_ac_repair;
+  const isInstantSlug =
+    ['helping-hand', 'road-help', 'laundry', 'pack-move', 'pack-and-move', 'instant-helping-hand'].includes(
+      booking.serviceSlug?.toLowerCase() || booking.serviceId?.toLowerCase() || ''
+    ) ||
+    Boolean(booking.serviceName?.toLowerCase().includes('helping hand')) ||
+    Boolean(booking.serviceName?.toLowerCase().includes('road help')) ||
+    Boolean(booking.serviceName?.toLowerCase().includes('pack & move')) ||
+    Boolean(booking.serviceName?.toLowerCase().includes('express laundry'));
+
+  const isInstantService =
+    (booking.fulfillmentMode === 'INSTANT' ||
+     (booking as any).fulfillment_mode === 'INSTANT' ||
+     booking.id.startsWith('inst_')) &&
+    isInstantSlug;
+
+  const instantSlug =
+    booking.serviceSlug ||
+    (booking.serviceId === 'e1000000-0000-0000-0001-000000000002'
+      ? 'road-help'
+      : booking.serviceId === 'e1000000-0000-0000-0001-000000000003'
+      ? 'laundry'
+      : booking.serviceId === 'e1000000-0000-0000-0001-000000000004'
+      ? 'pack-move'
+      : booking.serviceId === 'e1000000-0000-0000-0001-000000000001'
+      ? 'helping-hand'
+      : booking.serviceName?.toLowerCase().includes('road')
+      ? 'road-help'
+      : booking.serviceName?.toLowerCase().includes('laundry')
+      ? 'laundry'
+      : booking.serviceName?.toLowerCase().includes('pack')
+      ? 'pack-move'
+      : 'helping-hand');
+
+  const displayServiceName = isInstantService
+    ? (instantSlug === 'road-help'
+        ? 'Road Help'
+        : instantSlug === 'laundry'
+        ? 'Express Laundry'
+        : instantSlug === 'pack-move'
+        ? 'Pack & Move Help'
+        : 'Helping Hand')
+    : booking.serviceName || 'Home Service';
+
+  const imageSource = isInstantService
+    ? getInstantServiceImage(instantSlug)
+    : booking.serviceImageUrl && AssetRegistry[booking.serviceImageUrl]
+    ? AssetRegistry[booking.serviceImageUrl]
+    : booking.serviceImageUrl && (booking.serviceImageUrl.startsWith('http://') || booking.serviceImageUrl.startsWith('https://'))
+    ? { uri: booking.serviceImageUrl }
+    : AssetRegistry.basic_ac_repair;
 
   // Authoritative real-time bill calculations via domain PriceCalculationEngine
   const billBreakdown = PriceCalculationEngine.calculateBill({
@@ -351,7 +510,7 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
       <StatusBar barStyle="light-content" />
 
       {/* DYNAMIC TOP BACKDROP (STATE 1: CANCELLED RED GRADIENT | STATE 2: RADAR | STATE 3: SERVS FOUND DARK GREEN | STATE 4: LIVE MAP | STATE 5: COMPLETED GREEN) */}
-      <View style={StyleSheet.absoluteFill}>
+      <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
         {isCancelled ? (
           <OrderCancelledBackdrop
             height={Dimensions.get('window').height}
@@ -400,7 +559,7 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
           <View style={styles.experienceRatingCard}>
             <Text style={styles.ratingCardTitle}>How was your experience?</Text>
             <Text style={styles.ratingCardSubtitle}>
-              Rate {effectivePartner?.name || 'Vipin Sharma'}'s service
+              Rate {effectivePartner?.name || 'your specialist'}'s service
             </Text>
 
             <View style={styles.starsRow}>
@@ -442,7 +601,11 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
           top={
             <View style={styles.ticketTopRow}>
               <View style={styles.serviceImageContainer}>
-                <Image source={imageSource} style={styles.serviceHeroImage} resizeMode="cover" />
+                <Image
+                  source={imageSource}
+                  style={styles.serviceHeroImage}
+                  resizeMode={isInstantService ? 'contain' : 'cover'}
+                />
               </View>
 
               <View style={styles.serviceHeaderInfo}>
@@ -467,7 +630,7 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
                 </View>
 
                 <Text style={styles.serviceMainTitle} numberOfLines={2}>
-                  {booking.serviceName}
+                  {displayServiceName}
                 </Text>
 
                 <View style={styles.inlineMetaRow}>
@@ -480,7 +643,9 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
                   </Text>
                   <Text style={styles.inlineDot}>•</Text>
                   <Clock size={12} color="#7C3AED" strokeWidth={2} />
-                  <Text style={styles.inlineMetaTextHighlight}>Express (~20 mins)</Text>
+                  <Text style={styles.inlineMetaTextHighlight}>
+                    {isInstantService ? 'Instant (~9-15 mins)' : 'Scheduled'}
+                  </Text>
                 </View>
               </View>
             </View>
@@ -491,20 +656,22 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
                 Included Services • {booking.items?.length || 1}
               </Text>
               {booking.items && booking.items.length > 0 ? (
-                booking.items.map((it, idx) => (
-                  <View key={it.id || idx} style={styles.itemRow}>
-                    <View style={styles.bulletDot} />
-                    <Text style={styles.itemTitle} numberOfLines={1}>
-                      {it.serviceName} × {it.quantity}
-                    </Text>
-                    <Text style={styles.itemPrice}>₹{it.totalPrice || it.unitPrice || itemTotal}</Text>
-                  </View>
-                ))
+                booking.items
+                  .filter((it) => !(isInstantService && it.serviceName === 'AC General Service' && booking.items!.length > 1))
+                  .map((it, idx) => (
+                    <View key={it.id || idx} style={styles.itemRow}>
+                      <View style={styles.bulletDot} />
+                      <Text style={styles.itemTitle} numberOfLines={1}>
+                        {isInstantService && it.serviceName === 'AC General Service' ? displayServiceName : it.serviceName} × {it.quantity}
+                      </Text>
+                      <Text style={styles.itemPrice}>₹{it.totalPrice || it.unitPrice || itemTotal}</Text>
+                    </View>
+                  ))
               ) : (
                 <View style={styles.itemRow}>
                   <View style={styles.bulletDot} />
                   <Text style={styles.itemTitle} numberOfLines={1}>
-                    {booking.serviceName} × 1
+                    {displayServiceName} × 1
                   </Text>
                   <Text style={styles.itemPrice}>₹{itemTotal}</Text>
                 </View>
@@ -512,6 +679,16 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
             </View>
           }
         />
+
+        {/* Doorstep Verification Start Code (Scheduled & Instant Services) */}
+        {!isCancelled && !isCompleted && Boolean(booking.verificationOtp) && (
+          <View style={{ marginTop: 14, marginBottom: 4 }}>
+            <InstantDoorstepOtpCard
+              otp={booking.verificationOtp || '4821'}
+              partnerName={effectivePartner?.name || 'your specialist'}
+            />
+          </View>
+        )}
 
         {/* 2. CANCELLED STATUS NOTICE BANNER (ZEPTO / BLINKIT STYLE) */}
         {isCancelled ? (
@@ -601,26 +778,51 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
               <View style={styles.partnerInfo}>
                 <Text style={styles.partnerName}>{effectivePartner.name}</Text>
                 <Text style={styles.partnerSpecialty}>
-                  {effectivePartner.specialization || 'Certified Servs'} • ★ {effectivePartner.rating || 4.95}
+                  {effectivePartner.specialization || 'Certified Specialist'} • Rating {effectivePartner.rating || 4.95}
                 </Text>
               </View>
 
-              <TouchableOpacity
-                style={styles.glassPurpleCallBtn}
-                onPress={() => {
-                  if (effectivePartner.phone) {
-                    const tel = effectivePartner.phone.replace(/\s+/g, '');
-                    Linking.openURL(`tel:${tel}`).catch(() => {});
-                  }
-                }}
-                activeOpacity={0.8}
-                accessibilityRole="button"
-                accessibilityLabel="Call Servs"
-              >
-                <PhoneCall size={16} color="#FFFFFF" strokeWidth={2.2} />
-                <Text style={styles.glassCallBtnText}>Call</Text>
-              </TouchableOpacity>
+              <View style={styles.partnerActionButtonsCol}>
+                <TouchableOpacity
+                  style={styles.glassPurpleCallBtn}
+                  onPress={() => {
+                    if (effectivePartner.phone) {
+                      const tel = effectivePartner.phone.replace(/\s+/g, '');
+                      Linking.openURL(`tel:${tel}`).catch(() => {});
+                    }
+                  }}
+                  activeOpacity={0.8}
+                  accessibilityRole="button"
+                  accessibilityLabel="Call Servs"
+                >
+                  <PhoneCall size={15} color="#FFFFFF" strokeWidth={2.2} />
+                  <Text style={styles.glassCallBtnText}>Call</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.glassPurpleChatBtn}
+                  onPress={() => setIsChatOpen(true)}
+                  activeOpacity={0.8}
+                  accessibilityRole="button"
+                  accessibilityLabel="Chat with Specialist"
+                >
+                  <MessageSquare size={15} color="#7C3AED" strokeWidth={2.2} />
+                  <Text style={styles.glassChatBtnText}>Chat</Text>
+                </TouchableOpacity>
+              </View>
             </View>
+
+            {/* Quick in-app chat prompt */}
+            <TouchableOpacity
+              style={styles.chatPromptBar}
+              onPress={() => setIsChatOpen(true)}
+              activeOpacity={0.8}
+            >
+              <MessageSquare size={14} color="#7C3AED" />
+              <Text style={styles.chatPromptBarText}>
+                Need to share flat number or gate directions? Chat with {effectivePartner.name ? effectivePartner.name.split(' ')[0] : 'Specialist'}
+              </Text>
+            </TouchableOpacity>
           </View>
         ) : null}
 
@@ -840,21 +1042,46 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
           ) : null}
 
           {canCancel ? (
-            <TouchableOpacity
-              style={styles.cancelGlassBtn}
-              onPress={handleCancelPress}
-              disabled={isCancelling}
-              activeOpacity={0.85}
-            >
-              {isCancelling ? (
-                <ActivityIndicator size="small" color="#DC2626" />
-              ) : (
-                <>
-                  <XCircle size={16} color="#DC2626" strokeWidth={2.2} style={{ marginRight: 6 }} />
-                  <Text style={styles.cancelGlassBtnText}>Cancel Booking</Text>
-                </>
-              )}
-            </TouchableOpacity>
+            <View style={{ width: '100%' }}>
+              <TouchableOpacity
+                style={[
+                  styles.cancelGlassBtn,
+                  (isMidway || (!isSearchingPartner && secondsRemaining <= 0)) && styles.cancelGlassBtnDisabled,
+                ]}
+                onPress={handleCancelPress}
+                disabled={isCancelling}
+                activeOpacity={0.85}
+              >
+                {isCancelling ? (
+                  <ActivityIndicator size="small" color="#DC2626" />
+                ) : isMidway ? (
+                  <>
+                    <Lock size={15} color="#64748B" strokeWidth={2.2} style={{ marginRight: 6 }} />
+                    <Text style={styles.cancelGlassBtnTextDisabled}>
+                      Mid-Way Cancellation Unavailable • Specialist En Route
+                    </Text>
+                  </>
+                ) : !isSearchingPartner && secondsRemaining <= 0 ? (
+                  <>
+                    <Lock size={15} color="#64748B" strokeWidth={2.2} style={{ marginRight: 6 }} />
+                    <Text style={styles.cancelGlassBtnTextDisabled}>
+                      Cancellation Window Expired (40s Policy)
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    <XCircle size={15} color="#DC2626" strokeWidth={2.2} style={{ marginRight: 6 }} />
+                    <Text style={styles.cancelGlassBtnText}>
+                      Cancel Booking ({secondsRemaining}s remaining)
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+
+              <Text style={styles.cancelPolicyNotice}>
+                Serventica Policy: Free cancellation allowed within 40 seconds. Once specialist is en route, mid-way cancellation is strictly blocked.
+              </Text>
+            </View>
           ) : null}
 
           {/* INVOICE & RECEIPT BUTTON (FOR CONFIRMED / COMPLETED ORDERS) */}
@@ -992,6 +1219,21 @@ export const BookingDetailScreen: React.FC<BookingDetailScreenProps> = ({
           </View>
         </View>
       </Modal>
+
+      {/* REAL-TIME IN-APP CHAT MODAL WITH AUTHORIZED ASSIGNED PARTNER */}
+      {effectivePartner && (
+        <BookingChatModal
+          visible={isChatOpen}
+          bookingId={booking.id}
+          bookingNumber={booking.bookingNumber}
+          customerId={booking.customerId || '6e9fc42b-8f70-4c39-9278-49d33043aac9'}
+          customerName="Customer"
+          partnerName={effectivePartner.name || 'Serventica Specialist'}
+          partnerAvatarUrl={effectivePartner.avatarUrl}
+          partnerSpecialization={effectivePartner.specialization}
+          onClose={() => setIsChatOpen(false)}
+        />
+      )}
     </View>
   );
 };
@@ -1983,6 +2225,45 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.Bold,
     color: '#FFFFFF',
   },
+  partnerActionButtonsCol: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  glassPurpleChatBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F3FF',
+    borderWidth: 1,
+    borderColor: '#DDD6FE',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 10,
+    gap: 5,
+  },
+  glassChatBtnText: {
+    fontSize: 12.5,
+    fontFamily: Fonts.Bold,
+    color: '#7C3AED',
+  },
+  chatPromptBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginTop: 12,
+    gap: 8,
+  },
+  chatPromptBarText: {
+    fontSize: 12,
+    fontFamily: Fonts.Medium,
+    color: '#475569',
+    flex: 1,
+  },
   cancelGlassBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1993,10 +2274,27 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 14,
   },
+  cancelGlassBtnDisabled: {
+    backgroundColor: '#F1F5F9',
+    borderColor: '#E2E8F0',
+  },
   cancelGlassBtnText: {
     fontSize: 13.5,
     fontFamily: Fonts.Bold,
     color: '#E11D48',
+  },
+  cancelGlassBtnTextDisabled: {
+    fontSize: 13,
+    fontFamily: Fonts.SemiBold,
+    color: '#64748B',
+  },
+  cancelPolicyNotice: {
+    fontSize: 11,
+    fontFamily: Fonts.Regular,
+    color: '#94A3B8',
+    textAlign: 'center',
+    marginTop: 6,
+    marginHorizontal: 12,
   },
   supportGlassBtn: {
     flexDirection: 'row',

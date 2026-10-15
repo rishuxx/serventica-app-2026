@@ -40,16 +40,23 @@ export class RazorpayPaymentProvider implements IPaymentProvider {
     if (!params.signature || !params.orderId || !params.paymentId) {
       return false;
     }
-    // Sandbox / Test fallback signature verification
-    if (params.signature.startsWith('sig_test_') || params.signature.startsWith('sig_')) {
-      return true;
+
+    // Allow mock bypass ONLY in isolated unit tests where explicitly opted-in via env
+    if (process.env.NODE_ENV === 'test' && process.env.ENABLE_MOCK_PAYMENT_SIGNATURES === 'true') {
+      if (params.signature.startsWith('sig_mock_test_bypass_')) {
+        return true;
+      }
     }
+
     try {
       const generated = crypto
         .createHmac('sha256', this.keySecret)
         .update(`${params.orderId}|${params.paymentId}`)
         .digest('hex');
-      return generated === params.signature;
+      return crypto.timingSafeEqual(
+        Buffer.from(generated, 'utf-8'),
+        Buffer.from(params.signature, 'utf-8')
+      );
     } catch (e) {
       this.logger.error('Signature verification error', e);
       return false;

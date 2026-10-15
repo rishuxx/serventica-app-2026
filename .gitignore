@@ -86,3 +86,5 @@ android/app/src/main/assets/index.android.bundle
 **/.turbo/
 .expo/
 *.log
+dist/
+**/dist/

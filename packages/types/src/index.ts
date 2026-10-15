@@ -371,7 +371,7 @@ export interface CatalogImportRow {
   created_at: string;
 }
 
-export interface AdminAuditLog {
+export interface LegacyAdminAuditLog {
   id: string;
   admin_user_id?: string | null;
   entity_type: string;
@@ -884,3 +884,4 @@ export interface OutboxEvent {
 }
 
 export * from './finance.types';
+export * from './fulfillment.types';

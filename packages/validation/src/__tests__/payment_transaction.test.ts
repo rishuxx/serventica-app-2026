@@ -64,6 +64,25 @@ describe('Phase 6 — Payment Transaction & Razorpay Verification Engine', () =>
 
       expect(isValid).toBe(false);
     });
+
+    it('[SECURITY REGRESSION] rejects attacker sig_ and sig_test_ backdoor payloads', () => {
+      const backdoorPayloads = [
+        'sig_bypass_attempt',
+        'sig_test_mock_token',
+        'sig_1234567890abcdef',
+        'sig_',
+      ];
+
+      for (const signature of backdoorPayloads) {
+        const isValid = PaymentTransactionEngine.verifyRazorpaySignature({
+          orderId: testOrderId,
+          paymentId: testPaymentId,
+          signature,
+          secret: testSecret,
+        });
+        expect(isValid).toBe(false);
+      }
+    });
   });
 
   describe('Webhook Signature Verification', () => {

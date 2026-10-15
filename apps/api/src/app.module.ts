@@ -6,6 +6,8 @@ import { HealthController } from './health/health.controller';
 import { TrackingModule } from './tracking/tracking.module';
 import { FulfillmentModule } from './fulfillment/fulfillment.module';
 import { FinanceModule } from './finance/finance.module';
+import { PartnerModule } from './partner/partner.module';
+import { AdminModule } from './admin/admin.module';
 
 /**
  * SERVENTICA — Root Application Module
@@ -41,6 +43,8 @@ import { FinanceModule } from './finance/finance.module';
     TrackingModule,
     FulfillmentModule,
     FinanceModule,
+    PartnerModule,
+    AdminModule,
   ],
   controllers: [CustomersController, HealthController],
   providers: [

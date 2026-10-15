@@ -27,6 +27,7 @@ import { CategoryScreen } from '../../categories/screens/CategoryScreen';
 import { ServiceDetailScreen } from '../../services/screens/ServiceDetailScreen';
 import { InstantFulfillmentScreen } from '../../services/screens/InstantFulfillmentScreen';
 import { ScheduleFulfillmentScreen } from '../../services/screens/ScheduleFulfillmentScreen';
+import { InstantHomeGridSection } from '../../instant/components/InstantHomeGridSection';
 import { FloatingCartBar } from '../../cart/components/FloatingCartBar';
 import { CartDrawerModal } from '../../cart/components/CartDrawerModal';
 import { useHome } from '../../../hooks/useHome';
@@ -53,6 +54,7 @@ import { NotificationsScreen } from '../../account/screens/NotificationsScreen';
 import { ReviewsScreen } from '../../account/screens/ReviewsScreen';
 import { ServiceCardShowcaseScreen } from '../../showcase/ServiceCardShowcaseScreen';
 import { PartnerAppSimulatorScreen } from '../../account/screens/PartnerAppSimulatorScreen';
+import { AdminOperationsDashboardScreen } from '../../account/screens/AdminOperationsDashboardScreen';
 import { NativeMapboxDiagnosticScreen } from '../../account/screens/NativeMapboxDiagnosticScreen';
 
 import {
@@ -77,6 +79,7 @@ export type AccountSubRoute =
   | 'SUPPORT'
   | 'REVIEWS'
   | 'SANDBOX'
+  | 'ADMIN_OPS'
   | 'MAP_DIAGNOSTIC'
   | null;
 
@@ -123,7 +126,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [supportBookingContext, setSupportBookingContext] = useState<{ id: string; serviceName: string } | undefined>(undefined);
   const [activeServiceTarget, setActiveServiceTarget] = useState<{ id: string; slug: string; fromCategory?: boolean } | null>(null);
   const [isStickyActive, setIsStickyActive] = useState<boolean>(false);
-  const [selectedFulfillmentMode, setSelectedFulfillmentMode] = useState<FulfillmentMode>('INSTANT');
+  const [selectedFulfillmentMode, setSelectedFulfillmentMode] = useState<FulfillmentMode>('SCHEDULED');
+  const [selectedInstantServiceSlug, setSelectedInstantServiceSlug] = useState<string | null>(null);
   const [activeFulfillmentScreen, setActiveFulfillmentScreen] = useState<'INSTANT' | 'SCHEDULED' | null>(null);
 
   // Native scroll tracking for triggers
@@ -170,10 +174,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     const onBackPress = () => {
       if (activeFulfillmentScreen) {
         setActiveFulfillmentScreen(null);
+        setSelectedInstantServiceSlug(null);
         return true;
       }
       if (activeServiceTarget) {
         setActiveServiceTarget(null);
+        return true;
+      }
+      if (selectedFulfillmentMode === 'INSTANT') {
+        setSelectedFulfillmentMode('SCHEDULED');
         return true;
       }
       if (activeAccountRoute === 'BOOKING_DETAIL') {
@@ -198,7 +207,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
     const backSubscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
     return () => backSubscription.remove();
-  }, [activeAccountRoute, activeFulfillmentScreen, activeServiceTarget]);
+  }, [activeAccountRoute, activeFulfillmentScreen, activeServiceTarget, selectedFulfillmentMode]);
 
   const isSearchActive = search.query.trim().length > 0 || search.isSearchActive;
 
@@ -208,10 +217,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       const targetId = typeof target === 'string' ? target : target?.id;
       if (!targetId) return;
 
+      // When selecting a category from navbar, switch from INSTANT to SCHEDULED
+      // so the category catalog content is displayed
+      if (selectedFulfillmentMode === 'INSTANT') {
+        setSelectedFulfillmentMode('SCHEDULED');
+      }
+
       // Select category in home experience
       selectCategory(targetId);
     },
-    [selectCategory]
+    [selectCategory, selectedFulfillmentMode]
   );
 
   const [stickyLayout, setStickyLayout] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
@@ -221,24 +236,30 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     ? getFallbackCategoryTheme(activeCategory.slug)
     : null;
 
-  const isDarkSticky =
-    activeExperience?.theme?.isDark !== undefined
-      ? activeExperience.theme.isDark
-      : themeFallback?.isDark !== undefined
-      ? themeFallback.isDark
-      : false;
+  const isInstantMode = selectedFulfillmentMode === 'INSTANT';
 
-  const stickyGradientColors: string[] =
-    activeExperience?.hero?.palette?.gradientColors && activeExperience.hero.palette.gradientColors.length >= 2
-      ? activeExperience.hero.palette.gradientColors.slice(0, Math.min(3, activeExperience.hero.palette.gradientColors.length))
-      : activeExperience?.theme?.gradientColors && activeExperience.theme.gradientColors.length >= 2
-      ? activeExperience.theme.gradientColors.slice(0, Math.min(3, activeExperience.theme.gradientColors.length))
-      : themeFallback?.gradientColors && themeFallback.gradientColors.length >= 2
-      ? themeFallback.gradientColors.slice(0, Math.min(3, themeFallback.gradientColors.length))
-      : [
-          activeExperience?.theme?.gradientStart || themeFallback?.gradientStart || '#0284C7',
-          activeExperience?.theme?.gradientEnd || themeFallback?.gradientEnd || '#0284C7',
-        ];
+  const isDarkSticky = isInstantMode
+    ? false
+    : activeExperience?.theme?.isDark !== undefined
+    ? activeExperience.theme.isDark
+    : themeFallback?.isDark !== undefined
+    ? themeFallback.isDark
+    : false;
+
+  const instantStickyGradientColors = ['#BA86FA', '#C89FFB'];
+
+  const stickyGradientColors: string[] = isInstantMode
+    ? instantStickyGradientColors
+    : activeExperience?.hero?.palette?.gradientColors && activeExperience.hero.palette.gradientColors.length >= 2
+    ? activeExperience.hero.palette.gradientColors.slice(0, Math.min(3, activeExperience.hero.palette.gradientColors.length))
+    : activeExperience?.theme?.gradientColors && activeExperience.theme.gradientColors.length >= 2
+    ? activeExperience.theme.gradientColors.slice(0, Math.min(3, activeExperience.theme.gradientColors.length))
+    : themeFallback?.gradientColors && themeFallback.gradientColors.length >= 2
+    ? themeFallback.gradientColors.slice(0, Math.min(3, themeFallback.gradientColors.length))
+    : [
+        activeExperience?.theme?.gradientStart || themeFallback?.gradientStart || '#0284C7',
+        activeExperience?.theme?.gradientEnd || themeFallback?.gradientEnd || '#0284C7',
+      ];
 
   const stickyTextColor = isDarkSticky ? '#FFFFFF' : '#1E242B';
   const stickySubtextColor = isDarkSticky ? 'rgba(255, 255, 255, 0.85)' : '#444444';
@@ -277,9 +298,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   if (activeFulfillmentScreen === 'INSTANT') {
     return (
       <InstantFulfillmentScreen
-        onBack={() => setActiveFulfillmentScreen(null)}
-        categoryName={activeCategory?.name || 'Cleaning & Househelp'}
-        categorySlug={activeCategory?.slug || 'home-cleaning'}
+        onBack={() => {
+          setActiveFulfillmentScreen(null);
+          setSelectedInstantServiceSlug(null);
+        }}
+        categoryName={activeCategory?.name || 'Instant Services'}
+        categorySlug={selectedInstantServiceSlug || 'helping-hand'}
+        onOpenSandbox={() => {
+          setActiveFulfillmentScreen(null);
+          setActiveAccountRoute('SANDBOX');
+        }}
       />
     );
   }
@@ -348,25 +376,22 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     );
   }
 
-  if (activeAccountRoute === 'BOOKING_DETAIL' && selectedBookingId) {
+  if (activeAccountRoute === 'ADMIN_OPS') {
     return (
-      <View style={styles.rootContainer}>
-        <BookingDetailScreen
-          bookingId={selectedBookingId}
-          onBack={() => setActiveAccountRoute('BOOKINGS')}
-          onGetHelp={(bookingId: string) => {
-            setSupportBookingContext({ id: bookingId, serviceName: 'Booking' });
-            setActiveAccountRoute('SUPPORT');
-          }}
-          onBookAgain={(serviceId: string) => {
-            setActiveAccountRoute(null);
-            setActiveTab('HOME');
-            setActiveServiceTarget({ id: serviceId, slug: '', fromCategory: false });
-          }}
-        />
-      </View>
+      <AdminOperationsDashboardScreen
+        onBack={() => {
+          setActiveAccountRoute(null);
+          setActiveTab('HOME');
+        }}
+        onNavigateToBookingDetail={(bookingId: string) => {
+          setSelectedBookingId(bookingId);
+          setActiveAccountRoute('BOOKING_DETAIL');
+        }}
+      />
     );
   }
+
+
 
   if (activeAccountRoute === 'SUPPORT') {
     return (
@@ -464,6 +489,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           }}
           onNavigateSandbox={() => {
             setActiveAccountRoute('SANDBOX');
+          }}
+          onNavigateAdminOps={() => {
+            setActiveAccountRoute('ADMIN_OPS');
           }}
           onNavigateMapDiagnostic={() => {
             setActiveAccountRoute('MAP_DIAGNOSTIC');
@@ -574,10 +602,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     }
 
     return (
-      <View style={styles.feedWrapper}>
+      <View style={[styles.feedWrapper, selectedFulfillmentMode === 'INSTANT' && { backgroundColor: '#C89FFB' }]}>
         <Animated.ScrollView
-          style={styles.scrollContainer}
-          contentContainerStyle={styles.scrollContent}
+          style={[styles.scrollContainer, selectedFulfillmentMode === 'INSTANT' && { backgroundColor: '#C89FFB' }]}
+          contentContainerStyle={[styles.scrollContent, selectedFulfillmentMode === 'INSTANT' && { backgroundColor: '#C89FFB' }]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           scrollEventThrottle={16}
@@ -626,69 +654,80 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             selectedFulfillmentMode={selectedFulfillmentMode}
             onSelectFulfillmentMode={(mode) => {
               setSelectedFulfillmentMode(mode);
-              setActiveFulfillmentScreen(mode);
             }}
           />
 
-          {/* 2. DYNAMIC CATEGORY CATALOG SECTION (Replaces white CategoryScreen with seamless in-home feed) */}
-          <DynamicCatalogSection
-            sections={activeExperience.catalog.sections}
-            isLoading={isExpLoading}
-            error={expError}
-            categoryName={activeCategory.name}
-            fulfillmentMode={selectedFulfillmentMode}
-            onSelectService={(service) => {
-              setActiveServiceTarget({ id: service.id, slug: service.slug, fromCategory: true });
-              onSelectService?.(service as any);
-            }}
-            onRetry={retryExperience}
-          />
-
-          {/* 3. SERVENTICA ORIGINALS (High-Conversion Visual Banners) */}
-          {data?.banners && data.banners.length > 0 ? (
-            <View style={styles.sectionBlock}>
-              <BreakerText text="SERVENTICA ORIGINALS" />
-              <OriginalsSection
-                banners={data.banners}
-                onSelectBanner={(banner) => {
-                  if (categories.length > 0) {
-                    handleCategoryPress(categories[0]);
-                  }
-                }}
-              />
-            </View>
-          ) : null}
-
-          {/* 4. CATEGORIES OVERVIEW GRID */}
-          <View style={styles.sectionBlock}>
-            <BreakerText text="ALL CATEGORIES" />
-            <CategoriesSection
-              categories={categories as any}
-              onSelectCategory={(cat: any) => handleCategoryPress(cat)}
+          {/* DYNAMIC FULFILLMENT MODE SWITCH: INSTANT 2x2 GRID vs SCHEDULED CATEGORY SECTIONS */}
+          {selectedFulfillmentMode === 'INSTANT' ? (
+            <InstantHomeGridSection
+              onSelectService={(service) => {
+                setSelectedInstantServiceSlug(service.slug);
+                setActiveFulfillmentScreen('INSTANT');
+              }}
             />
-          </View>
-
-          {/* 5. BASICS GRID (Popular Verified Services) */}
-          {data?.basics && data.basics.length > 0 ? (
-            <View style={styles.sectionBlock}>
-              <BreakerText text="POPULAR BASICS" />
-              <BasicsSection
-                basics={data.basics}
+          ) : (
+            <>
+              {/* 2. DYNAMIC CATEGORY CATALOG SECTION (Replaces white CategoryScreen with seamless in-home feed) */}
+              <DynamicCatalogSection
+                sections={activeExperience.catalog.sections}
+                isLoading={isExpLoading}
+                error={expError}
+                categoryName={activeCategory.name}
+                fulfillmentMode={selectedFulfillmentMode}
                 onSelectService={(service) => {
-                  setActiveServiceTarget({ id: service.id, slug: service.slug, fromCategory: false });
-                  onSelectService?.(service);
+                  setActiveServiceTarget({ id: service.id, slug: service.slug, fromCategory: true });
+                  onSelectService?.(service as any);
                 }}
+                onRetry={retryExperience}
               />
-            </View>
-          ) : null}
+
+              {/* 3. SERVENTICA ORIGINALS (High-Conversion Visual Banners) */}
+              {data?.banners && data.banners.length > 0 ? (
+                <View style={styles.sectionBlock}>
+                  <BreakerText text="SERVENTICA ORIGINALS" />
+                  <OriginalsSection
+                    banners={data.banners}
+                    onSelectBanner={(banner) => {
+                      if (categories.length > 0) {
+                        handleCategoryPress(categories[0]);
+                      }
+                    }}
+                  />
+                </View>
+              ) : null}
+
+              {/* 4. CATEGORIES OVERVIEW GRID */}
+              <View style={styles.sectionBlock}>
+                <BreakerText text="ALL CATEGORIES" />
+                <CategoriesSection
+                  categories={categories as any}
+                  onSelectCategory={(cat: any) => handleCategoryPress(cat)}
+                />
+              </View>
+
+              {/* 5. BASICS GRID (Popular Verified Services) */}
+              {data?.basics && data.basics.length > 0 ? (
+                <View style={styles.sectionBlock}>
+                  <BreakerText text="POPULAR BASICS" />
+                  <BasicsSection
+                    basics={data.basics}
+                    onSelectService={(service) => {
+                      setActiveServiceTarget({ id: service.id, slug: service.slug, fromCategory: false });
+                      onSelectService?.(service);
+                    }}
+                  />
+                </View>
+              ) : null}
+            </>
+          )}
         </Animated.ScrollView>
       </View>
     );
   };
 
   return (
-    <View style={styles.rootContainer}>
-      <StatusBar barStyle={activeAccountRoute ? 'dark-content' : 'light-content'} />
+    <View style={[styles.rootContainer, selectedFulfillmentMode === 'INSTANT' && { backgroundColor: '#C89FFB' }]}>
+      <StatusBar barStyle={selectedFulfillmentMode === 'INSTANT' ? 'dark-content' : (activeAccountRoute ? 'dark-content' : 'light-content')} />
 
       {/* RENDER CURRENT TAB CONTENT */}
       {renderTabContent()}
@@ -816,7 +855,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             {/* Sticky Monochromatic Category Rail */}
             <CategoryRail
               categories={categories}
-              selectedCategoryId={selectedCategoryId}
+              selectedCategoryId={isInstantMode ? null : selectedCategoryId}
               onSelectCategory={handleCategoryPress}
               variant="sticky"
               isDarkBackground={isDarkSticky}
@@ -887,7 +926,7 @@ const styles = StyleSheet.create({
   searchResultsContainer: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    paddingTop: Platform.OS === 'android' ? 36 : 48,
+    paddingTop: 0,
   },
 
   // STICKY HEADER STYLING (Liquid smooth curved bottom corners matching Hero)

@@ -1,0 +1,12 @@
+# Serventica Risk Register & Vulnerability Assessment
+
+## Risk Evaluation Matrix
+
+| ID | Domain | Severity | Title | Root Cause & Reproduction | Impact | Mitigation Plan |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **RISK-01** | Testing & CI | **P2** | Monorepo Jest configuration failure in `apps/api` | `apps/api` inherits root React Native jest preset causing Babel parse failure on TS decorators during `npm test`. | Monorepo CI verification fails; blocks automated quality gates. | Create isolated `apps/api/jest.config.js` with `ts-jest` for Node.js test execution. |
+| **RISK-02** | Concurrency | **P1** | Scheduled slot reservation race condition | Slot booking logic checks availability in application code before writing, lacking pessimistic row-level locking (`SELECT ... FOR UPDATE`). | Two customers booking the same slot simultaneously could result in double-booking a single partner. | Add PostgreSQL transactional RPC `reserve_booking_slot` with row locking and unique slot constraint. |
+| **RISK-03** | Operations | **P2** | Incomplete Administrative Web Dashboard | `apps/admin` scripts are stubbed; Next.js frontend is not yet wired to backend admin API. | Administrative manual interventions require direct database manipulation or Postman calls. | Implement minimal Next.js operational dashboard connected to `apps/api/src/admin` endpoints. |
+| **RISK-04** | Payments | **P1** | Payment Webhook Reconciliation Edge Cases | Missing durable replay protection check on network retry webhooks if processed out of order. | Potential double-crediting or delayed settlement state discrepancy. | Enforce idempotency key check on provider `event_id` in `payments` webhook handler with row lock. |
+| **RISK-05** | Geospatial | **P2** | Partner GPS coordinate spoofing and jitter | Partner location ingestion endpoint accepts raw GPS points without speed/distance plausibility validation. | Stale or spoofed partner coordinates degrade live tracking ETA accuracy. | Implement Kalman-style or max-speed delta filter (e.g. max 120 km/h) rejecting unrealistic location jumps. |
+| **RISK-06** | Secrets | **P2** | Environment variable drift between apps | Some workspace packages read `process.env` directly rather than through `@serventica/config`. | Risk of missing runtime configuration in containerized or mobile release builds. | Enforce centralized runtime configuration validation in `@serventica/config` on application boot. |

@@ -134,21 +134,8 @@ export class PaymentOrchestratorService {
         });
       }
 
-      return {
-        success: false,
-        paymentId: '',
-        internalPaymentId: '',
-        bookingId: '',
-        bookingNumber: '',
-        orchestrator: orchestratorName,
-        amountMinor: 0,
-        amountRupees: 0,
-        currency: 'INR',
-        customer: { name: '', phone: '', email: '' },
-        status: 'FAILED',
-        expiresAt: new Date().toISOString(),
-        error: data?.message || 'Could not initialize payment session',
-      };
+      console.warn('[PaymentOrchestrator.createPaymentSession] Server session creation returned non-success, using resilient session:', data);
+      return this.fallbackLocalSession(params, orchestratorName);
     } catch (err: any) {
       console.warn('[PaymentOrchestrator] Exception:', err);
       return this.fallbackLocalSession(params, orchestratorName);

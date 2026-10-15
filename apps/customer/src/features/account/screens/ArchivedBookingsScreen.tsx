@@ -31,6 +31,7 @@ import { BookingTicket } from '../../../components/BookingTicket';
 import { BookingSwipeableRow } from '../../../components/BookingSwipeableRow';
 import { PriceCalculationEngine } from '../../../services/pricing/PriceCalculationEngine';
 import { triggerHaptic } from '../../../hooks/useEventHaptics';
+import { getInstantServiceImage } from '../../../assets/images/instant';
 
 interface ArchivedBookingsScreenProps {
   onBack: () => void;
@@ -69,14 +70,50 @@ export const ArchivedBookingsScreen: React.FC<ArchivedBookingsScreenProps> = ({
   const keyExtractor = useCallback((item: BookingRecord) => item.id || item.bookingNumber, []);
 
   const renderItem = ({ item }: { item: BookingRecord }) => {
+    const isInstantSlug =
+      ['helping-hand', 'instant-helping-hand', 'road-help', 'laundry', 'pack-move', 'pack-and-move'].includes(
+        item.serviceId?.toLowerCase() || item.serviceSlug?.toLowerCase() || ''
+      ) ||
+      Boolean(item.serviceName?.toLowerCase().includes('helping hand')) ||
+      Boolean(item.serviceName?.toLowerCase().includes('road help')) ||
+      Boolean(item.serviceName?.toLowerCase().includes('pack & move')) ||
+      Boolean(item.serviceName?.toLowerCase().includes('express laundry'));
+
+    const isInstantService =
+      (item.fulfillmentMode === 'INSTANT' ||
+       (item as any).fulfillment_mode === 'INSTANT' ||
+       item.id.startsWith('inst_')) &&
+      isInstantSlug;
+
+    const instantSlug =
+      item.serviceSlug ||
+      item.serviceId ||
+      (item.serviceName?.toLowerCase().includes('helping hand')
+        ? 'helping-hand'
+        : item.serviceName?.toLowerCase().includes('road help')
+        ? 'road-help'
+        : item.serviceName?.toLowerCase().includes('laundry')
+        ? 'laundry'
+        : item.serviceName?.toLowerCase().includes('pack')
+        ? 'pack-move'
+        : 'helping-hand');
+
     const imageSource =
       item.serviceImageUrl && AssetRegistry[item.serviceImageUrl]
         ? AssetRegistry[item.serviceImageUrl]
+        : isInstantService
+        ? getInstantServiceImage(instantSlug)
         : AssetRegistry.basic_ac_repair;
 
     const isCancelled = Boolean(item.status?.includes('CANCEL'));
     const isCompleted = item.status === 'SERVICE_COMPLETED' || item.status === 'CLOSED';
-    const theme = isCancelled ? 'red' : isCompleted ? 'green' : 'purple';
+    const theme = isCancelled
+      ? 'red'
+      : isCompleted
+      ? 'green'
+      : isInstantService
+      ? 'yellow'
+      : 'purple';
 
     const bill = PriceCalculationEngine.calculateBill({
       itemTotal: item.payment?.subtotal,
@@ -93,6 +130,7 @@ export const ArchivedBookingsScreen: React.FC<ArchivedBookingsScreenProps> = ({
           theme={theme}
           status={item.status}
           bookingId={`#${item.bookingNumber}`}
+          isInstant={isInstantService}
           datetime={formatBookingExactDateTime(item.scheduledStartTime, item.scheduledDate, item.createdAt)}
           thumbnail={imageSource}
           title={item.serviceName}

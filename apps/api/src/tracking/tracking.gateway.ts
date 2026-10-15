@@ -4,8 +4,6 @@ import {
   SubscribeMessage,
   OnGatewayConnection,
   OnGatewayDisconnect,
-  ConnectedSocket,
-  MessageBody,
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
@@ -13,6 +11,8 @@ import {
   PartnerLiveLocation,
   SocketTrackingEvents,
   TrackingSnapshotPayload,
+  DispatchOfferPayload,
+  MatchedPartnerPayload,
 } from '@serventica/types';
 import {
   TrackingSessionService,
@@ -88,7 +88,16 @@ export class TrackingGateway
     };
 
     this.socketUsers.set(client.id, user);
-    this.socketRooms.set(client.id, new Set());
+    const userRooms = new Set<string>();
+    this.socketRooms.set(client.id, userRooms);
+
+    // If partner, automatically subscribe to private offer channel
+    if (user.role === 'PARTNER') {
+      const partnerRoom = `partner:${user.userId}`;
+      client.join(partnerRoom);
+      userRooms.add(partnerRoom);
+      this.logger.log(`[PartnerRoomJoined] Partner ${user.userId} auto-subscribed to ${partnerRoom}`);
+    }
 
     this.logger.log(
       `[SocketConnected] Client ${client.id} authenticated as ${user.role} (${user.userId})`
@@ -120,8 +129,8 @@ export class TrackingGateway
    */
   @SubscribeMessage('tracking:join')
   handleJoinRoom(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() payload: { bookingId: string; clientRole: 'CUSTOMER' | 'PARTNER'; token?: string }
+    client: Socket,
+    payload: { bookingId: string; clientRole: 'CUSTOMER' | 'PARTNER'; token?: string }
   ) {
     const user = this.socketUsers.get(client.id);
     if (!user) {
@@ -178,8 +187,8 @@ export class TrackingGateway
    */
   @SubscribeMessage('partner:location')
   handlePartnerLocation(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() location: Partial<PartnerLiveLocation>
+    client: Socket,
+    location: Partial<PartnerLiveLocation>
   ) {
     const user = this.socketUsers.get(client.id);
     if (!user || user.role !== 'PARTNER') {
@@ -264,8 +273,8 @@ export class TrackingGateway
    */
   @SubscribeMessage('tracking:status')
   handleStatusUpdate(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() payload: { bookingId: string; status: any }
+    client: Socket,
+    payload: { bookingId: string; status: any }
   ) {
     const user = this.socketUsers.get(client.id);
     if (!user || (user.role !== 'PARTNER' && user.role !== 'ADMIN')) {
@@ -287,5 +296,170 @@ export class TrackingGateway
       status,
       timestamp: new Date().toISOString(),
     });
+  }
+
+  /**
+   * Explicit offer room subscription: partner:subscribe_offers
+   */
+  @SubscribeMessage('partner:subscribe_offers')
+  handleSubscribeOffers(
+    client: Socket,
+    payload?: { partnerId?: string }
+  ) {
+    const user = this.socketUsers.get(client.id);
+    const partnerId = payload?.partnerId || user?.userId;
+
+    if (!partnerId) {
+      client.emit('tracking:error', {
+        code: 'MISSING_PARTNER_ID',
+        message: 'partnerId is required to subscribe to offers.',
+      });
+      return;
+    }
+
+    const partnerRoom = `partner:${partnerId}`;
+    client.join(partnerRoom);
+
+    const userRooms = this.socketRooms.get(client.id) || new Set();
+    userRooms.add(partnerRoom);
+    this.socketRooms.set(client.id, userRooms);
+
+    this.logger.log(`[PartnerOfferSubscribed] Client ${client.id} joined ${partnerRoom}`);
+    client.emit('partner:subscribed', { partnerId, channel: partnerRoom });
+  }
+
+  // ==============================================================================
+  // PHASE 3: INSTANT EVENT BROADCASTING BRIDGE METHODS
+  // ==============================================================================
+
+  /**
+   * Dispatches Wave Offer to candidate's private room: partner:{partnerId}
+   */
+  public broadcastOfferToPartner(partnerId: string, offer: DispatchOfferPayload): void {
+    const room = `partner:${partnerId}`;
+    this.server?.to(room).emit('dispatch:new_offer', offer);
+    this.logger.log(`[SocketBroadcast] Emitted dispatch:new_offer (${offer.offerId}) to ${room}`);
+  }
+
+  /**
+   * Cancels active offer when expired or declined: partner:{partnerId}
+   */
+  public broadcastOfferCancelled(partnerId: string, offerId: string, reason: string): void {
+    const room = `partner:${partnerId}`;
+    this.server?.to(room).emit('dispatch:offer_cancelled', { offerId, reason });
+    this.logger.log(`[SocketBroadcast] Emitted dispatch:offer_cancelled (${offerId}) to ${room}`);
+  }
+
+  /**
+   * Broadcasts partner match & confirmation to customer tracking room: tracking:{bookingId}
+   */
+  public broadcastMatchToBooking(bookingId: string, payload: MatchedPartnerPayload): void {
+    const room = `tracking:${bookingId}`;
+    this.server?.to(room).emit('dispatch:matched', payload);
+    this.logger.log(`[SocketBroadcast] Emitted dispatch:matched to ${room}`);
+  }
+
+  /**
+   * Broadcasts doorstep arrival & verification OTP to customer room: tracking:{bookingId}
+   */
+  public broadcastArrivalToBooking(
+    bookingId: string,
+    payload: { bookingId: string; arrivedAt: string; verificationOtp?: string }
+  ): void {
+    const room = `tracking:${bookingId}`;
+    this.server?.to(room).emit('partner:arrived', payload);
+    this.logger.log(`[SocketBroadcast] Emitted partner:arrived to ${room}`);
+  }
+
+  /**
+   * Broadcasts service started event to customer room: tracking:{bookingId}
+   */
+  public broadcastServiceStarted(bookingId: string, startedAt: string): void {
+    const room = `tracking:${bookingId}`;
+    this.server?.to(room).emit('job:started', { bookingId, startedAt });
+    this.logger.log(`[SocketBroadcast] Emitted job:started to ${room}`);
+  }
+
+  /**
+   * Prompts partner with in-job duration extension request: partner:{partnerId}
+   */
+  public broadcastExtensionPrompt(
+    partnerId: string,
+    payload: {
+      bookingId: string;
+      extensionId: string;
+      additionalMinutes: number;
+      additionalPayout: number;
+      expiresAt: string;
+    }
+  ): void {
+    const room = `partner:${partnerId}`;
+    this.server?.to(room).emit('job:extension_prompt', payload);
+    this.logger.log(`[SocketBroadcast] Emitted job:extension_prompt to ${room}`);
+  }
+
+  /**
+   * Broadcasts confirmed duration extension to customer room: tracking:{bookingId}
+   */
+  public broadcastExtensionConfirmed(
+    bookingId: string,
+    payload: {
+      bookingId: string;
+      extensionId: string;
+      newDurationMinutes: number;
+      newTotal: number;
+    }
+  ): void {
+    const room = `tracking:${bookingId}`;
+    this.server?.to(room).emit('job:extension_confirmed', payload);
+    this.logger.log(`[SocketBroadcast] Emitted job:extension_confirmed to ${room}`);
+  }
+
+  /**
+   * Broadcasts laundry weight reconciliation notice to customer room: tracking:{bookingId}
+   */
+  public broadcastLaundryReconciliation(
+    bookingId: string,
+    payload: {
+      bookingId: string;
+      initialTotal: number;
+      reconciledTotal: number;
+      deviationPercent: number;
+      requiresCustomerConfirmation: boolean;
+    }
+  ): void {
+    const room = `tracking:${bookingId}`;
+    this.server?.to(room).emit('job:laundry_weight_confirmation', payload);
+    this.logger.log(`[SocketBroadcast] Emitted job:laundry_weight_confirmation to ${room}`);
+  }
+
+  /**
+   * Broadcasts job completion to customer room: tracking:{bookingId}
+   */
+  public broadcastJobCompleted(
+    bookingId: string,
+    payload: { bookingId: string; completedAt: string; total: number }
+  ): void {
+    const room = `tracking:${bookingId}`;
+    this.server?.to(room).emit('job:completed', payload);
+    this.logger.log(`[SocketBroadcast] Emitted job:completed to ${room}`);
+  }
+
+  /**
+   * Broadcasts booking cancellation to tracking room
+   */
+  public broadcastCancellation(bookingId: string, reason: string): void {
+    const room = `tracking:${bookingId}`;
+    this.server?.to(room).emit('job:cancelled', { bookingId, reason });
+    this.logger.log(`[SocketBroadcast] Emitted job:cancelled to ${room}`);
+  }
+
+  /**
+   * Broadcasts automated redispatch notification to customer room
+   */
+  public broadcastRedispatching(bookingId: string, message: string): void {
+    const room = `tracking:${bookingId}`;
+    this.server?.to(room).emit('job:redispatching', { bookingId, message });
+    this.logger.log(`[SocketBroadcast] Emitted job:redispatching to ${room}`);
   }
 }

@@ -15,8 +15,8 @@ export const supabase = createClient(
   {
     auth: {
       storage: SafeAsyncStorage as any,
-      autoRefreshToken: true,
-      persistSession: true,
+      autoRefreshToken: process.env.NODE_ENV !== 'test',
+      persistSession: process.env.NODE_ENV !== 'test',
       detectSessionInUrl: false, // Handled manually via React Native Linking
     },
     global: {

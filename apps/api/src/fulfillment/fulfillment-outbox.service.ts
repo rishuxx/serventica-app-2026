@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { PushNotificationService } from '../tracking/push-notification.service';
 import { TrackingGateway } from '../tracking/tracking.gateway';
 
@@ -25,8 +25,8 @@ export class FulfillmentOutboxService {
   private inMemoryQueue: OutboxMessage[] = [];
 
   constructor(
-    private readonly pushNotifications: PushNotificationService,
-    private readonly trackingGateway: TrackingGateway
+    @Optional() private readonly pushNotifications?: PushNotificationService,
+    @Optional() private readonly trackingGateway?: TrackingGateway
   ) {}
 
   public enqueueEvent(event: Omit<OutboxMessage, 'status' | 'retry_count'>): void {
@@ -72,7 +72,7 @@ export class FulfillmentOutboxService {
 
     // 1. Broadcast over Socket.IO tracking room if gateway is active
     try {
-      this.trackingGateway.handleStatusUpdate(
+      this.trackingGateway?.handleStatusUpdate?.(
         { id: 'system_outbox' } as any,
         { bookingId: booking_id, status: event_type }
       );
@@ -82,7 +82,7 @@ export class FulfillmentOutboxService {
 
     // 2. Dispatch push notification if recipient is identified
     const customerId = payload?.customer_id;
-    if (customerId) {
+    if (customerId && this.pushNotifications?.dispatchNotification) {
       await this.pushNotifications.dispatchNotification({
         recipientId: customerId,
         bookingId: booking_id,

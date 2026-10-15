@@ -217,7 +217,9 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
     enabled: isCartDrawerOpen && Boolean(primaryItem?.serviceId),
   });
 
-  const [bookingMode, setBookingMode] = useState<'EXPRESS' | 'SCHEDULED'>('EXPRESS');
+  const [bookingMode, setBookingMode] = useState<'EXPRESS' | 'SCHEDULED'>('SCHEDULED');
+  const [confirmedOtp, setConfirmedOtp] = useState<string>('4821');
+  const [confirmedItemCount, setConfirmedItemCount] = useState<number>(1);
   const [selectedDurationId, setSelectedDurationId] = useState<string>('1hr');
   const [selectedPaymentKey, setSelectedPaymentKey] = useState<PaymentMethodKey>('RAZORPAY_ONLINE');
   const [isPaymentPickerOpen, setIsPaymentPickerOpen] = useState<boolean>(false);
@@ -578,15 +580,35 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
         ? (activeLocation as any).id
         : ensureUuid();
 
+      const isAllInstantItems = itemList.length > 0 && itemList.every((it) =>
+        ['helping-hand', 'instant-helping-hand', 'road-help', 'laundry', 'pack-move'].includes(it.slug || it.serviceId)
+      );
+      const isExpressBooking = isAllInstantItems;
+      const generatedOtp = String(Math.floor(1000 + Math.random() * 9000));
+      setConfirmedOtp(generatedOtp);
+      setConfirmedItemCount(itemList.length);
+
+      const effectiveCustomerId = user?.id && isUuid(user.id)
+        ? user.id
+        : '6e9fc42b-8f70-4c39-9278-49d33043aac9';
+
+      const pickupLat = activeLocation?.latitude != null ? activeLocation.latitude : 30.343866;
+      const pickupLng = activeLocation?.longitude != null ? activeLocation.longitude : 77.953231;
+      const addressSnippet = activeLocation?.formattedAddress || activeLocation?.shortAddress || 'Rajpur Road, Clock Tower, Dehradun';
+
       const newBooking: BookingRecord = {
         id: finalBookingId,
         bookingNumber,
-        customerId: user?.id || 'guest_user',
+        customerId: effectiveCustomerId,
         partnerId: null,
         addressId: bookingAddressId,
-        status: 'CONFIRMED' as BookingStatus,
-        scheduledDate: selectedDate || (bookingMode === 'EXPRESS' ? 'Today' : new Date().toISOString().split('T')[0]),
-        scheduledStartTime: selectedSlot?.startAt || new Date().toISOString(),
+        status: 'SEARCHING_PARTNER' as BookingStatus,
+        scheduledDate: selectedDate || (isExpressBooking ? 'Today' : new Date().toISOString().split('T')[0]),
+        scheduledStartTime: isExpressBooking
+          ? 'Instant (~9-15 mins)'
+          : ((selectedSlot as any)?.label || selectedSlot?.startAt || `${selectedDate || 'Today'} • Slot Confirmed`),
+        fulfillmentMode: isExpressBooking ? 'INSTANT' : 'SCHEDULED',
+        verificationOtp: generatedOtp,
         serviceId: primary.serviceId,
         serviceName: combinedServiceName,
         serviceSlug: primary.slug,
@@ -601,8 +623,8 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
           state: (activeLocation as any)?.state || 'Uttarakhand',
           pincode: (activeLocation as any)?.pincode || (activeLocation as any)?.postalCode || '248007',
           formattedAddress: activeLocation?.formattedAddress || `${activeLocation?.shortAddress || 'Dehradun'}, India`,
-          latitude: activeLocation?.latitude != null ? activeLocation.latitude : undefined,
-          longitude: activeLocation?.longitude != null ? activeLocation.longitude : undefined,
+          latitude: pickupLat,
+          longitude: pickupLng,
         } as any,
         partner: null,
         payment: {
@@ -631,20 +653,27 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
 
       await bookingRepository.saveBooking(newBooking);
 
-      // Trigger Instant Dispatch Wave for eligible partners
-      if (bookingMode === 'EXPRESS' || !selectedDate || selectedDate === 'Today') {
-        const pickupLat = activeLocation?.latitude || 30.3342;
-        const pickupLng = activeLocation?.longitude || 77.9629;
-        DispatchService.triggerInstantDispatch({
+      // Launch partner dispatch wave so nearby available partners receive the incoming order alert
+      const targetServiceIdOrSlug = primary.slug || primary.serviceId;
+      console.log('[CartDrawerModal] Launching partner dispatch wave for booking:', finalBookingId, 'service:', targetServiceIdOrSlug, 'mode:', isExpressBooking ? 'INSTANT' : 'SCHEDULED');
+
+      try {
+        const dispatchRes = await DispatchService.placeOrderAndDispatch({
           bookingId: finalBookingId,
-          serviceId: primary.serviceId,
+          bookingNumber: bookingNumber,
+          customerId: effectiveCustomerId,
+          serviceIdOrSlug: targetServiceIdOrSlug,
+          serviceName: combinedServiceName,
           pickupLatitude: pickupLat,
           pickupLongitude: pickupLng,
-          maxCandidates: 5,
-          timeoutSeconds: 45,
-        }).catch((dispErr) => {
-          console.warn('[CartDrawerModal] Instant dispatch wave trigger notice:', dispErr);
+          addressText: addressSnippet,
+          totalAmount: amount,
+          paymentMethod: paymentMethodName,
+          verificationOtp: generatedOtp,
         });
+        console.log('[CartDrawerModal] Partner dispatch wave result:', dispatchRes);
+      } catch (dispErr) {
+        console.warn('[CartDrawerModal] Partner dispatch wave trigger notice:', dispErr);
       }
     } catch (e) {
       console.warn('[CartDrawerModal] Failed to persist booking:', e);
@@ -679,9 +708,10 @@ export const CartDrawerModal: React.FC<CartDrawerModalProps> = ({ onProceedToBoo
                 ? `${profile.first_name}${profile.last_name ? ` ${profile.last_name}` : ''}`
                 : user?.user_metadata?.full_name || 'Rishu'
             }
-            itemCount={itemCount}
+            itemCount={confirmedItemCount || 1}
             selectedDate={selectedDate}
             bookingMode={bookingMode}
+            verificationOtp={confirmedOtp}
             onClose={closeCartDrawer}
             onViewBooking={handleDismissSuccess}
           />

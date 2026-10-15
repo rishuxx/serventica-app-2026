@@ -55,6 +55,8 @@ export interface BookingRecord {
   partnerId?: string | null;
   addressId: string;
   status: BookingStatus;
+  fulfillmentMode?: 'INSTANT' | 'SCHEDULED' | string;
+  verificationOtp?: string;
   scheduledDate: string;
   scheduledStartTime: string;
   scheduledEndTime?: string;
